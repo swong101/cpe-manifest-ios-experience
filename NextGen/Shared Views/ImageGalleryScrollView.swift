@@ -105,6 +105,10 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
         return gallery?.getImageURLForPage(currentPage)
     }
     
+    var currentImageId: String? {
+        return gallery?.getPictureForPage(currentPage)?.image?.id
+    }
+    
     
     // MARK: Initialization
     override init(frame: CGRect) {
