@@ -27,6 +27,7 @@ public enum NextGenAnalyticsAction: String {
     // Home
     case launchInMovie = "launch_ime"
     case launchExtras = "launch_extras"
+    case launchBuy = "launch_buy"
     
     // Extras
     case selectTalent = "select_talent"
@@ -97,6 +98,9 @@ public protocol NextGenHookDelegate {
     func experienceWillOpen()
     func experienceWillClose()
     func experienceWillEnterDebugMode()
+    
+    // Preview mode callbacks
+    func previewModeShouldLaunchBuy()
     
     // Video Player callbacks
     func videoPlayerWillClose(_ mode: VideoPlayerMode, playbackPosition: Double)
