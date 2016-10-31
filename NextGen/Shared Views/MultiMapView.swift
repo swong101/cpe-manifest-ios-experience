@@ -272,15 +272,19 @@ class MultiMapView: UIView, MKMapViewDelegate, GMSMapViewDelegate {
     
     // MARK: MKMapViewDelegate
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-        var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: Constants.MarkerAnnotationViewReuseIdentifier)
-        if annotationView == nil {
-            annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: Constants.MarkerAnnotationViewReuseIdentifier)
-            annotationView?.image = mapIconImage
+        if let mapIconImage = mapIconImage {
+            var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: Constants.MarkerAnnotationViewReuseIdentifier)
+            if annotationView == nil {
+                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: Constants.MarkerAnnotationViewReuseIdentifier)
+                annotationView?.image = mapIconImage
+            }
+            
+            annotationView?.annotation = annotation
+            
+            return annotationView
         }
         
-        annotationView?.annotation = annotation
-        
-        return annotationView
+        return nil
     }
     
     // MARK: GMSMapViewDelegate
