@@ -406,7 +406,7 @@ class HomeViewController: UIViewController {
                 if let buyButton = buyButton {
                     extrasButton.center = CGPoint(x: buttonOverlayWidth / 2, y: buttonOverlayHeight / 2)
                     
-                    buyButton.frame.size = extrasButton.frame.size
+                    buyButton.frame.size = playButton.frame.size
                     buyButton.frame.origin = CGPoint(x: (buttonOverlayWidth - buyButton.frame.size.width) / 2, y: buttonOverlayHeight - buyButton.frame.size.height)
                 } else {
                     extrasButton.frame.origin = CGPoint(x: (buttonOverlayWidth - extrasButtonWidth) / 2, y: buttonOverlayHeight - extrasButtonHeight)
