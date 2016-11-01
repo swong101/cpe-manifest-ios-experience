@@ -107,18 +107,18 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
     }
     
     @IBAction private func onShare(_ sender: UIButton) {
-        if let url = timedEvent?.videoURL, let title = NGDMManifest.sharedInstance.mainExperience?.title {
+        if let url = timedEvent?.videoURL, let videoId = timedEvent?.video?.id, let title = NGDMManifest.sharedInstance.mainExperience?.title {
             let showShareDialog = { [weak self] (url: URL) in
                 let activityViewController = UIActivityViewController(activityItems: [String.localize("clipshare.share_message", variables: ["movie_name": title, "url": url.absoluteString])], applicationActivities: nil)
                 activityViewController.popoverPresentationController?.sourceView = sender
                 self?.present(activityViewController, animated: true, completion: nil)
                 
-                NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .shareVideo, itemId: self?.timedEvent?.id)
+                NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .shareVideo, itemId: videoId)
                 NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
             }
             
             if let delegate = NextGenHook.delegate {
-                delegate.urlForSharedContent(url, completion: { (newUrl) in
+                delegate.urlForSharedContent(id: videoId, type: .video, completion: { (newUrl) in
                     showShareDialog(newUrl ?? url)
                 })
             } else {

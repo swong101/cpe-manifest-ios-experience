@@ -25,6 +25,7 @@ class HomeViewController: UIViewController {
     private var buttonOverlayView: UIView!
     private var playButton: UIButton!
     private var extrasButton: UIButton!
+    private var buyButton: UIButton?
     private var titleOverlayView: UIView?
     private var titleImageView: UIImageView?
     private var homeScreenViews = [UIView]()
@@ -76,6 +77,10 @@ class HomeViewController: UIViewController {
         return nodeStyle?.getButtonImage("Extras")
     }
     
+    private var buyButtonImage: NGDMImage? {
+        return nodeStyle?.getButtonImage("Buy")
+    }
+    
     private var buttonOverlaySize: CGSize {
         return nodeStyle?.buttonOverlaySize ?? CGSize(width: 300, height: 100)
     }
@@ -90,6 +95,10 @@ class HomeViewController: UIViewController {
     
     private var extrasButtonSize: CGSize {
         return extrasButtonImage?.size ?? CGSize(width: 300, height: 60)
+    }
+    
+    private var buyButtonSize: CGSize {
+        return buyButtonImage?.size ?? playButtonSize
     }
     
     private var titleOverlaySize: CGSize {
@@ -140,7 +149,7 @@ class HomeViewController: UIViewController {
             
             // Play button
             playButton = UIButton()
-            playButton.addTarget(self, action: #selector(self.onPlay), for: UIControlEvents.touchUpInside)
+            playButton.addTarget(self, action: #selector(self.onPlay), for: .touchUpInside)
             playButton.layer.shadowRadius = 5
             playButton.layer.shadowColor = UIColor.black.cgColor
             playButton.layer.shadowOffset = CGSize.zero
@@ -159,7 +168,7 @@ class HomeViewController: UIViewController {
             
             // Extras button
             extrasButton = UIButton()
-            extrasButton.addTarget(self, action: #selector(self.onExtras), for: UIControlEvents.touchUpInside)
+            extrasButton.addTarget(self, action: #selector(self.onExtras), for: .touchUpInside)
             extrasButton.layer.shadowRadius = 5
             extrasButton.layer.shadowColor = UIColor.black.cgColor
             extrasButton.layer.shadowOffset = CGSize.zero
@@ -178,6 +187,21 @@ class HomeViewController: UIViewController {
                 extrasButton.setTitle(String.localize("label.extras"), for: UIControlState())
                 extrasButton.titleLabel?.font = UIFont.themeCondensedBoldFont(15)
                 extrasButton.backgroundColor = UIColor.gray
+            }
+            
+            // Buy button
+            if let buyButtonImage = buyButtonImage, let buyButtonImageUrl = buyButtonImage.url {
+                buyButton = UIButton()
+                buyButton!.addTarget(self, action: #selector(self.onBuy), for: .touchUpInside)
+                buyButton!.layer.shadowRadius = 5
+                buyButton!.layer.shadowColor = UIColor.black.cgColor
+                buyButton!.layer.shadowOffset = CGSize.zero
+                buyButton!.layer.masksToBounds = false
+                buyButton!.sd_setImage(with: buyButtonImageUrl, for: .normal)
+                buyButton!.contentHorizontalAlignment = .fill
+                buyButton!.contentVerticalAlignment = .fill
+                buyButton!.imageView?.contentMode = .scaleAspectFit
+                buttonOverlayView.addSubview(buyButton!)
             }
             
             buttonOverlayView.addSubview(playButton)
@@ -378,7 +402,15 @@ class HomeViewController: UIViewController {
                 
                 let extrasButtonWidth = playButton.frame.width * 0.675
                 let extrasButtonHeight = extrasButtonWidth / (extrasButtonSize.width / extrasButtonSize.height)
-                extrasButton.frame = CGRect(x: (buttonOverlayView.frame.width - extrasButtonWidth) / 2, y: buttonOverlayHeight - extrasButtonHeight, width: extrasButtonWidth, height: extrasButtonHeight)
+                extrasButton.frame.size = CGSize(width: extrasButtonWidth, height: extrasButtonHeight)
+                if let buyButton = buyButton {
+                    extrasButton.center = CGPoint(x: buttonOverlayWidth / 2, y: buttonOverlayHeight / 2)
+                    
+                    buyButton.frame.size = playButton.frame.size
+                    buyButton.frame.origin = CGPoint(x: (buttonOverlayWidth - buyButton.frame.size.width) / 2, y: buttonOverlayHeight - buyButton.frame.size.height)
+                } else {
+                    extrasButton.frame.origin = CGPoint(x: (buttonOverlayWidth - extrasButtonWidth) / 2, y: buttonOverlayHeight - extrasButtonHeight)
+                }
                 
                 if let titleOverlayView = titleOverlayView {
                     let titleOverlayWidth = min(titleOverlaySize.width * backgroundNewScale, viewWidth * 0.9)
@@ -535,6 +567,11 @@ class HomeViewController: UIViewController {
     func onExtras() {
         self.performSegue(withIdentifier: SegueIdentifier.ShowOutOfMovieExperience, sender: NGDMManifest.sharedInstance.outOfMovieExperience)
         NextGenHook.logAnalyticsEvent(.homeAction, action: .launchExtras)
+    }
+    
+    func onBuy() {
+        NextGenHook.delegate?.previewModeShouldLaunchBuy()
+        NextGenHook.logAnalyticsEvent(.homeAction, action: .launchBuy)
     }
     
     @IBAction func onExit() {

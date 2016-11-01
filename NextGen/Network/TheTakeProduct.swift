@@ -55,7 +55,7 @@ class TheTakeProduct: NSObject {
         brand = data[Constants.Keys.ProductBrand] as? String
         price = data[Constants.Keys.ProductPrice] as? String
         
-        if let imagesData = (data[Constants.Keys.ProductImages] ?? data[Constants.Keys.ProductImage]) as? [String: String], let imageString = imagesData[Constants.Keys.ProductImageThumbnail] {
+        if let imagesData = data[Constants.Keys.ProductImages] as? [String: String] ?? data[Constants.Keys.ProductImage] as? [String: String], let imageString = imagesData[Constants.Keys.ProductImageThumbnail] {
             productImageURL = URL(string: imageString)
         }
         
@@ -65,7 +65,7 @@ class TheTakeProduct: NSObject {
             if let x = data[Constants.Keys.BullseyeKeyFrameX] as? Double, let y = data[Constants.Keys.BullseyeKeyFrameY] as? Double {
                 bullseyePoint = CGPoint(x: x, y: y)
             }
-        } else if let imagesData = (data[Constants.Keys.KeyFrameImage] ?? data[Constants.Keys.CropImages] ?? data[Constants.Keys.CropImage]) as? [String: String], let imageString = imagesData[Constants.Keys.CropImageThumbnail] {
+        } else if let imagesData = data[Constants.Keys.KeyFrameImage] as? [String: String] ?? data[Constants.Keys.CropImages] as? [String: String] ?? data[Constants.Keys.CropImage] as? [String: String], let imageString = imagesData[Constants.Keys.CropImageThumbnail] {
             sceneImageURL = URL(string: imageString)
             
             if let x = data[Constants.Keys.BullseyeCropX] as? Double, let y = data[Constants.Keys.BullseyeCropY] as? Double {

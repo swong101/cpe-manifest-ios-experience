@@ -235,9 +235,9 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
                     } else if firstChildExperience.isType(.gallery) {
                         NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.id)
                     }
+                    
+                    self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
                 }
-                
-                self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
             }
         }
     }

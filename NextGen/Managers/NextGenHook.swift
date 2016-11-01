@@ -27,6 +27,7 @@ public enum NextGenAnalyticsAction: String {
     // Home
     case launchInMovie = "launch_ime"
     case launchExtras = "launch_extras"
+    case launchBuy = "launch_buy"
     
     // Extras
     case selectTalent = "select_talent"
@@ -84,6 +85,11 @@ public enum NextGenConnectionStatus {
     case off
 }
 
+public enum NextGenSharedContentType {
+    case image
+    case video
+}
+
 public protocol NextGenHookDelegate {
     // Connection status
     func connectionStatusChanged(status: NextGenConnectionStatus)
@@ -93,12 +99,15 @@ public protocol NextGenHookDelegate {
     func experienceWillClose()
     func experienceWillEnterDebugMode()
     
+    // Preview mode callbacks
+    func previewModeShouldLaunchBuy()
+    
     // Video Player callbacks
     func videoPlayerWillClose(_ mode: VideoPlayerMode, playbackPosition: Double)
     func urlForProcessedVideo(_ url: URL, mode: VideoPlayerMode, completion: @escaping (_ url: URL?, _ startTime: Double) -> Void)
     
     // Sharing callbacks
-    func urlForSharedContent(_ contentUrl: URL, completion: @escaping (_ url: URL?) -> Void)
+    func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (_ url: URL?) -> Void)
     
     // Talent callbacks
     func urlForTitle(_ title: String, completion: @escaping (_ url: URL?) -> Void)
