@@ -167,6 +167,10 @@ class VideoPlayerViewController: NextGenVideoPlayerViewController {
 
         if mode == .mainFeature {
             self.fullScreenButton.removeFromSuperview()
+            if let delegate = NextGenHook.delegate {
+                _didPlayInterstitial = SettingsManager.didWatchInterstitial && !delegate.interstitialShouldPlayMultipleTimes()
+            }
+            
             playMainExperience()
         } else {
             _didPlayInterstitial = true
