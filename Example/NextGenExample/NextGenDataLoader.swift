@@ -231,6 +231,11 @@ extension NextGenDataLoader: NextGenHookDelegate {
         completion(url, 0)
     }
     
+    func interstitialShouldPlayMultipleTimes() -> Bool {
+        // Return true if interstitial video should play again after user has already seen it (with ability to skip)
+        return true
+    }
+    
     func urlForTitle(_ title: String, completion: @escaping (URL?) -> Void) {
         if let encodedTitleName = title.replacingOccurrences(of: ":", with: "").replacingOccurrences(of: "-", with: "").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
             completion(URL(string: "http://www.vudu.com/movies/#search/" + encodedTitleName))
