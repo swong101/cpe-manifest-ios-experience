@@ -4,6 +4,7 @@
 
 import UIKit
 import WebKit
+import MBProgressHUD
 
 class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler {
     
@@ -17,9 +18,9 @@ class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessage
         static let HeaderIconPadding: CGFloat = (DeviceType.IS_IPAD ? 30 : 15)
     }
     
-    private var _webView: WKWebView!
-    private var _title: String?
-    private var _url: URL!
+    private var webView: WKWebView!
+    private var url: URL!
+    private var hud: MBProgressHUD?
     var shouldDisplayFullScreen = false
     
     // MARK: Initialization
@@ -40,17 +41,15 @@ class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessage
             }
         }
         
-        _title = title
-        _url = webViewUrl
+        self.title = title
+        self.url = webViewUrl
     }
 
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = _title
         self.view.backgroundColor = UIColor.black
-        
         self.navigationController?.isNavigationBarHidden = shouldDisplayFullScreen
         
         let configuration = WKWebViewConfiguration()
@@ -63,8 +62,8 @@ class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessage
             configuration.mediaPlaybackRequiresUserAction = false
         }
         
-        _webView = WKWebView(frame: self.view.bounds, configuration: configuration)
-        self.view.addSubview(_webView)
+        webView = WKWebView(frame: self.view.bounds, configuration: configuration)
+        self.view.addSubview(webView)
         
         // Disable caching for now
         if #available(iOS 9.0, *) {
@@ -84,20 +83,26 @@ class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessage
             URLCache.shared.removeAllCachedResponses()
         }
         
-        _webView.navigationDelegate = self
-        _webView.load(URLRequest(url: _url))
+        webView.navigationDelegate = self
+        webView.load(URLRequest(url: url))
+        
+        hud = MBProgressHUD.showAdded(to: webView, animated: true)
     }
 
     // MARK: Actions
     func close() {
-        _webView.configuration.userContentController.removeScriptMessageHandler(forName: Constants.ScriptMessageHandlerName)
-        _webView.navigationDelegate = nil
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: Constants.ScriptMessageHandlerName)
+        webView.navigationDelegate = nil
         self.dismiss(animated: true, completion: nil)
     }
     
     // MARK: WKNavigationDelegate
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         decisionHandler(WKNavigationActionPolicy.allow)
+    }
+    
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        hud?.hide(true)
     }
     
     // MARK: WKScriptMessageHandler

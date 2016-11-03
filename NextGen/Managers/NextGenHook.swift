@@ -91,6 +91,7 @@ public enum NextGenSharedContentType {
 }
 
 public protocol NextGenHookDelegate {
+    
     // Connection status
     func connectionStatusChanged(status: NextGenConnectionStatus)
     
@@ -105,6 +106,7 @@ public protocol NextGenHookDelegate {
     // Video Player callbacks
     func videoPlayerWillClose(_ mode: VideoPlayerMode, playbackPosition: Double)
     func urlForProcessedVideo(_ url: URL, mode: VideoPlayerMode, completion: @escaping (_ url: URL?, _ startTime: Double) -> Void)
+    func interstitialShouldPlayMultipleTimes() -> Bool
     
     // Sharing callbacks
     func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (_ url: URL?) -> Void)

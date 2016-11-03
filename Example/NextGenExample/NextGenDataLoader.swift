@@ -218,6 +218,10 @@ extension NextGenDataLoader: NextGenHookDelegate {
         // Debug mode is activated by tapping and holding the "Extras" button on the home screen for five seconds
     }
     
+    public func previewModeShouldLaunchBuy() {
+        // Callback for when the user taps the home screen buy button
+    }
+    
     func videoPlayerWillClose(_ mode: VideoPlayerMode, playbackPosition: Double) {
         // Handle end of playback
     }
@@ -225,6 +229,11 @@ extension NextGenDataLoader: NextGenHookDelegate {
     func urlForProcessedVideo(_ url: URL, mode: VideoPlayerMode, completion: @escaping (URL?, Double) -> Void) {
         // Handle DRM
         completion(url, 0)
+    }
+    
+    func interstitialShouldPlayMultipleTimes() -> Bool {
+        // Return true if interstitial video should play again after user has already seen it (with ability to skip)
+        return true
     }
     
     func urlForTitle(_ title: String, completion: @escaping (URL?) -> Void) {
@@ -235,8 +244,17 @@ extension NextGenDataLoader: NextGenHookDelegate {
         }
     }
     
-    func urlForSharedContent(_ contentUrl: URL, completion: @escaping (URL?) -> Void) {
-        completion(contentUrl)
+    func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (URL?) -> Void) {
+        var shareUrl = "your-domain.com"
+        
+        if type == .image {
+            shareUrl += "/share/images"
+        } else {
+            shareUrl += "/share/videos"
+        }
+        
+        shareUrl += "/" + id
+        completion(URL(string: shareUrl))
     }
     
 }
