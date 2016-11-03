@@ -280,6 +280,7 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     // MARK: Actions
     func toggleFullScreen() {
         isFullScreen = !isFullScreen
+        self.layoutPages()
     }
     
     func turntableSliderValueChanged(_ slider: UISlider!) {
