@@ -91,7 +91,9 @@ class NextGenCacheManager {
     }
     
     static func storeApplicationSupportFile(_ remoteURL: URL, completionHandler: @escaping (_ localFileURL: URL?) -> Void) {
-        URLSession.shared.downloadTask(with: remoteURL, completionHandler: { (location, response, error) in
+        var request = URLRequest(url: remoteURL)
+        request.addValue("gzip", forHTTPHeaderField: "Accept-Encoding")
+        URLSession.shared.downloadTask(with: request, completionHandler: { (location, response, error) in
             if error != nil {
                 print("Error downloading Application Support file: \(error)")
                 completionHandler(nil)
