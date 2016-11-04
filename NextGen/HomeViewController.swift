@@ -274,11 +274,16 @@ class HomeViewController: UIViewController {
         if self.view.window != nil && !currentlyDismissing {
             coordinator.animate(alongsideTransition: { [weak self] (_) in
                 if let strongSelf = self, strongSelf.interfaceCreated {
-                    if let currentUrl = strongSelf.backgroundVideoPlayerViewController?.url, let newUrl = strongSelf.backgroundVideo?.url, currentUrl != newUrl {
+                    if let currentUrl = strongSelf.backgroundVideoPlayerViewController?.url {
+                        if let newUrl = strongSelf.backgroundVideo?.url, currentUrl != newUrl {
+                            strongSelf.unloadBackground()
+                            strongSelf.loadBackground()
+                        } else {
+                            strongSelf.seekBackgroundVideoToLoopTimecode()
+                        }
+                    } else {
                         strongSelf.unloadBackground()
                         strongSelf.loadBackground()
-                    } else {
-                        strongSelf.seekBackgroundVideoToLoopTimecode()
                     }
                 }
             }, completion: nil)
