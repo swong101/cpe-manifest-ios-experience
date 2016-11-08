@@ -10,10 +10,11 @@ import ReachabilitySwift
     
     static var sharedInstance: NextGenLauncher? = NextGenLauncher()
     
-    private var homeViewController: HomeViewController?
-    
     private var reachability = Reachability()!
     private var reachabilityChangedObserver: NSObjectProtocol?
+    
+    private var homeViewController: HomeViewController?
+    var isBeingDismissed = false
     
     deinit {
         removeObservers()
@@ -58,9 +59,11 @@ import ReachabilitySwift
     }
     
     func closeExperience() {
+        isBeingDismissed = true
         removeObservers()
         NextGenHook.experienceWillClose()
-        homeViewController?.dismiss(animated: true, completion: { 
+        UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true, completion: { [weak self] in
+            self?.isBeingDismissed = false
             NGDMManifest.destroyInstance()
         })
     }
