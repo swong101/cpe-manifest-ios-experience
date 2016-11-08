@@ -333,7 +333,11 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     }
     
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        return imageViewForPage(currentPage)
+        if !isTurntable {
+            return imageViewForPage(currentPage)
+        }
+        
+        return nil
     }
  
 }

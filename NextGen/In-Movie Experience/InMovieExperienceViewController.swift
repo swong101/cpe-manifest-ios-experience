@@ -17,8 +17,8 @@ class InMovieExperienceViewController: UIViewController {
     
     private var playerCurrentTime: Double? {
         for viewController in self.childViewControllers {
-            if let viewController = viewController as? VideoPlayerViewController {
-                return viewController.player.currentTime().seconds
+            if let player = (viewController as? VideoPlayerViewController)?.player {
+                return player.currentTime().seconds
             }
         }
         
