@@ -67,9 +67,11 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
                 mapView.zoomToFitAllMarkers()
             }
             
-            reloadBreadcrumbs()
-            collectionView.reloadData()
-            collectionView.contentOffset = CGPoint.zero
+            if selectedExperience == nil || selectedExperience!.appDataMediaCount > 0 {
+                reloadBreadcrumbs()
+                collectionView.reloadData()
+                collectionView.contentOffset = CGPoint.zero
+            }
         }
     }
     
