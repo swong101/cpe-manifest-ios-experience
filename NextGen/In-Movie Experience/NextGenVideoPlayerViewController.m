@@ -1022,6 +1022,7 @@ shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loading
         } else {
             [self setState:NextGenVideoPlayerStateVideoPaused];
         }
+        [self syncPlayPauseButtons];
 	}
 	/* AVPlayer "currentItem" property observer.
         Called when the AVPlayer replaceCurrentItemWithPlayerItem: 
