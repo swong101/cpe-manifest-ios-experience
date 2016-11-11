@@ -47,7 +47,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
             if let selectedExperience = selectedExperience {
                 if let marker = markers[selectedExperience.id] {
                     if let appData = selectedExperience.appData {
-                        mapView.maxZoomLevel = appData.zoomLevel
+                        mapView.maxZoomLevel = (appData.zoomLocked ? appData.zoomLevel : -1)
                         mapView.setLocation(marker.location, zoomLevel: appData.zoomLevel, animated: true)
                     }
                     
@@ -58,7 +58,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
                 
                 var lowestZoomLevel = MAXFLOAT
                 for locationExperience in locationExperiences {
-                    if let appData = locationExperience.appData , appData.zoomLevel < lowestZoomLevel {
+                    if let appData = locationExperience.appData, appData.zoomLocked, appData.zoomLevel < lowestZoomLevel {
                         lowestZoomLevel = appData.zoomLevel
                     }
                 }
