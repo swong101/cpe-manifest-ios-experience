@@ -326,6 +326,7 @@ class HomeViewController: UIViewController {
                 }
                 
                 backgroundVideoView.frame = CGRect(x: backgroundPoint.x, y: backgroundPoint.y, width: backgroundSize.width, height: backgroundSize.height)
+                backgroundVideoPreviewImageView?.frame = backgroundVideoView.frame
             }
             
             if backgroundImageSize != CGSize.zero {
