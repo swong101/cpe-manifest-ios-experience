@@ -17,6 +17,7 @@
 		708D535F1D525944009CED95 /* NextGenHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708D535E1D525944009CED95 /* NextGenHook.swift */; };
 		70977FEF1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70977FEE1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift */; };
 		70977FF11DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70977FF01DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib */; };
+		70A217D21DDF6FE50006815C /* AssetLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A217D11DDF6FE50006815C /* AssetLoaderDelegate.swift */; };
 		70A5FBAB1D62895D00EE7847 /* EnhancedTitlesCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70A5FBAA1D62895D00EE7847 /* EnhancedTitlesCollectionViewCell.xib */; };
 		70A5FBAD1D62899C00EE7847 /* VideoCell_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70A5FBAC1D62899C00EE7847 /* VideoCell_iPhone.xib */; };
 		70A5FBB01D6289B800EE7847 /* AVPlayerItem+Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A5FBAE1D6289B800EE7847 /* AVPlayerItem+Cache.swift */; };
@@ -134,6 +135,7 @@
 		708D535E1D525944009CED95 /* NextGenHook.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenHook.swift; sourceTree = "<group>"; };
 		70977FEE1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtrasTalentSelectorViewController.swift; sourceTree = "<group>"; };
 		70977FF01DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "TalentTableViewCell-Narrow_iPhone.xib"; sourceTree = "<group>"; };
+		70A217D11DDF6FE50006815C /* AssetLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AssetLoaderDelegate.swift; sourceTree = "<group>"; };
 		70A5FBAA1D62895D00EE7847 /* EnhancedTitlesCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EnhancedTitlesCollectionViewCell.xib; sourceTree = "<group>"; };
 		70A5FBAC1D62899C00EE7847 /* VideoCell_iPhone.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = VideoCell_iPhone.xib; sourceTree = "<group>"; };
 		70A5FBAE1D6289B800EE7847 /* AVPlayerItem+Cache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVPlayerItem+Cache.swift"; sourceTree = "<group>"; };
@@ -328,6 +330,7 @@
 				70C092B71D0F60DF00BFC1E4 /* LargeTextSceneDetailViewController.swift */,
 				70C092B81D0F60DF00BFC1E4 /* MapDetailViewController.swift */,
 				70C092B91D0F60DF00BFC1E4 /* MapSceneDetailCollectionViewCell.swift */,
+				70A217D11DDF6FE50006815C /* AssetLoaderDelegate.swift */,
 				7006F14E1D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.h */,
 				7006F14F1D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.m */,
 				7006F1501D346A2700C8DD25 /* NextGenVideoPlayerViewController.h */,
@@ -696,6 +699,7 @@
 				70C093381D0F60DF00BFC1E4 /* ExtrasSceneLocationsViewController.swift in Sources */,
 				708488DC1D0F7EC900670B45 /* NextGenDataLoader.swift in Sources */,
 				70C0931D1D0F60DF00BFC1E4 /* GallerySceneDetailViewController.swift in Sources */,
+				70A217D21DDF6FE50006815C /* AssetLoaderDelegate.swift in Sources */,
 				7006F1531D346A2700C8DD25 /* NextGenVideoPlayerViewController.m in Sources */,
 				70C093281D0F60DF00BFC1E4 /* ShoppingSceneDetailCollectionViewCell.swift in Sources */,
 				70C093551D0F60DF00BFC1E4 /* SocialButton.swift in Sources */,
@@ -872,7 +876,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C8C0E3512E4E5C0412D7D1AA /* Pods-NextGenExample.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -903,7 +906,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 29EBFFD493A43292101F1452 /* Pods-NextGenExample.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";

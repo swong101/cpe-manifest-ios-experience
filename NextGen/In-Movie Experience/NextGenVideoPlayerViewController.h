@@ -47,7 +47,7 @@ static NSString * const kNextGenVideoPlayerPlaybackLikelyToKeepUpNotification   
 //=========================================================
 # pragma mark - NextGenVideoPlayerViewController Interface
 //=========================================================
-@interface NextGenVideoPlayerViewController : UIViewController <AVAssetResourceLoaderDelegate> {
+@interface NextGenVideoPlayerViewController : UIViewController {
 @protected
 	float                                    mRestoreAfterScrubbingRate;
 	id                                       mTimeObserver;
@@ -92,8 +92,7 @@ static NSString * const kNextGenVideoPlayerPlaybackLikelyToKeepUpNotification   
 - (BOOL)isPlaying;
 - (void)displayError:(NSError *)error;
 - (CMTime)playerItemDuration;
-- (void)playVideoWithURL:(NSURL *)url;
-- (void)playVideoWithURL:(NSURL *)url startTime:(NSTimeInterval)time;
+- (void)playAsset:(AVURLAsset *)asset fromStartTime:(NSTimeInterval)startTime;
 - (void)playVideo;
 - (void)pauseVideo;
 - (void)seekPlayerToTime:(CMTime)seekTime;

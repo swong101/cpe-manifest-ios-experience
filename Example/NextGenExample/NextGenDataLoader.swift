@@ -26,19 +26,12 @@ import PromiseKit
     }
     
     static let ManifestData = [
-        "urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q": [
+        "man_of_steel": [
             "title": "Man of Steel",
             "image": "MOS-Onesheet",
-            "manifest": "urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_manifest-2.2.xml",
-            "appdata": "urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_appdata_locations-2.2.xml",
-            "cpestyle": "urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_cpestyle-2.2.xml"
-        ],
-        "urn:dece:cid:eidr-s:B257-8696-871C-A12B-B8C1-S": [
-            "title": "Batman v Superman",
-            "image": "BvS-Onesheet",
-            "manifest": "urn:dece:cid:eidr-s:B257-8696-871C-A12B-B8C1-S/bvs_manifest-2.2.xml",
-            "appdata": "urn:dece:cid:eidr-s:B257-8696-871C-A12B-B8C1-S/bvs_appdata_locations-2.2.xml",
-            "cpestyle": "urn:dece:cid:eidr-s:B257-8696-871C-A12B-B8C1-S/bvs_cpestyle-2.2.xml"
+            "manifest": "path-to-manifest.xml",
+            "appdata": "path-to-appdata.xml",
+            "cpestyle": "path-to-cpestyle.xml"
         ]
     ]
     
@@ -226,9 +219,9 @@ extension NextGenDataLoader: NextGenHookDelegate {
         // Handle end of playback
     }
     
-    func urlForProcessedVideo(_ url: URL, mode: VideoPlayerMode, completion: @escaping (URL?, Double) -> Void) {
+    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, completion: @escaping (AVURLAsset, Double) -> Void) {
         // Handle DRM
-        completion(url, 0)
+        completion(AVURLAsset(url: url), 0)
     }
     
     func interstitialShouldPlayMultipleTimes() -> Bool {

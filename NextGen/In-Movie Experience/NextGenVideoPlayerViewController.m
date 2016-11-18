@@ -77,54 +77,21 @@ static void *VideoPlayerPlaybackLikelyToKeepUpObservationContext = &VideoPlayerP
 //=========================================================
 # pragma mark - Playback
 //=========================================================
--(void)loadItems:(NSMutableArray*) urls{
+- (void)playAsset:(AVURLAsset *)asset fromStartTime:(NSTimeInterval)startTime {
+    playbackSyncStartTime = startTime;
+    hasSeekedToPlaybackSyncStartTime = NO;
     
-    self.videoURLS = urls;
+    _URL = asset.URL;
     
-    [self playVideoWithURL:self.videoURLS.firstObject];
+    NSArray *requestedKeys = @[kAVPlayerTracksKVO, kAVPlayerPlayableKVO];
     
-}
-
-
-// Play from beginning
-- (void)playVideoWithURL:(NSURL *)theURL {
-    [self playVideoWithURL:theURL startTime:0];
-}
-
-// Play from start time
-- (void)playVideoWithURL:(NSURL *)theURL startTime:(NSTimeInterval)theStartTime {
-	if (_URL != theURL) {
-        // set start time
-        playbackSyncStartTime = theStartTime;
-        hasSeekedToPlaybackSyncStartTime = NO;
-        
-        if (theURL) {
-            // set URL
-            _URL = [theURL copy];
-            
-            /*
-             Create an asset for inspection of a resource referenced by a given URL.
-             Load the values for the asset key "playable".
-             */
-            AVURLAsset *asset = [AVURLAsset URLAssetWithURL:_URL options: @{ AVURLAssetReferenceRestrictionsKey: @(AVAssetReferenceRestrictionForbidNone) }];
-            
-            // Set AVAssetResourceLoaderDelegate
-            [asset.resourceLoader setDelegate:self queue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)];
-            
-            NSArray *requestedKeys = @[kAVPlayerTracksKVO, kAVPlayerPlayableKVO];
-            
-            /* Tells the asset to load the values of any of the specified keys that are not already loaded. */
-            [asset loadValuesAsynchronouslyForKeys:requestedKeys completionHandler: ^{
-                dispatch_async( dispatch_get_main_queue(), ^{
-                    /* IMPORTANT: Must dispatch to main queue in order to operate on the AVPlayer and AVPlayerItem. */
-                    [self prepareToPlayAsset:asset withKeys:requestedKeys];
-                });
-             }];
-        } else {
-            _URL = nil;
-            [self.player removeAllItems];
-        }
-	}
+    /* Tells the asset to load the values of any of the specified keys that are not already loaded. */
+    [asset loadValuesAsynchronouslyForKeys:requestedKeys completionHandler: ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            /* IMPORTANT: Must dispatch to main queue in order to operate on the AVPlayer and AVPlayerItem. */
+            [self prepareToPlayAsset:asset withKeys:requestedKeys];
+        });
+    }];
 }
 
 //=========================================================
@@ -759,18 +726,6 @@ static void *VideoPlayerPlaybackLikelyToKeepUpObservationContext = &VideoPlayerP
 }
 
 //=========================================================
-# pragma mark - AVAssetResourceLoaderDelegate
-//=========================================================
-- (BOOL)                 resourceLoader:(AVAssetResourceLoader *)resourceLoader
-shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loadingRequest {
-    return NO;
-}
-
-//=========================================================
-# pragma mark - Loading the Asset Keys Asynchronously
-//=========================================================
-
-//=========================================================
 # pragma mark - Error Handling - Preparing Assets for Playback Failed
 //=========================================================
 
@@ -895,7 +850,7 @@ shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loading
                                                object:self.player.currentItem];
 	
     /* Create new player, if we don't already have one. */
-    if (!self.player){
+    if (!self.player) {
         /* Get a new AVPlayer initialized to play the specified player item. */
         
         [self setPlayer:[AVQueuePlayer playerWithPlayerItem:self.playerItem]];
@@ -917,15 +872,8 @@ shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loading
         
     }
     
-    else {
-  
-        //insert new items to the queue
-        [self.player insertItem:self.playerItem afterItem:nil];
-
-    }
-    
     /* Make our new AVPlayerItem the AVPlayer's current item. */
-    if (self.player.currentItem != self.playerItem){
+    if (self.player.currentItem != self.playerItem) {
         /* Replace the player item with a new player item. The item replacement occurs 
          asynchronously; observe the currentItem property to find out when the 
          replacement will/did occur
@@ -933,9 +881,8 @@ shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loading
 		 If needed, configure player item here (example: adding outputs, setting text style rules,
 		 selecting media options) before associating it with a player
 		 */
-
-        //[self.player replaceCurrentItemWithPlayerItem:self.playerItem];
-        [self syncPlayPauseButtons];
+        
+        [self.player replaceCurrentItemWithPlayerItem:self.playerItem];
     }
     
     [self.scrubber setValue:0.0];
@@ -1031,10 +978,9 @@ shouldWaitForLoadingOfRequestedResource:(AVAssetResourceLoadingRequest *)loading
         AVPlayerItem *newPlayerItem = [change objectForKey:NSKeyValueChangeNewKey];
         
         /* Is the new player item null? */
-        if (newPlayerItem == (id)[NSNull null]){
+        if (newPlayerItem == (id)[NSNull null]) {
             self.playerControlsEnabled = NO;
-        }
-        else /* Replacement of player currentItem has occurred */{
+        } else { /* Replacement of player currentItem has occurred */
             /* Set the AVPlayer for which the player layer displays visual output. */
             [self.playbackView setPlayer:self.player];
             

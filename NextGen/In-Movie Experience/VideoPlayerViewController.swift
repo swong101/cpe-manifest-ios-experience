@@ -209,23 +209,23 @@ class VideoPlayerViewController: NextGenVideoPlayerViewController {
     }
     
     // MARK: Video Playback
-    override func playVideo(with url: URL?) {
+    func playVideo(with url: URL) {
         cancelCountdown()
         
-        if _didPlayInterstitial, let url = url {
-            DispatchQueue.global(qos: .userInteractive).async {
+        if _didPlayInterstitial {
+            DispatchQueue.main.async {
                 SettingsManager.setVideoAsWatched(url)
-                NextGenHook.delegate?.urlForProcessedVideo(url, mode: self.mode, completion: { (url, startTime) in
-                    if let url = url {
-                        DispatchQueue.main.async {
-                            super.playVideo(with: url, startTime: startTime)
-                        }
-                    }
+                NextGenHook.delegate?.videoAsset(forUrl: url, mode:self.mode, completion: { (asset, startTime) in
+                    super.play(asset, fromStartTime: startTime)
                 })
-            }
+            } 
         } else {
-            super.playVideo(with: url)
+            playVideo(with: url, startTime: 0)
         }
+    }
+    
+    func playVideo(with url: URL, startTime: TimeInterval) {
+        super.play(AVURLAsset(url: url), fromStartTime: 0)
     }
     
     func playMainExperience() {
