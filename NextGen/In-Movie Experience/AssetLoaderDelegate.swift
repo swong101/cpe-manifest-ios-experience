@@ -113,10 +113,13 @@ private extension AssetLoaderDelegate {
             return
         }
         
-        let shouldPersist = asset.resourceLoader.preloadsEligibleContentKeys
+        var shouldPersist = false
+        if #available(iOS 9.0, *) {
+            shouldPersist = asset.resourceLoader.preloadsEligibleContentKeys
+        }
         
         // Check if this reuqest is the result of a potential AVAssetDownloadTask.
-        if shouldPersist {
+        if #available(iOS 9.0, *), shouldPersist {
             if resourceLoadingRequest.contentInformationRequest != nil {
                 resourceLoadingRequest.contentInformationRequest!.contentType = AVStreamingKeyDeliveryPersistentContentKeyType
             }
@@ -176,7 +179,7 @@ private extension AssetLoaderDelegate {
         var resourceLoadingRequestOptions: [String : AnyObject]? = nil
         
         // Check if this reuqest is the result of a potential AVAssetDownloadTask.
-        if shouldPersist {
+        if #available(iOS 9.0, *), shouldPersist {
             // Since this request is the result of an AVAssetDownloadTask, we configure the options to request a persistent content key from the KSM.
             resourceLoadingRequestOptions = [AVAssetResourceLoadingRequestStreamingContentKeyRequestRequiresPersistentKey: true as AnyObject]
         }
@@ -216,7 +219,7 @@ private extension AssetLoaderDelegate {
             }
             
             // Check if this reuqest is the result of a potential AVAssetDownloadTask.
-            if shouldPersist {
+            if #available(iOS 9.0, *), shouldPersist {
                 // Since this request is the result of an AVAssetDownloadTask, we should get the secure persistent content key.
                 var error: NSError?
                 
