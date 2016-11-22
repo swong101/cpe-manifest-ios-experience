@@ -112,7 +112,7 @@ public protocol NextGenHookDelegate {
     func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (_ url: URL?) -> Void)
     
     // Talent callbacks
-    func urlForTitle(_ title: String, completion: @escaping (_ url: URL?) -> Void)
+    func didTapFilmography(forTitle title: String, fromViewController viewController: UIViewController)
     
     // Analytics
     func logAnalyticsEvent(_ event: NextGenAnalyticsEvent, action: NextGenAnalyticsAction, itemId: String?, itemName: String?)
