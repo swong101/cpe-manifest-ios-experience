@@ -228,7 +228,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
             videoPlayerViewController.didMove(toParentViewController: self)
             
             if !DeviceType.IS_IPAD && videoPlayerViewController.fullScreenButton != nil {
-                videoPlayerViewController.fullScreenButton.removeFromSuperview()
+                videoPlayerViewController.fullScreenButton?.removeFromSuperview()
             }
             
             self.videoPlayerViewController = videoPlayerViewController
@@ -240,11 +240,11 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
                 UIView.animate(withDuration: 0.25, animations: {
                     self.locationDetailView.alpha = 1
                 }, completion: { (_) in
-                    self.videoPlayerViewController?.playVideo(with: videoURL)
+                    self.videoPlayerViewController?.play(url: videoURL)
                 })
             } else {
                 locationDetailView.alpha = 1
-                self.videoPlayerViewController?.playVideo(with: videoURL)
+                self.videoPlayerViewController?.play(url: videoURL)
             }
         }
     }

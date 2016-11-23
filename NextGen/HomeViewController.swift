@@ -244,7 +244,7 @@ class HomeViewController: UIViewController {
         backgroundVideoLastTimecode = 0
         
         if let image = backgroundVideoPlayerViewController?.getScreenGrab() {
-            backgroundVideoLastTimecode = backgroundVideoPlayerViewController!.playerItem.currentTime().seconds
+            backgroundVideoLastTimecode = backgroundVideoPlayerViewController!.currentTime
             backgroundVideoPreviewImageView = UIImageView(frame: backgroundVideoView.frame)
             backgroundVideoPreviewImageView!.contentMode = .scaleAspectFill
             backgroundVideoPreviewImageView!.image = image
@@ -467,8 +467,8 @@ class HomeViewController: UIViewController {
     
     private func seekBackgroundVideoToLoopTimecode() {
         if let nodeStyle = nodeStyle, nodeStyle.backgroundVideoLoops, let videoPlayerViewController = backgroundVideoPlayerViewController {
-            videoPlayerViewController.seekPlayer(to: CMTimeMakeWithSeconds(nodeStyle.backgroundVideoLoopTimecode, Int32(NSEC_PER_SEC)))
-            videoPlayerViewController.player?.isMuted = true
+            videoPlayerViewController.seekPlayer(to: nodeStyle.backgroundVideoLoopTimecode)
+            videoPlayerViewController.isMuted = true
         }
     }
     
@@ -508,7 +508,7 @@ class HomeViewController: UIViewController {
             
             videoPlayerViewController.shouldMute = interfaceCreated
             videoPlayerViewController.shouldTrackOutput = true
-            videoPlayerViewController.playVideo(with: backgroundVideoURL, startTime: backgroundVideoLastTimecode)
+            videoPlayerViewController.play(url: backgroundVideoURL, fromStartTime: backgroundVideoLastTimecode)
             backgroundVideoPlayerViewController = videoPlayerViewController
         } else {
             showHomeScreenViews(animated: false)

@@ -242,7 +242,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
                 previewImageView.isHidden = true
                 previewPlayButton.isHidden = true
                 
-                videoPlayerViewController.player?.removeAllItems()
+                videoPlayerViewController.removeCurrentItem()
                 videoPlayerViewController.mode = VideoPlayerMode.supplemental
                 videoPlayerViewController.queueTotalCount = experience.childExperiences?.count ?? 0
                 videoPlayerViewController.queueCurrentIndex = (selectedIndexPath as NSIndexPath).row
@@ -254,9 +254,9 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
                     videoPlayerViewController.didMove(toParentViewController: self)
                 }
                 
-                videoPlayerViewController.playVideo(with: videoURL)
+                videoPlayerViewController.play(url: videoURL)
                 if !DeviceType.IS_IPAD && videoPlayerViewController.fullScreenButton != nil {
-                    videoPlayerViewController.fullScreenButton.removeFromSuperview()
+                    videoPlayerViewController.fullScreenButton?.removeFromSuperview()
                 }
                 
                 self.videoPlayerViewController = videoPlayerViewController

@@ -106,7 +106,7 @@ public protocol NextGenHookDelegate {
     // Video Player callbacks
     func videoPlayerWillClose(_ mode: VideoPlayerMode, playbackPosition: Double)
     func interstitialShouldPlayMultipleTimes() -> Bool
-    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, completion: @escaping (_ asset: AVURLAsset, _ startTime: Double) -> Void)
+    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, isInterstitial: Bool, completion: @escaping (_ asset: AVURLAsset, _ startTime: Double) -> Void)
     
     // Sharing callbacks
     func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (_ url: URL?) -> Void)
