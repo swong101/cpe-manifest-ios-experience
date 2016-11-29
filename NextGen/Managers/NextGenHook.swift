@@ -33,6 +33,7 @@ public enum NextGenAnalyticsAction: String {
     case selectTalent = "select_talent"
     case selectVideoGallery = "select_video_gallery"
     case selectImageGalleries = "select_image_galleries"
+    case selectExperienceList = "select_experience_list"
     case selectSceneLocations = "select_scene_locations"
     case selectApp = "select_app"
     case selectShopping = "select_shopping"
