@@ -463,6 +463,8 @@ class HomeViewController: UIViewController {
             homeScreenViews.forEach { $0.isHidden = false }
             homeScreenViews.removeAll()
         }
+        
+        backgroundVideoPlayerViewController?.activityIndicatorDisabled = true
     }
     
     private func seekBackgroundVideoToLoopTimecode() {

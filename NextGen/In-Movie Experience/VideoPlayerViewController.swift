@@ -72,6 +72,8 @@ class VideoPlayerPlaybackView: UIView {
 class VideoPlayerViewController: UIViewController {
     
     private struct Constants {
+        static let CommentaryEnabled = false
+        
         static let CountdownTimeInterval: CGFloat = 1
         static let CountdownTotalTime: CGFloat = 5
         static let PlayerControlsAutoHideTime = 5.0
@@ -204,6 +206,7 @@ class VideoPlayerViewController: UIViewController {
     // Controls
     @IBOutlet weak private var playbackView: VideoPlayerPlaybackView!
     @IBOutlet weak private var topToolbar: UIView?
+    @IBOutlet weak private var commentaryButton: UIButton?
     @IBOutlet weak private var captionsButton: UIButton?
     @IBOutlet weak private var playbackToolbar: UIView?
     @IBOutlet weak private var homeButton: UIButton?
@@ -227,6 +230,7 @@ class VideoPlayerViewController: UIViewController {
             scrubber?.isEnabled = playerControlsEnabled
             playButton?.isEnabled = playerControlsEnabled
             pauseButton?.isEnabled = playerControlsEnabled
+            commentaryButton?.isEnabled = playerControlsEnabled
             captionsButton?.isEnabled = playerControlsEnabled
             fullScreenButton?.isEnabled = playerControlsEnabled
         }
@@ -276,9 +280,10 @@ class VideoPlayerViewController: UIViewController {
     }
     
     private var activityIndicator: MBProgressHUD?
+    var activityIndicatorDisabled = false
     private var activityIndicatorVisible = false {
         didSet {
-            if activityIndicatorVisible {
+            if activityIndicatorVisible && !activityIndicatorDisabled {
                 if activityIndicator == nil {
                     activityIndicator = MBProgressHUD.showAdded(to: self.playbackView, animated: true)
                 }
@@ -676,7 +681,7 @@ class VideoPlayerViewController: UIViewController {
         }
         
         // Set up the captions options
-        if let captionsGroup = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicLegible), captionsGroup.options.count > 0 {
+        if let captionsGroup = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicLegible), captionsGroup.options.first(where: { $0.locale != nil }) != nil {
             self.captionsGroup = captionsGroup
             captionsButton?.isHidden = false
         } else {
@@ -749,7 +754,12 @@ class VideoPlayerViewController: UIViewController {
         showPauseButton()
         
         // Send notification
-        NotificationCenter.default.post(name: .videoPlayerDidPlayVideo, object: nil, userInfo: [NotificationConstants.videoUrl: url])
+        var userInfo: [AnyHashable: Any]? = nil
+        if let url = url {
+            userInfo = [NotificationConstants.videoUrl: url]
+        }
+        
+        NotificationCenter.default.post(name: .videoPlayerDidPlayVideo, object: nil, userInfo: userInfo)
     }
     
     private func pauseVideo() {
@@ -786,7 +796,10 @@ class VideoPlayerViewController: UIViewController {
     
     // MARK: Main Feature
     private func playMainExperience() {
+        // Initial state of controls
         playerControlsVisible = false
+        commentaryButton?.isHidden = true
+        captionsButton?.isHidden = true
         countdownProgressView?.removeFromSuperview()
         countdownProgressView = nil
         
@@ -805,9 +818,14 @@ class VideoPlayerViewController: UIViewController {
         
         playerControlsLocked = false
         skipContainerView.isHidden = true
-        if let videoURL = NGDMManifest.sharedInstance.mainExperience?.videoURL {
+        
+        if let mainExperience = NGDMManifest.sharedInstance.mainExperience, let videoURL = mainExperience.videoURL {
             NotificationCenter.default.post(name: .videoPlayerDidPlayMainExperience, object: nil)
             play(url: videoURL)
+            
+            if mainExperience.commentaryAudioURL != nil && Constants.CommentaryEnabled {
+                commentaryButton?.isHidden = false
+            }
         }
     }
     
@@ -822,7 +840,7 @@ class VideoPlayerViewController: UIViewController {
     /* Set the scrubber based on the player current time. */
     private func syncScrubber() {
         updateTimeLabels(time: currentTime)
-        //activityIndicatorVisible = false
+        activityIndicatorVisible = false
         
         if let scrubber = scrubber {
             if playerItemDuration > 0 {
@@ -1000,9 +1018,15 @@ class VideoPlayerViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
     }
     
+    @IBAction private func onToggleCommentary() {
+        if let commentaryButton = commentaryButton {
+            commentaryButton.isSelected = !commentaryButton.isSelected
+        }
+    }
+    
     @IBAction private func onCaptionSelection() {
         if let captionsGroup = captionsGroup {
-            let captionsActionSheet = UIAlertController(title: "", message: "Select a language below or choose \"Off\" to disable captions.", preferredStyle: .actionSheet)
+            let captionsActionSheet = UIAlertController(title: "", message: "Select an option below or choose \"Off\" to disable captions.", preferredStyle: .actionSheet)
             
             captionsActionSheet.addAction(UIAlertAction(title: "Off", style: .destructive, handler: { [weak self] (_) in
                 self?.playerItem?.select(nil, in: captionsGroup)
@@ -1011,11 +1035,13 @@ class VideoPlayerViewController: UIViewController {
             }))
             
             for option in captionsGroup.options {
-                captionsActionSheet.addAction(UIAlertAction(title: option.displayName, style: .default, handler: { [weak self] (_) in
-                    self?.playerItem?.select(option, in: captionsGroup)
-                    self?.captionsButton?.isSelected = true
-                    self?.playerControlsVisible = false
-                }))
+                if let locale = option.locale {
+                    captionsActionSheet.addAction(UIAlertAction(title: option.displayName(with: locale), style: .default, handler: { [weak self] (_) in
+                        self?.playerItem?.select(option, in: captionsGroup)
+                        self?.captionsButton?.isSelected = true
+                        self?.playerControlsVisible = false
+                    }))
+                }
             }
             
             captionsActionSheet.modalPresentationStyle = .popover
