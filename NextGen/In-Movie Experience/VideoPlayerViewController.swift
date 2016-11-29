@@ -204,6 +204,7 @@ class VideoPlayerViewController: UIViewController {
     // Controls
     @IBOutlet weak private var playbackView: VideoPlayerPlaybackView!
     @IBOutlet weak private var topToolbar: UIView?
+    @IBOutlet weak private var captionsButton: UIButton?
     @IBOutlet weak private var playbackToolbar: UIView?
     @IBOutlet weak private var homeButton: UIButton?
     @IBOutlet weak private var scrubber: UISlider?
@@ -212,7 +213,6 @@ class VideoPlayerViewController: UIViewController {
     @IBOutlet weak private var cropToActivePictureButton: UIButton?
     @IBOutlet weak private var playButton: UIButton?
     @IBOutlet weak private var pauseButton: UIButton?
-    @IBOutlet weak private var subtitlesButton: UIButton?
     @IBOutlet weak var fullScreenButton: UIButton?
     private var previousScrubbingRate: Float = 0
     
@@ -227,7 +227,7 @@ class VideoPlayerViewController: UIViewController {
             scrubber?.isEnabled = playerControlsEnabled
             playButton?.isEnabled = playerControlsEnabled
             pauseButton?.isEnabled = playerControlsEnabled
-            subtitlesButton?.isEnabled = playerControlsEnabled
+            captionsButton?.isEnabled = playerControlsEnabled
             fullScreenButton?.isEnabled = playerControlsEnabled
         }
     }
@@ -288,6 +288,9 @@ class VideoPlayerViewController: UIViewController {
             }
         }
     }
+    
+    // Captions
+    private var captionsGroup: AVMediaSelectionGroup?
     
     // Playback Sync
     private var playbackSyncStartTime: Double = 0
@@ -672,6 +675,14 @@ class VideoPlayerViewController: UIViewController {
             return
         }
         
+        // Set up the captions options
+        if let captionsGroup = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicLegible), captionsGroup.options.count > 0 {
+            self.captionsGroup = captionsGroup
+            captionsButton?.isHidden = false
+        } else {
+            captionsButton?.isHidden = true
+        }
+        
         // At this point we're ready to set up for playback of the asset.
             
         // Stop observing our prior AVPlayerItem, if we have one.
@@ -989,6 +1000,35 @@ class VideoPlayerViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
     }
     
+    @IBAction private func onCaptionSelection() {
+        if let captionsGroup = captionsGroup {
+            let captionsActionSheet = UIAlertController(title: "", message: "Select a language below or choose \"Off\" to disable captions.", preferredStyle: .actionSheet)
+            
+            captionsActionSheet.addAction(UIAlertAction(title: "Off", style: .destructive, handler: { [weak self] (_) in
+                self?.playerItem?.select(nil, in: captionsGroup)
+                self?.captionsButton?.isSelected = false
+                self?.playerControlsVisible = false
+            }))
+            
+            for option in captionsGroup.options {
+                captionsActionSheet.addAction(UIAlertAction(title: option.displayName, style: .default, handler: { [weak self] (_) in
+                    self?.playerItem?.select(option, in: captionsGroup)
+                    self?.captionsButton?.isSelected = true
+                    self?.playerControlsVisible = false
+                }))
+            }
+            
+            captionsActionSheet.modalPresentationStyle = .popover
+            captionsActionSheet.popoverPresentationController?.sourceView = captionsButton
+            captionsActionSheet.popoverPresentationController?.sourceRect = captionsButton!.bounds
+            
+            removeAutoHideTimer()
+            self.present(captionsActionSheet, animated: true, completion: { [weak self] in
+                self?.initAutoHideTimer()
+            })
+        }
+    }
+    
     @IBAction private func onCropToActivePicture() {
         playbackView.toggleVideoFillMode()
         
@@ -997,7 +1037,7 @@ class VideoPlayerViewController: UIViewController {
             cropToActivePictureButton?.setImage(UIImage(named: "CropActiveCancel-Highlighted"), for: .highlighted)
         } else {
             cropToActivePictureButton?.setImage(UIImage(named: "CropActive"), for: .normal)
-            cropToActivePictureButton?.setImage(UIImage(named: "CropActiveCancel-Highlighted"), for: .highlighted)
+            cropToActivePictureButton?.setImage(UIImage(named: "CropActive-Highlighted"), for: .highlighted)
         }
     }
     
@@ -1115,7 +1155,11 @@ class VideoPlayerViewController: UIViewController {
             playerTimeObserver = nil
         }
         
-        // Player Controls Auto-Hide Timer
+        removeAutoHideTimer()
+    }
+    
+    /* Cancels the previous ly registered controls auto-hide timer */
+    private func removeAutoHideTimer() {
         playerControlsAutoHideTimer?.invalidate()
         playerControlsAutoHideTimer = nil
     }
