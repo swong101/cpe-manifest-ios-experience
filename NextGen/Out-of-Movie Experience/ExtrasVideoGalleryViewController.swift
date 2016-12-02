@@ -20,7 +20,8 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
     @IBOutlet weak private var previewImageView: UIImageView!
     @IBOutlet weak private var previewPlayButton: UIButton!
     @IBOutlet weak private var mediaTitleLabel: UILabel!
-    @IBOutlet weak private var mediaDescriptionLabel: UILabel!
+    @IBOutlet weak private var mediaDescriptionLabel: UILabel?
+    @IBOutlet weak private var mediaDescriptionTextView: UITextView?
     private var videoPlayerViewController: VideoPlayerViewController?
     private var videoPlayerDidToggleFullScreenObserver: NSObjectProtocol?
     
@@ -191,7 +192,8 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
         
         if let thisExperience = experience.childExperiences?[indexPath.row] {
             mediaTitleLabel.isHidden = true
-            mediaDescriptionLabel.isHidden = true
+            mediaDescriptionLabel?.isHidden = true
+            mediaDescriptionTextView?.isHidden = true
             
             // Reset media detail views
             shareButton.isHidden = true
@@ -223,9 +225,11 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
                 NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .selectImageGallery, itemId: gallery.id)
             } else if thisExperience.isType(.audioVisual) {
                 mediaTitleLabel.text = thisExperience.metadata?.title
-                mediaDescriptionLabel.text = thisExperience.metadata?.description
+                mediaDescriptionLabel?.text = thisExperience.metadata?.description
+                mediaDescriptionTextView?.text = thisExperience.metadata?.description
                 mediaTitleLabel.isHidden = false
-                mediaDescriptionLabel.isHidden = false
+                mediaDescriptionLabel?.isHidden = false
+                mediaDescriptionTextView?.isHidden = false
                 playSelectedExperience()
             }
         }
