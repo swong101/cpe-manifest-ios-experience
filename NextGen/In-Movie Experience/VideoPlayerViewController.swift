@@ -333,7 +333,7 @@ class VideoPlayerViewController: UIViewController {
     
     var currentTime: Double {
         if let seconds = playerItem?.currentTime().seconds, !seconds.isNaN, seconds.isFinite {
-            return seconds
+            return max(seconds, 0)
         }
         
         return 0
