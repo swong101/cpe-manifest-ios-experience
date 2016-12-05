@@ -83,7 +83,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
         mapView.setLocation(center, zoomLevel: appData.zoomLevel, animated: false)
         marker = mapView.addMarker(center, title: location.name, subtitle: location.address, icon: location.iconImage, autoSelect: true)
         mapView.addControls()
-        mapView.maxZoomLevel = appData.zoomLevel
+        mapView.maxZoomLevel = (appData.zoomLocked ? appData.zoomLevel : -1)
     }
     
     fileprivate func animateToCenter() {
@@ -104,7 +104,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
             self.addChildViewController(videoPlayerViewController)
             videoPlayerViewController.didMove(toParentViewController: self)
             
-            videoPlayerViewController.playVideo(with: videoURL)
+            videoPlayerViewController.play(url: videoURL)
             
             locationDetailView.isHidden = false
             self.videoPlayerViewController = videoPlayerViewController

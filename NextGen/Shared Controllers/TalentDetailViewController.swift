@@ -215,15 +215,7 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
             self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: (indexPath as NSIndexPath).row + 1)
         } else if collectionView == filmographyCollectionView {
             if let film = talent?.films?[indexPath.row], let delegate = NextGenHook.delegate {
-                MBProgressHUD.showAdded(to: self.view, animated: true)
-                delegate.urlForTitle(film.title, completion: { [weak self] (url) in
-                    if let strongSelf = self {
-                        MBProgressHUD.hideAllHUDs(for: strongSelf.view, animated: true)
-                    }
-                    
-                    url?.promptLaunchBrowser()
-                })
-                
+                delegate.didTapFilmography(forTitle: film.title, fromViewController: self)
                 NextGenHook.logAnalyticsEvent(currentAnalyticsEvent, action: .selectFilm, itemId: talent.id, itemName: film.title)
             }
         }

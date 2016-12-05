@@ -4,7 +4,6 @@
 
 
 import UIKit
-import AVFoundation
 import NextGenDataManager
 
 class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource, TalentDetailViewPresenter {
@@ -19,6 +18,7 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
     private struct SegueIdentifier {
         static let ShowTalent = "ShowTalentSegueIdentifier"
         static let ShowGallery = "ExtrasGallerySegue"
+        static let ShowList = "ExtrasListSegue"
         static let ShowMap = "ExtrasMapSegue"
         static let ShowShopping = "ExtrasShoppingSegue"
         static let ShowTalentSelector = "TalentSelectorSegueIdentifier"
@@ -38,6 +38,8 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        experience = NGDMManifest.sharedInstance.outOfMovieExperience!
         
         if let talentTableView = talentTableView {
             if let actors = NGDMManifest.sharedInstance.mainExperience?.orderedActors , actors.count > 0 {
@@ -172,7 +174,7 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
     
     // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        var experiencesCount = NGDMManifest.sharedInstance.outOfMovieExperience?.childExperiences?.count ?? 0
+        var experiencesCount = experience.childExperiences?.count ?? 0
         if showActorsInGrid {
             experiencesCount += 1
         }
@@ -183,9 +185,9 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TitledImageCell.ReuseIdentifier, for: indexPath) as! TitledImageCell
         
-        var childExperienceIndex = (indexPath as NSIndexPath).row
+        var childExperienceIndex = indexPath.row
         if showActorsInGrid {
-            if (indexPath as NSIndexPath).row == 0 {
+            if childExperienceIndex == 0 {
                 cell.experience = nil
                 cell.title = String.localize("label.actors")
                 cell.imageURL = NGDMManifest.sharedInstance.mainExperience?.orderedActors?.first?.images?.first?.thumbnailImageURL
@@ -196,16 +198,16 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
             childExperienceIndex -= 1
         }
         
-        cell.experience = NGDMManifest.sharedInstance.outOfMovieExperience?.childExperiences?[childExperienceIndex]
+        cell.experience = experience.childExperiences?[childExperienceIndex]
         
         return cell
     }
     
     // MARK: UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        var childExperienceIndex = (indexPath as NSIndexPath).row
+        var childExperienceIndex = indexPath.row
         if showActorsInGrid {
-            if (indexPath as NSIndexPath).row == 0 {
+            if childExperienceIndex == 0 {
                 self.performSegue(withIdentifier: SegueIdentifier.ShowTalentSelector, sender: nil)
                 return
             }
@@ -213,7 +215,7 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
             childExperienceIndex -= 1
         }
         
-        if let experience = NGDMManifest.sharedInstance.outOfMovieExperience?.childExperiences?[childExperienceIndex] {
+        if let experience = experience.childExperiences?[childExperienceIndex] {
             if experience.isType(.shopping) {
                 self.performSegue(withIdentifier: SegueIdentifier.ShowShopping, sender: experience)
                 NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectShopping)
@@ -231,12 +233,15 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
             } else {
                 if let firstChildExperience = experience.childExperiences?.first {
                     if firstChildExperience.isType(.audioVisual) {
+                        self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
                         NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.id)
                     } else if firstChildExperience.isType(.gallery) {
+                        self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
                         NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.id)
+                    } else {
+                        self.performSegue(withIdentifier: SegueIdentifier.ShowList, sender: experience)
+                        NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectExperienceList, itemId: experience.id)
                     }
-                    
-                    self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
                 }
             }
         }

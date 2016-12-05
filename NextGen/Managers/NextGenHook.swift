@@ -3,6 +3,8 @@
 //
 
 import Foundation
+import UIKit
+import AVFoundation
 
 public enum NextGenAnalyticsEvent: String {
     case homeAction = "home_action"
@@ -33,6 +35,7 @@ public enum NextGenAnalyticsAction: String {
     case selectTalent = "select_talent"
     case selectVideoGallery = "select_video_gallery"
     case selectImageGalleries = "select_image_galleries"
+    case selectExperienceList = "select_experience_list"
     case selectSceneLocations = "select_scene_locations"
     case selectApp = "select_app"
     case selectShopping = "select_shopping"
@@ -105,14 +108,14 @@ public protocol NextGenHookDelegate {
     
     // Video Player callbacks
     func videoPlayerWillClose(_ mode: VideoPlayerMode, playbackPosition: Double)
-    func urlForProcessedVideo(_ url: URL, mode: VideoPlayerMode, completion: @escaping (_ url: URL?, _ startTime: Double) -> Void)
     func interstitialShouldPlayMultipleTimes() -> Bool
+    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, isInterstitial: Bool, completion: @escaping (_ asset: AVURLAsset, _ startTime: Double) -> Void)
     
     // Sharing callbacks
     func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (_ url: URL?) -> Void)
     
     // Talent callbacks
-    func urlForTitle(_ title: String, completion: @escaping (_ url: URL?) -> Void)
+    func didTapFilmography(forTitle title: String, fromViewController viewController: UIViewController)
     
     // Analytics
     func logAnalyticsEvent(_ event: NextGenAnalyticsEvent, action: NextGenAnalyticsAction, itemId: String?, itemName: String?)

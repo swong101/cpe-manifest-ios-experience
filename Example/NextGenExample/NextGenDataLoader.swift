@@ -4,9 +4,11 @@
 
 import Foundation
 import UIKit
+import AVFoundation
 import GoogleMaps
 import NextGenDataManager
 import PromiseKit
+import MBProgressHUD
 
 @objc class NextGenDataLoader: NSObject {
     
@@ -26,19 +28,12 @@ import PromiseKit
     }
     
     static let ManifestData = [
-        "urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q": [
+        "man_of_steel": [
             "title": "Man of Steel",
             "image": "MOS-Onesheet",
-            "manifest": "urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_manifest-2.2.xml",
-            "appdata": "urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_appdata_locations-2.2.xml",
-            "cpestyle": "urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_cpestyle-2.2.xml"
-        ],
-        "urn:dece:cid:eidr-s:B257-8696-871C-A12B-B8C1-S": [
-            "title": "Batman v Superman",
-            "image": "BvS-Onesheet",
-            "manifest": "urn:dece:cid:eidr-s:B257-8696-871C-A12B-B8C1-S/bvs_manifest-2.2.xml",
-            "appdata": "urn:dece:cid:eidr-s:B257-8696-871C-A12B-B8C1-S/bvs_appdata_locations-2.2.xml",
-            "cpestyle": "urn:dece:cid:eidr-s:B257-8696-871C-A12B-B8C1-S/bvs_cpestyle-2.2.xml"
+            "manifest": "path-to-manifest.xml",
+            "appdata": "path-to-appdata.xml",
+            "cpestyle": "path-to-cpestyle.xml"
         ]
     ]
     
@@ -226,21 +221,22 @@ extension NextGenDataLoader: NextGenHookDelegate {
         // Handle end of playback
     }
     
-    func urlForProcessedVideo(_ url: URL, mode: VideoPlayerMode, completion: @escaping (URL?, Double) -> Void) {
-        // Handle DRM
-        completion(url, 0)
-    }
-    
     func interstitialShouldPlayMultipleTimes() -> Bool {
         // Return true if interstitial video should play again after user has already seen it (with ability to skip)
         return true
     }
     
-    func urlForTitle(_ title: String, completion: @escaping (URL?) -> Void) {
-        if let encodedTitleName = title.replacingOccurrences(of: ":", with: "").replacingOccurrences(of: "-", with: "").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
-            completion(URL(string: "http://www.vudu.com/movies/#search/" + encodedTitleName))
+    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, isInterstitial: Bool, completion: @escaping (AVURLAsset, Double) -> Void) {
+        // Handle DRM
+        if mode == .mainFeature && !isInterstitial {
+            if DeviceType.IS_SIMULATOR {
+                completion(AVURLAsset(url: URL(string: "http://pdl.warnerbros.com/digitalcopy2/s/bbb/big_buck_bunny_480p_h264.mov")!), 0)
+            } else {
+                // TODO: Handle DRM
+                completion(AVURLAsset(url: url), 0)
+            }
         } else {
-            completion(nil)
+            completion(AVURLAsset(url: url), 0)
         }
     }
     
@@ -255,6 +251,37 @@ extension NextGenDataLoader: NextGenHookDelegate {
         
         shareUrl += "/" + id
         completion(URL(string: shareUrl))
+    }
+    
+    func didTapFilmography(forTitle title: String, fromViewController viewController: UIViewController) {
+        let showQueryNotFound = {
+            let alertController = UIAlertController(title: "", message: "Sorry, but this movie is currently unavailable on iTunes", preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            viewController.present(alertController, animated: true, completion: nil)
+        }
+        
+        if let searchUrl = URL(string: "https://itunes.apple.com/search?media=movie&entity=movie&term=\(title.replacingOccurrences(of: " ", with: "+"))") {
+            let hud = MBProgressHUD.showAdded(to: viewController.view, animated: true)
+            URLSession.shared.dataTask(with: searchUrl, completionHandler: { (data, _, error) in
+                DispatchQueue.main.async {
+                    hud?.hide(true)
+                    if let data = data {
+                        do {
+                            if let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? NSDictionary, let result = (jsonResult["results"] as? [NSDictionary])?.first, let urlString = result["trackViewUrl"] as? String, let url = URL(string: urlString) {
+                                url.promptLaunch(type: .itunes)
+                            } else {
+                                showQueryNotFound()
+                            }
+                        } catch {
+                            print("Error parsing iTunes data: \(error)")
+                            showQueryNotFound()
+                        }
+                    }
+                }
+            }).resume()
+        } else {
+            showQueryNotFound()
+        }
     }
     
 }

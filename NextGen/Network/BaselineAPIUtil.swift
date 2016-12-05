@@ -5,7 +5,7 @@
 import Foundation
 import NextGenDataManager
 
-public class BaselineAPIUtil: APIUtil, TalentAPIUtil {
+public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
     
     public static var APIDomain = "https://vic57ayytg.execute-api.us-west-2.amazonaws.com/prod"
     

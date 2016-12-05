@@ -59,7 +59,7 @@ class GallerySceneDetailViewController: SceneDetailViewController, UIScrollViewD
                         self.addChildViewController(videoPlayerViewController)
                         videoPlayerViewController.didMove(toParentViewController: self)
                         
-                        videoPlayerViewController.playVideo(with: videoURL)
+                        videoPlayerViewController.play(url: videoURL)
                     }
                 }
             } else if let gallery = timedEvent.gallery {

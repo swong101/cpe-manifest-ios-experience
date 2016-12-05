@@ -125,7 +125,7 @@ class ShoppingDetailViewController: SceneDetailViewController, UICollectionViewD
     
     // MARK: Actions
     @IBAction func onShop(_ sender: AnyObject) {
-        currentProduct?.theTakeURL?.promptLaunchBrowser()
+        currentProduct?.theTakeURL?.promptLaunch()
     }
     
     @IBAction func onSendLink(_ sender: AnyObject) {

@@ -30,7 +30,6 @@ class HomeViewController: UIViewController {
     private var titleImageView: UIImageView?
     private var homeScreenViews = [UIView]()
     private var interfaceCreated = false
-    private var currentlyDismissing = false
     
     private var shouldLaunchExtrasObserver: NSObjectProtocol?
     
@@ -232,17 +231,9 @@ class HomeViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        currentlyDismissing = false
-        
-        if interfaceCreated {
+        if interfaceCreated && !(NextGenLauncher.sharedInstance?.isBeingDismissed ?? false) {
             loadBackground()
         }
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        currentlyDismissing = true
-        
-        super.viewWillDisappear(animated)
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -253,7 +244,7 @@ class HomeViewController: UIViewController {
         backgroundVideoLastTimecode = 0
         
         if let image = backgroundVideoPlayerViewController?.getScreenGrab() {
-            backgroundVideoLastTimecode = backgroundVideoPlayerViewController!.playerItem.currentTime().seconds
+            backgroundVideoLastTimecode = backgroundVideoPlayerViewController!.currentTime
             backgroundVideoPreviewImageView = UIImageView(frame: backgroundVideoView.frame)
             backgroundVideoPreviewImageView!.contentMode = .scaleAspectFill
             backgroundVideoPreviewImageView!.image = image
@@ -271,14 +262,19 @@ class HomeViewController: UIViewController {
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         
-        if self.view.window != nil && !currentlyDismissing {
+        if self.view.window != nil && !self.isBeingDismissed {
             coordinator.animate(alongsideTransition: { [weak self] (_) in
                 if let strongSelf = self, strongSelf.interfaceCreated {
-                    if let currentUrl = strongSelf.backgroundVideoPlayerViewController?.url, let newUrl = strongSelf.backgroundVideo?.url, currentUrl != newUrl {
+                    if let currentUrl = strongSelf.backgroundVideoPlayerViewController?.url {
+                        if let newUrl = strongSelf.backgroundVideo?.url, currentUrl != newUrl {
+                            strongSelf.unloadBackground()
+                            strongSelf.loadBackground()
+                        } else {
+                            strongSelf.seekBackgroundVideoToLoopTimecode()
+                        }
+                    } else {
                         strongSelf.unloadBackground()
                         strongSelf.loadBackground()
-                    } else {
-                        strongSelf.seekBackgroundVideoToLoopTimecode()
                     }
                 }
             }, completion: nil)
@@ -288,7 +284,7 @@ class HomeViewController: UIViewController {
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         
-        if interfaceCreated && !currentlyDismissing && (backgroundVideoSize != CGSize.zero || backgroundImageSize != CGSize.zero) {
+        if interfaceCreated && !self.isBeingDismissed && (backgroundVideoSize != CGSize.zero || backgroundImageSize != CGSize.zero) {
             let viewWidth = self.view.frame.width
             let viewHeight = self.view.frame.height
             let viewAspectRatio = viewWidth / viewHeight
@@ -330,6 +326,7 @@ class HomeViewController: UIViewController {
                 }
                 
                 backgroundVideoView.frame = CGRect(x: backgroundPoint.x, y: backgroundPoint.y, width: backgroundSize.width, height: backgroundSize.height)
+                backgroundVideoPreviewImageView?.frame = backgroundVideoView.frame
             }
             
             if backgroundImageSize != CGSize.zero {
@@ -466,12 +463,14 @@ class HomeViewController: UIViewController {
             homeScreenViews.forEach { $0.isHidden = false }
             homeScreenViews.removeAll()
         }
+        
+        backgroundVideoPlayerViewController?.activityIndicatorDisabled = true
     }
     
     private func seekBackgroundVideoToLoopTimecode() {
         if let nodeStyle = nodeStyle, nodeStyle.backgroundVideoLoops, let videoPlayerViewController = backgroundVideoPlayerViewController {
-            videoPlayerViewController.seekPlayer(to: CMTimeMakeWithSeconds(nodeStyle.backgroundVideoLoopTimecode, Int32(NSEC_PER_SEC)))
-            videoPlayerViewController.player?.isMuted = true
+            videoPlayerViewController.seekPlayer(to: nodeStyle.backgroundVideoLoopTimecode)
+            videoPlayerViewController.isMuted = true
         }
     }
     
@@ -511,7 +510,7 @@ class HomeViewController: UIViewController {
             
             videoPlayerViewController.shouldMute = interfaceCreated
             videoPlayerViewController.shouldTrackOutput = true
-            videoPlayerViewController.playVideo(with: backgroundVideoURL, startTime: backgroundVideoLastTimecode)
+            videoPlayerViewController.play(url: backgroundVideoURL, fromStartTime: backgroundVideoLastTimecode)
             backgroundVideoPlayerViewController = videoPlayerViewController
         } else {
             showHomeScreenViews(animated: false)
@@ -575,7 +574,6 @@ class HomeViewController: UIViewController {
     }
     
     @IBAction func onExit() {
-        currentlyDismissing = true
         NextGenHook.logAnalyticsEvent(.homeAction, action: .exit)
         NextGenLauncher.sharedInstance?.closeExperience()
     }

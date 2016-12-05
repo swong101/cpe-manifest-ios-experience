@@ -2,6 +2,8 @@
 //  AVPlayerItem+Cache.swift
 //
 
+import AVFoundation
+
 extension AVPlayerItem {
     
     convenience init(cacheableURL: URL) {

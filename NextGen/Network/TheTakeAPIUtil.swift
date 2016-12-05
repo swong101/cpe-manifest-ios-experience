@@ -25,7 +25,7 @@ private func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
 }
 
 
-public class TheTakeAPIUtil: APIUtil {
+public class TheTakeAPIUtil: NextGenDataManager.APIUtil {
     
     public static let sharedInstance = TheTakeAPIUtil(apiDomain: "https://thetake.p.mashape.com")
     

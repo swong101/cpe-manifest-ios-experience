@@ -69,12 +69,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         previewPlayButton.isHidden = true
         
         if let videoURL = timedEvent?.videoURL, let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController  {
-            if let player = videoPlayerViewController.player {
-                player.removeAllItems()
-            }
-            
-            videoPlayerViewController.queueTotalCount = 1
-            videoPlayerViewController.queueCurrentIndex = 0
+            videoPlayerViewController.removeCurrentItem()
             videoPlayerViewController.mode = .supplementalInMovie
             videoPlayerViewController.view.frame = videoContainerView.bounds
             
@@ -83,7 +78,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
             self.addChildViewController(videoPlayerViewController)
             videoPlayerViewController.didMove(toParentViewController: self)
             
-            videoPlayerViewController.playVideo(with: videoURL)
+            videoPlayerViewController.play(url: videoURL)
             self.videoPlayerViewController = videoPlayerViewController
             
             NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectVideo, itemId: timedEvent?.id)

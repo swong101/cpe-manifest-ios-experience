@@ -73,8 +73,7 @@ class EnhancedTitlesCollectionViewController: UICollectionViewController, UIColl
     
     // MARK: UICollectionViewDelegate
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        MBProgressHUD.showAdded(to: self.view, animated: true)
-        
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
         DispatchQueue.global(qos: .userInitiated).async {
             do {
                 try NextGenDataLoader.sharedInstance.loadTitle(cid: Array(NextGenDataLoader.ManifestData.keys)[indexPath.row], completionHandler: { [weak self] (success) in
@@ -82,6 +81,11 @@ class EnhancedTitlesCollectionViewController: UICollectionViewController, UIColl
                         DispatchQueue.main.async {
                             NextGenLauncher.sharedInstance?.launchExperience(fromViewController: strongSelf)
                         }
+                    } else {
+                        hud?.hide(true)
+                        let alertController = UIAlertController(title: "Error loading Manifest", message: "To continue, please check the domain and path values in NextGenDataLoader.swift > XMLBaseURI and ManifestData", preferredStyle: .alert)
+                        alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                        self?.present(alertController, animated: true, completion: nil)
                     }
                 })
             } catch let error {

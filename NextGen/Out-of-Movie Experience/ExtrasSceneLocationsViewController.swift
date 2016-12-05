@@ -47,7 +47,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
             if let selectedExperience = selectedExperience {
                 if let marker = markers[selectedExperience.id] {
                     if let appData = selectedExperience.appData {
-                        mapView.maxZoomLevel = appData.zoomLevel
+                        mapView.maxZoomLevel = (appData.zoomLocked ? appData.zoomLevel : -1)
                         mapView.setLocation(marker.location, zoomLevel: appData.zoomLevel, animated: true)
                     }
                     
@@ -58,7 +58,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
                 
                 var lowestZoomLevel = MAXFLOAT
                 for locationExperience in locationExperiences {
-                    if let appData = locationExperience.appData , appData.zoomLevel < lowestZoomLevel {
+                    if let appData = locationExperience.appData, appData.zoomLocked, appData.zoomLevel < lowestZoomLevel {
                         lowestZoomLevel = appData.zoomLevel
                     }
                 }
@@ -67,9 +67,11 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
                 mapView.zoomToFitAllMarkers()
             }
             
-            reloadBreadcrumbs()
-            collectionView.reloadData()
-            collectionView.contentOffset = CGPoint.zero
+            if selectedExperience == nil || selectedExperience!.appDataMediaCount > 0 {
+                reloadBreadcrumbs()
+                collectionView.reloadData()
+                collectionView.contentOffset = CGPoint.zero
+            }
         }
     }
     
@@ -226,7 +228,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
             videoPlayerViewController.didMove(toParentViewController: self)
             
             if !DeviceType.IS_IPAD && videoPlayerViewController.fullScreenButton != nil {
-                videoPlayerViewController.fullScreenButton.removeFromSuperview()
+                videoPlayerViewController.fullScreenButton?.removeFromSuperview()
             }
             
             self.videoPlayerViewController = videoPlayerViewController
@@ -238,11 +240,11 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
                 UIView.animate(withDuration: 0.25, animations: {
                     self.locationDetailView.alpha = 1
                 }, completion: { (_) in
-                    self.videoPlayerViewController?.playVideo(with: videoURL)
+                    self.videoPlayerViewController?.play(url: videoURL)
                 })
             } else {
                 locationDetailView.alpha = 1
-                self.videoPlayerViewController?.playVideo(with: videoURL)
+                self.videoPlayerViewController?.play(url: videoURL)
             }
         }
     }
