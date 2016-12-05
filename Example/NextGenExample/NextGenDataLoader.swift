@@ -4,9 +4,11 @@
 
 import Foundation
 import UIKit
+import AVFoundation
 import GoogleMaps
 import NextGenDataManager
 import PromiseKit
+import MBProgressHUD
 
 @objc class NextGenDataLoader: NSObject {
     
@@ -219,21 +221,22 @@ extension NextGenDataLoader: NextGenHookDelegate {
         // Handle end of playback
     }
     
-    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, completion: @escaping (AVURLAsset, Double) -> Void) {
-        // Handle DRM
-        completion(AVURLAsset(url: url), 0)
-    }
-    
     func interstitialShouldPlayMultipleTimes() -> Bool {
         // Return true if interstitial video should play again after user has already seen it (with ability to skip)
         return true
     }
     
-    func urlForTitle(_ title: String, completion: @escaping (URL?) -> Void) {
-        if let encodedTitleName = title.replacingOccurrences(of: ":", with: "").replacingOccurrences(of: "-", with: "").addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
-            completion(URL(string: "http://www.vudu.com/movies/#search/" + encodedTitleName))
+    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, isInterstitial: Bool, completion: @escaping (AVURLAsset, Double) -> Void) {
+        // Handle DRM
+        if mode == .mainFeature && !isInterstitial {
+            if DeviceType.IS_SIMULATOR {
+                completion(AVURLAsset(url: URL(string: "http://pdl.warnerbros.com/digitalcopy2/s/bbb/big_buck_bunny_480p_h264.mov")!), 0)
+            } else {
+                // TODO: Handle DRM
+                completion(AVURLAsset(url: url), 0)
+            }
         } else {
-            completion(nil)
+            completion(AVURLAsset(url: url), 0)
         }
     }
     
@@ -248,6 +251,37 @@ extension NextGenDataLoader: NextGenHookDelegate {
         
         shareUrl += "/" + id
         completion(URL(string: shareUrl))
+    }
+    
+    func didTapFilmography(forTitle title: String, fromViewController viewController: UIViewController) {
+        let showQueryNotFound = {
+            let alertController = UIAlertController(title: "", message: "Sorry, but this movie is currently unavailable on iTunes", preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            viewController.present(alertController, animated: true, completion: nil)
+        }
+        
+        if let searchUrl = URL(string: "https://itunes.apple.com/search?media=movie&entity=movie&term=\(title.replacingOccurrences(of: " ", with: "+"))") {
+            let hud = MBProgressHUD.showAdded(to: viewController.view, animated: true)
+            URLSession.shared.dataTask(with: searchUrl, completionHandler: { (data, _, error) in
+                DispatchQueue.main.async {
+                    hud?.hide(true)
+                    if let data = data {
+                        do {
+                            if let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? NSDictionary, let result = (jsonResult["results"] as? [NSDictionary])?.first, let urlString = result["trackViewUrl"] as? String, let url = URL(string: urlString) {
+                                url.promptLaunch(type: .itunes)
+                            } else {
+                                showQueryNotFound()
+                            }
+                        } catch {
+                            print("Error parsing iTunes data: \(error)")
+                            showQueryNotFound()
+                        }
+                    }
+                }
+            }).resume()
+        } else {
+            showQueryNotFound()
+        }
     }
     
 }

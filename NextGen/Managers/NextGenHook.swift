@@ -3,6 +3,8 @@
 //
 
 import Foundation
+import UIKit
+import AVFoundation
 
 public enum NextGenAnalyticsEvent: String {
     case homeAction = "home_action"

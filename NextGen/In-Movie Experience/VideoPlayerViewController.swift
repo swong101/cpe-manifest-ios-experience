@@ -4,6 +4,7 @@
 
 import Foundation
 import UIKit
+import AVFoundation
 import MessageUI
 import CoreMedia
 import NextGenDataManager
@@ -675,7 +676,7 @@ class VideoPlayerViewController: UIViewController {
         /* Use the AVAsset playable property to detect whether the asset can be played. */
         if !asset.isPlayable {
             /* Generate and show an error describing the failure. */
-            let errorDict = [NSLocalizedDescriptionKey: NSLocalizedString("player-generalError"), NSLocalizedFailureReasonErrorKey: NSLocalizedString("player-asset-tracks-load-error")]
+            let errorDict = [NSLocalizedDescriptionKey: NSLocalizedString("player-generalError", comment: "Error"), NSLocalizedFailureReasonErrorKey: NSLocalizedString("player-asset-tracks-load-error", comment: "Can't load tracks")]
             assetFailedToPrepareForPlayback(error: NSError(domain: "VideoPlayer", code: 0, userInfo: errorDict))
             return
         }

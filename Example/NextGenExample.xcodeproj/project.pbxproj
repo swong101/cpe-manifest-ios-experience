@@ -9,8 +9,6 @@
 /* Begin PBXBuildFile section */
 		495CF36A1CC042BA006AE290 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 495CF3691CC042BA006AE290 /* CoreText.framework */; };
 		49C1E65F1C7FA9930076E9F3 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49C1E65E1C7FA9930076E9F3 /* MessageUI.framework */; };
-		7006F1521D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7006F14F1D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.m */; };
-		7006F1531D346A2700C8DD25 /* NextGenVideoPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7006F1511D346A2700C8DD25 /* NextGenVideoPlayerViewController.m */; };
 		7021D3691D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */; };
 		703876431DAC1C1000544D5B /* NextGenLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703876421DAC1C1000544D5B /* NextGenLauncher.swift */; };
 		708488DC1D0F7EC900670B45 /* NextGenDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */; };
@@ -30,10 +28,7 @@
 		70B101A41D2D7BAB003D0424 /* SimpleMapCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70B101A31D2D7BAB003D0424 /* SimpleMapCollectionViewCell.swift */; };
 		70C093161D0F60DF00BFC1E4 /* NextGen.strings in Resources */ = {isa = PBXBuildFile; fileRef = 70C092A91D0F60DF00BFC1E4 /* NextGen.strings */; };
 		70C093171D0F60DF00BFC1E4 /* NextGen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 70C092AB1D0F60DF00BFC1E4 /* NextGen.storyboard */; };
-		70C093181D0F60DF00BFC1E4 /* Commentary.plist in Resources */ = {isa = PBXBuildFile; fileRef = 70C092AD1D0F60DF00BFC1E4 /* Commentary.plist */; };
 		70C0931A1D0F60DF00BFC1E4 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092AF1D0F60DF00BFC1E4 /* HomeViewController.swift */; };
-		70C0931B1D0F60DF00BFC1E4 /* CommentaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092B11D0F60DF00BFC1E4 /* CommentaryView.swift */; };
-		70C0931C1D0F60DF00BFC1E4 /* CommentaryViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092B21D0F60DF00BFC1E4 /* CommentaryViewCell.swift */; };
 		70C0931D1D0F60DF00BFC1E4 /* GallerySceneDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092B31D0F60DF00BFC1E4 /* GallerySceneDetailViewController.swift */; };
 		70C0931E1D0F60DF00BFC1E4 /* ImageSceneDetailCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092B41D0F60DF00BFC1E4 /* ImageSceneDetailCollectionViewCell.swift */; };
 		70C0931F1D0F60DF00BFC1E4 /* InMovieExperienceExtrasViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092B51D0F60DF00BFC1E4 /* InMovieExperienceExtrasViewController.swift */; };
@@ -123,10 +118,6 @@
 		495CF3691CC042BA006AE290 /* CoreText.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreText.framework; path = System/Library/Frameworks/CoreText.framework; sourceTree = SDKROOT; };
 		49C1E65E1C7FA9930076E9F3 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		49F502541C890E6500DFAD88 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
-		7006F14E1D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NextGenVideoPlayerPlaybackView.h; sourceTree = "<group>"; };
-		7006F14F1D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NextGenVideoPlayerPlaybackView.m; sourceTree = "<group>"; };
-		7006F1501D346A2700C8DD25 /* NextGenVideoPlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NextGenVideoPlayerViewController.h; sourceTree = "<group>"; };
-		7006F1511D346A2700C8DD25 /* NextGenVideoPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NextGenVideoPlayerViewController.m; sourceTree = "<group>"; };
 		7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ClipShareSceneDetailCollectionViewCell.xib; sourceTree = "<group>"; };
 		703876421DAC1C1000544D5B /* NextGenLauncher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenLauncher.swift; sourceTree = "<group>"; };
 		7071C54B1C6BCC11006F4275 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
@@ -150,10 +141,7 @@
 		70C092A41D0F52E100BFC1E4 /* GoogleMaps.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GoogleMaps.framework; path = ../Dependencies/GoogleMaps.framework; sourceTree = "<group>"; };
 		70C092AA1D0F60DF00BFC1E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/NextGen.strings; sourceTree = "<group>"; };
 		70C092AC1D0F60DF00BFC1E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/NextGen.storyboard; sourceTree = "<group>"; };
-		70C092AD1D0F60DF00BFC1E4 /* Commentary.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Commentary.plist; sourceTree = "<group>"; };
 		70C092AF1D0F60DF00BFC1E4 /* HomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
-		70C092B11D0F60DF00BFC1E4 /* CommentaryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentaryView.swift; sourceTree = "<group>"; };
-		70C092B21D0F60DF00BFC1E4 /* CommentaryViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommentaryViewCell.swift; sourceTree = "<group>"; };
 		70C092B31D0F60DF00BFC1E4 /* GallerySceneDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GallerySceneDetailViewController.swift; sourceTree = "<group>"; };
 		70C092B41D0F60DF00BFC1E4 /* ImageSceneDetailCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSceneDetailCollectionViewCell.swift; sourceTree = "<group>"; };
 		70C092B51D0F60DF00BFC1E4 /* InMovieExperienceExtrasViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InMovieExperienceExtrasViewController.swift; sourceTree = "<group>"; };
@@ -223,7 +211,6 @@
 		70C093131D0F60DF00BFC1E4 /* TalentTableViewCell-Wide.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "TalentTableViewCell-Wide.xib"; sourceTree = "<group>"; };
 		70C093141D0F60DF00BFC1E4 /* TitledImageCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = TitledImageCell.xib; sourceTree = "<group>"; };
 		70C093151D0F60DF00BFC1E4 /* VideoCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = VideoCell.xib; sourceTree = "<group>"; };
-		70C093761D0F625A00BFC1E4 /* NextGen-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NextGen-Bridging-Header.h"; sourceTree = "<group>"; };
 		70C093791D0F6DF700BFC1E4 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data; sourceTree = "<group>"; };
 		70C9EA571D08A18C002299B3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		70C9EA691D08A2D7002299B3 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -295,10 +282,8 @@
 			isa = PBXGroup;
 			children = (
 				70C092A91D0F60DF00BFC1E4 /* NextGen.strings */,
-				70C093761D0F625A00BFC1E4 /* NextGen-Bridging-Header.h */,
 				70C092AB1D0F60DF00BFC1E4 /* NextGen.storyboard */,
 				70D595A81D628C8700801C5E /* NextGen_iPhone.storyboard */,
-				70C092AD1D0F60DF00BFC1E4 /* Commentary.plist */,
 				70C092AF1D0F60DF00BFC1E4 /* HomeViewController.swift */,
 				70CE5F561D81CE6F0052DA20 /* Notifications.swift */,
 				70C092B01D0F60DF00BFC1E4 /* In-Movie Experience */,
@@ -321,8 +306,6 @@
 			isa = PBXGroup;
 			children = (
 				70A5FBB41D6289F400EE7847 /* ClipShareSceneDetailViewController.swift */,
-				70C092B11D0F60DF00BFC1E4 /* CommentaryView.swift */,
-				70C092B21D0F60DF00BFC1E4 /* CommentaryViewCell.swift */,
 				70C092B31D0F60DF00BFC1E4 /* GallerySceneDetailViewController.swift */,
 				70C092B41D0F60DF00BFC1E4 /* ImageSceneDetailCollectionViewCell.swift */,
 				70C092B51D0F60DF00BFC1E4 /* InMovieExperienceExtrasViewController.swift */,
@@ -331,10 +314,6 @@
 				70C092B81D0F60DF00BFC1E4 /* MapDetailViewController.swift */,
 				70C092B91D0F60DF00BFC1E4 /* MapSceneDetailCollectionViewCell.swift */,
 				70A217D11DDF6FE50006815C /* AssetLoaderDelegate.swift */,
-				7006F14E1D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.h */,
-				7006F14F1D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.m */,
-				7006F1501D346A2700C8DD25 /* NextGenVideoPlayerViewController.h */,
-				7006F1511D346A2700C8DD25 /* NextGenVideoPlayerViewController.m */,
 				70C092BA1D0F60DF00BFC1E4 /* SceneDetailCollectionViewCell.swift */,
 				70C092BB1D0F60DF00BFC1E4 /* SceneDetailCollectionViewController.swift */,
 				70C092BC1D0F60DF00BFC1E4 /* SceneDetailViewController.swift */,
@@ -591,7 +570,6 @@
 				70C0936E1D0F60DF00BFC1E4 /* ShoppingSceneDetailCollectionViewCell.xib in Resources */,
 				70D595AA1D628C8700801C5E /* NextGen_iPhone.storyboard in Resources */,
 				70C9EA6F1D08A3C5002299B3 /* LaunchScreen.storyboard in Resources */,
-				70C093181D0F60DF00BFC1E4 /* Commentary.plist in Resources */,
 				70C093701D0F60DF00BFC1E4 /* TalentTableViewCell-Wide.xib in Resources */,
 				70C0936B1D0F60DF00BFC1E4 /* MapSceneDetailCollectionViewCell.xib in Resources */,
 				70C0933E1D0F60DF00BFC1E4 /* Roboto-Regular.ttf in Resources */,
@@ -690,17 +668,14 @@
 				70C0934E1D0F60DF00BFC1E4 /* MapItemCell.swift in Sources */,
 				70C093571D0F60DF00BFC1E4 /* TitledImageCell.swift in Sources */,
 				70C093251D0F60DF00BFC1E4 /* SceneDetailCollectionViewController.swift in Sources */,
-				70C0931C1D0F60DF00BFC1E4 /* CommentaryViewCell.swift in Sources */,
 				70A5FBB31D6289EB00EE7847 /* TextSceneDetailCollectionViewCell.swift in Sources */,
 				70C0931F1D0F60DF00BFC1E4 /* InMovieExperienceExtrasViewController.swift in Sources */,
 				70C093601D0F60DF00BFC1E4 /* String+Utils.swift in Sources */,
-				70C0931B1D0F60DF00BFC1E4 /* CommentaryView.swift in Sources */,
 				70C9EA6C1D08A2D7002299B3 /* EnhancedTitlesCollectionViewController.swift in Sources */,
 				70C093381D0F60DF00BFC1E4 /* ExtrasSceneLocationsViewController.swift in Sources */,
 				708488DC1D0F7EC900670B45 /* NextGenDataLoader.swift in Sources */,
 				70C0931D1D0F60DF00BFC1E4 /* GallerySceneDetailViewController.swift in Sources */,
 				70A217D21DDF6FE50006815C /* AssetLoaderDelegate.swift in Sources */,
-				7006F1531D346A2700C8DD25 /* NextGenVideoPlayerViewController.m in Sources */,
 				70C093281D0F60DF00BFC1E4 /* ShoppingSceneDetailCollectionViewCell.swift in Sources */,
 				70C093551D0F60DF00BFC1E4 /* SocialButton.swift in Sources */,
 				70C0935F1D0F60DF00BFC1E4 /* NSURL+Utils.swift in Sources */,
@@ -740,7 +715,6 @@
 				70A5FBB01D6289B800EE7847 /* AVPlayerItem+Cache.swift in Sources */,
 				70C0932A1D0F60DF00BFC1E4 /* VideoPlayerViewController.swift in Sources */,
 				70C093331D0F60DF00BFC1E4 /* TheTakeCategory.swift in Sources */,
-				7006F1521D346A2700C8DD25 /* NextGenVideoPlayerPlaybackView.m in Sources */,
 				70C0932E1D0F60DF00BFC1E4 /* SettingsManager.swift in Sources */,
 				70C0935A1D0F60DF00BFC1E4 /* UIFont+Theme.swift in Sources */,
 				70C093581D0F60DF00BFC1E4 /* VideoCell.swift in Sources */,
@@ -895,7 +869,6 @@
 				PRODUCT_NAME = NextGenExample;
 				PROVISIONING_PROFILE = "";
 				SWIFT_INCLUDE_PATHS = "$(inherited)";
-				SWIFT_OBJC_BRIDGING_HEADER = "../NextGen/NextGen-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(inherited)";
@@ -925,7 +898,6 @@
 				PRODUCT_NAME = NextGenExample;
 				PROVISIONING_PROFILE = "";
 				SWIFT_INCLUDE_PATHS = "$(inherited)";
-				SWIFT_OBJC_BRIDGING_HEADER = "../NextGen/NextGen-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				USER_HEADER_SEARCH_PATHS = "$(inherited)";
