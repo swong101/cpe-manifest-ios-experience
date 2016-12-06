@@ -5,8 +5,6 @@
 "label.home" = "Home";
 "label.back" = "Back";
 "label.exit" = "Exit";
-"label.commentary" = "Commentary";
-"label.commentary.on" = "Commentary is on";
 
 // Home
 "label.play_movie" = "Play Movie";
@@ -22,6 +20,12 @@
 "label.time.hours" = "%{count} hr";
 "label.time.minutes" = "%{count} min";
 "label.time.seconds" = "%{count} sec";
+
+// Player
+"label.off" = "Off";
+"label.commentary" = "Commentary";
+"label.commentary_on" = "Commentary is on";
+"player.message.select_captions" = "Select an option below or choose \"Off\" to disable captions.";
 
 // Menu labels
 "label.all" = "All";

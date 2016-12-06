@@ -97,7 +97,7 @@ class VideoPlayerViewController: UIViewController {
     var shouldTrackOutput = false
     
     private var player: AVPlayer?
-    private var playerItem: AVPlayerItem?
+    fileprivate var playerItem: AVPlayerItem?
     private var playerItemVideoOutput: AVPlayerItemVideoOutput?
     private var originalContainerView: UIView?
     
@@ -207,8 +207,8 @@ class VideoPlayerViewController: UIViewController {
     // Controls
     @IBOutlet weak private var playbackView: VideoPlayerPlaybackView!
     @IBOutlet weak private var topToolbar: UIView?
-    @IBOutlet weak private var commentaryButton: UIButton?
-    @IBOutlet weak private var captionsButton: UIButton?
+    @IBOutlet weak fileprivate var commentaryButton: UIButton?
+    @IBOutlet weak fileprivate var captionsButton: UIButton?
     @IBOutlet weak private var playbackToolbar: UIView?
     @IBOutlet weak private var homeButton: UIButton?
     @IBOutlet weak private var scrubber: UISlider?
@@ -246,6 +246,8 @@ class VideoPlayerViewController: UIViewController {
                         topToolbar.transform = .identity
                     })
                 } else {
+                    audioOptionsVisible = false
+                    captionsOptionsVisible = false
                     UIView.animate(withDuration: 0.2, animations: {
                         topToolbar.transform = CGAffineTransform(translationX: 0, y: -topToolbar.bounds.height)
                     }, completion: { (_) in
@@ -296,7 +298,60 @@ class VideoPlayerViewController: UIViewController {
     }
     
     // Captions
-    private var captionsGroup: AVMediaSelectionGroup?
+    @IBOutlet fileprivate var captionsOptionsTableView: UITableView?
+    private var captionsOptionsVisible = false {
+        didSet {
+            captionsButton?.isHighlighted = captionsOptionsVisible
+            if let captionsOptionsTableView = captionsOptionsTableView {
+                if captionsOptionsVisible && captionsOptionsTableView.isHidden {
+                    removeAutoHideTimer()
+                    captionsOptionsTableView.alpha = 0
+                    captionsOptionsTableView.isHidden = false
+                    UIView.animate(withDuration: 0.2, animations: {
+                        captionsOptionsTableView.alpha = 1
+                    })
+                } else if !captionsOptionsTableView.isHidden {
+                    initAutoHideTimer()
+                    UIView.animate(withDuration: 0.2, animations: {
+                        captionsOptionsTableView.alpha = 0
+                    }, completion: { (_) in
+                        captionsOptionsTableView.isHidden = true
+                    })
+                }
+            }
+        }
+    }
+    
+    fileprivate var captionsSelectionGroup: AVMediaSelectionGroup?
+    
+    // Audio (Commentary)
+    @IBOutlet fileprivate var audioOptionsTableView: UITableView?
+    private var audioOptionsVisible = false {
+        didSet {
+            commentaryButton?.isHighlighted = audioOptionsVisible
+            if let audioOptionsTableView = audioOptionsTableView {
+                if audioOptionsVisible && audioOptionsTableView.isHidden {
+                    removeAutoHideTimer()
+                    audioOptionsTableView.alpha = 0
+                    audioOptionsTableView.isHidden = false
+                    UIView.animate(withDuration: 0.2, animations: {
+                        audioOptionsTableView.alpha = 1
+                    })
+                } else if !audioOptionsTableView.isHidden {
+                    initAutoHideTimer()
+                    UIView.animate(withDuration: 0.2, animations: {
+                        audioOptionsTableView.alpha = 0
+                    }, completion: { (_) in
+                        audioOptionsTableView.isHidden = true
+                    })
+                }
+            }
+        }
+    }
+    
+    fileprivate var audioSelectionGroup: AVMediaSelectionGroup?
+    fileprivate var mainAudioSelectionOption: AVMediaSelectionOption?
+    fileprivate var commentaryAudioSelectionOption: AVMediaSelectionOption?
     
     // Playback Sync
     private var playbackSyncStartTime: Double = 0
@@ -408,7 +463,7 @@ class VideoPlayerViewController: UIViewController {
             print("Error setting AVAudioSession category: \(error)")
         }
         
-        self.playbackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.onTapPlayer)))
+        playbackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.onTapPlayer)))
         
         isSeeking = false
         initScrubberTimer()
@@ -420,6 +475,14 @@ class VideoPlayerViewController: UIViewController {
         
         // Localizations
         homeButton?.setTitle(String.localize("label.home"), for: UIControlState())
+        commentaryButton?.setTitle(String.localize("label.commentary"), for: .normal)
+        commentaryButton?.setTitle(String.localize("label.commentary_on"), for: .selected)
+        commentaryButton?.setTitle(String.localize("label.commentary_on"), for: [.selected, .highlighted])
+        
+        // View setup
+        captionsButton?.setImage(UIImage(named: "ClosedCaptions-Highlighted"), for: [.selected, .highlighted])
+        commentaryButton?.setImage(UIImage(named: "Commentary-Highlighted"), for: [.selected, .highlighted])
+        commentaryButton?.setTitleColor(UIColor.themePrimary, for: [.selected, .highlighted])
         
         // Notifications
         playerItemDurationDidLoadObserver = NotificationCenter.default.addObserver(forName: .videoPlayerItemDurationDidLoad, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
@@ -456,12 +519,10 @@ class VideoPlayerViewController: UIViewController {
             }
         })
         
-        if !DeviceType.IS_IPAD {
-            cropToActivePictureButton?.removeFromSuperview()
-        }
-
         if mode == .mainFeature {
             fullScreenButton?.removeFromSuperview()
+            audioOptionsTableView?.register(UINib(nibName: "DropdownTableViewCell", bundle: nil), forCellReuseIdentifier: DropdownTableViewCell.ReuseIdentifier)
+            captionsOptionsTableView?.register(UINib(nibName: "DropdownTableViewCell", bundle: nil), forCellReuseIdentifier: DropdownTableViewCell.ReuseIdentifier)
             
             if let delegate = NextGenHook.delegate {
                 didPlayInterstitial = SettingsManager.didWatchInterstitial && !delegate.interstitialShouldPlayMultipleTimes()
@@ -472,7 +533,8 @@ class VideoPlayerViewController: UIViewController {
             didPlayInterstitial = true
             playerControlsVisible = false
             topToolbar?.removeFromSuperview()
-            cropToActivePictureButton?.removeFromSuperview()
+            audioOptionsTableView?.removeFromSuperview()
+            captionsOptionsTableView?.removeFromSuperview()
             
             if mode == .supplementalInMovie {
                 fullScreenButton?.removeFromSuperview()
@@ -622,7 +684,6 @@ class VideoPlayerViewController: UIViewController {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
         
-        playbackView.videoFillMode = (didPlayInterstitial && mode != .basicPlayer ? AVLayerVideoGravityResizeAspect : AVLayerVideoGravityResizeAspectFill)
         syncPlayPauseButtons()
         
         if mode == .basicPlayer {
@@ -681,14 +742,6 @@ class VideoPlayerViewController: UIViewController {
             return
         }
         
-        // Set up the captions options
-        if let captionsGroup = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicLegible), captionsGroup.options.first(where: { $0.locale != nil }) != nil {
-            self.captionsGroup = captionsGroup
-            captionsButton?.isHidden = false
-        } else {
-            captionsButton?.isHidden = true
-        }
-        
         // At this point we're ready to set up for playback of the asset.
             
         // Stop observing our prior AVPlayerItem, if we have one.
@@ -706,6 +759,40 @@ class VideoPlayerViewController: UIViewController {
         playerItem!.addObserver(self, forKeyPath: Constants.Keys.Duration, options: [.initial, .new], context: &VideoPlayerDurationObservationContext)
         playerItem!.addObserver(self, forKeyPath: Constants.Keys.PlaybackBufferEmpty, options: .new, context: &VideoPlayerBufferEmptyObservationContext)
         playerItem!.addObserver(self, forKeyPath: Constants.Keys.PlaybackLikelyToKeepUp, options: .new, context: &VideoPlayerPlaybackLikelyToKeepUpObservationContext)
+        
+        // Set up the captions options
+        if let group = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicLegible), group.options.first(where: { $0.locale != nil }) != nil {
+            captionsSelectionGroup = group
+            captionsButton?.isHidden = false
+            captionsButton?.isSelected = false
+            captionsOptionsTableView?.reloadData()
+            
+            var selectedIndex = 0
+            if UIAccessibilityIsClosedCaptioningEnabled(), let index = group.options.index(where: { $0.locale == Locale.current }) ?? group.options.index(where: { $0.locale!.languageCode == Locale.current.languageCode }) {
+                selectedIndex = index + 1
+            }
+            
+            if selectedIndex > 0 {
+                playerItem!.select(group.options[selectedIndex - 1], in: group)
+                captionsButton?.isSelected = true
+            }
+            
+            captionsOptionsTableView?.selectRow(at: IndexPath(row: selectedIndex, section: 0), animated: false, scrollPosition: .none)
+        } else {
+            captionsButton?.isHidden = true
+        }
+        
+        // Set up commentary options
+        if let group = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicAudible), let option = group.options.first(where: { $0.displayName.lowercased().contains("commentary") }) {
+            audioSelectionGroup = group
+            mainAudioSelectionOption = group.options.first
+            commentaryAudioSelectionOption = option
+            commentaryButton?.isHidden = false
+            audioOptionsTableView?.reloadData()
+            audioOptionsTableView?.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)
+        } else {
+            commentaryButton?.isHidden = true
+        }
         
         /* When the player item has played to its end time we'll toggle
          the movie controller Pause button to be the Play button */
@@ -737,6 +824,7 @@ class VideoPlayerViewController: UIViewController {
             player!.replaceCurrentItem(with: playerItem)
         }
         
+        playbackView.videoFillMode = (didPlayInterstitial && mode != .basicPlayer ? AVLayerVideoGravityResizeAspect : AVLayerVideoGravityResizeAspectFill)
         scrubber?.value = 0
     }
     
@@ -799,7 +887,6 @@ class VideoPlayerViewController: UIViewController {
     private func playMainExperience() {
         // Initial state of controls
         playerControlsVisible = false
-        commentaryButton?.isHidden = true
         captionsButton?.isHidden = true
         countdownProgressView?.removeFromSuperview()
         countdownProgressView = nil
@@ -823,10 +910,6 @@ class VideoPlayerViewController: UIViewController {
         if let mainExperience = NGDMManifest.sharedInstance.mainExperience, let videoURL = mainExperience.videoURL {
             NotificationCenter.default.post(name: .videoPlayerDidPlayMainExperience, object: nil)
             play(url: videoURL)
-            
-            if mainExperience.commentaryAudioURL != nil && Constants.CommentaryEnabled {
-                commentaryButton?.isHidden = false
-            }
         }
     }
     
@@ -994,8 +1077,13 @@ class VideoPlayerViewController: UIViewController {
     // MARK: Actions
     @IBAction private func onTapPlayer() {
         if !playerControlsLocked {
-            playerControlsVisible = !playerControlsVisible
-            initAutoHideTimer()
+            if audioOptionsVisible || captionsOptionsVisible {
+                audioOptionsVisible = false
+                captionsOptionsVisible = false
+            } else {
+                playerControlsVisible = !playerControlsVisible
+                initAutoHideTimer()
+            }
         }
     }
     
@@ -1020,40 +1108,13 @@ class VideoPlayerViewController: UIViewController {
     }
     
     @IBAction private func onToggleCommentary() {
-        if let commentaryButton = commentaryButton {
-            commentaryButton.isSelected = !commentaryButton.isSelected
-        }
+        captionsOptionsVisible = false
+        audioOptionsVisible = !audioOptionsVisible
     }
     
     @IBAction private func onCaptionSelection() {
-        if let captionsGroup = captionsGroup {
-            let captionsActionSheet = UIAlertController(title: "", message: "Select an option below or choose \"Off\" to disable captions.", preferredStyle: .actionSheet)
-            
-            captionsActionSheet.addAction(UIAlertAction(title: "Off", style: .destructive, handler: { [weak self] (_) in
-                self?.playerItem?.select(nil, in: captionsGroup)
-                self?.captionsButton?.isSelected = false
-                self?.playerControlsVisible = false
-            }))
-            
-            for option in captionsGroup.options {
-                if let locale = option.locale {
-                    captionsActionSheet.addAction(UIAlertAction(title: option.displayName(with: locale), style: .default, handler: { [weak self] (_) in
-                        self?.playerItem?.select(option, in: captionsGroup)
-                        self?.captionsButton?.isSelected = true
-                        self?.playerControlsVisible = false
-                    }))
-                }
-            }
-            
-            captionsActionSheet.modalPresentationStyle = .popover
-            captionsActionSheet.popoverPresentationController?.sourceView = captionsButton
-            captionsActionSheet.popoverPresentationController?.sourceRect = captionsButton!.bounds
-            
-            removeAutoHideTimer()
-            self.present(captionsActionSheet, animated: true, completion: { [weak self] in
-                self?.initAutoHideTimer()
-            })
-        }
+        audioOptionsVisible = false
+        captionsOptionsVisible = !captionsOptionsVisible
     }
     
     @IBAction private func onCropToActivePicture() {
@@ -1189,6 +1250,69 @@ class VideoPlayerViewController: UIViewController {
     private func removeAutoHideTimer() {
         playerControlsAutoHideTimer?.invalidate()
         playerControlsAutoHideTimer = nil
+    }
+    
+}
+
+extension VideoPlayerViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if tableView == audioOptionsTableView {
+            return 2
+        }
+        
+        if tableView == captionsOptionsTableView, let options = captionsSelectionGroup?.options {
+            return options.count + 1
+        }
+        
+        return 0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: DropdownTableViewCell.ReuseIdentifier, for: indexPath) as! DropdownTableViewCell
+        
+        if tableView == audioOptionsTableView, let option = commentaryAudioSelectionOption {
+            cell.title = (indexPath.row == 0 ? String.localize("label.off") : option.displayName)
+        } else if tableView == captionsOptionsTableView, let options = captionsSelectionGroup?.options {
+            if indexPath.row == 0 {
+                cell.title = String.localize("label.off")
+            } else if options.count > (indexPath.row - 1) {
+                let option = options[indexPath.row - 1]
+                if let locale = option.locale {
+                    cell.title = option.displayName(with: locale)
+                } else {
+                    cell.title = option.displayName
+                }
+            }
+        }
+        
+        return cell
+    }
+    
+}
+
+extension VideoPlayerViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        (tableView.cellForRow(at: indexPath) as? DropdownTableViewCell)?.updateStyle()
+        
+        if tableView == audioOptionsTableView, let group = audioSelectionGroup {
+            if indexPath.row > 0, let option = commentaryAudioSelectionOption {
+                playerItem?.select(option, in: group)
+                commentaryButton?.isSelected = true
+            } else if let option = mainAudioSelectionOption {
+                playerItem?.select(option, in: group)
+                commentaryButton?.isSelected = false
+            }
+        } else if tableView == captionsOptionsTableView, let group = captionsSelectionGroup {
+            if indexPath.row > 0 && group.options.count > (indexPath.row - 1) {
+                playerItem?.select(group.options[indexPath.row - 1], in: group)
+                captionsButton?.isSelected = true
+            } else {
+                playerItem?.select(nil, in: group)
+                captionsButton?.isSelected = false
+            }
+        }
     }
     
 }
