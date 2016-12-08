@@ -1278,11 +1278,7 @@ extension VideoPlayerViewController: UITableViewDataSource {
                 cell.title = String.localize("label.off")
             } else if options.count > (indexPath.row - 1) {
                 let option = options[indexPath.row - 1]
-                if let locale = option.locale {
-                    cell.title = option.displayName(with: locale)
-                } else {
-                    cell.title = option.displayName
-                }
+                cell.title = option.displayName
             }
         }
         
