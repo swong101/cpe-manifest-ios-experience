@@ -62,27 +62,18 @@ class ExtrasExperienceListViewController: ExtrasExperienceViewController, UIColl
             } else if experience.isType(.location) {
                 self.performSegue(withIdentifier: SegueIdentifier.ShowMap, sender: experience)
                 NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectSceneLocations)
-            } else if experience.isType(.app) {
-                if let app = experience.app, let url = app.url {
-                    let webViewController = WebViewController(title: app.title, url: url)
-                    webViewController.shouldDisplayFullScreen = true
-                    let navigationController = LandscapeNavigationController(rootViewController: webViewController)
-                    self.present(navigationController, animated: true, completion: nil)
-                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectApp, itemId: app.id)
-                }
-            } else {
-                if let firstChildExperience = experience.childExperiences?.first {
-                    if firstChildExperience.isType(.audioVisual) {
-                        self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
-                        NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.id)
-                    } else if firstChildExperience.isType(.gallery) {
-                        self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
-                        NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.id)
-                    } else {
-                        self.performSegue(withIdentifier: SegueIdentifier.ShowList, sender: experience)
-                        NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectExperienceList, itemId: experience.id)
-                    }
-                }
+            } else if experience.isType(.app), let app = experience.app, let url = app.url {
+                let webViewController = WebViewController(title: app.title, url: url)
+                webViewController.shouldDisplayFullScreen = true
+                let navigationController = LandscapeNavigationController(rootViewController: webViewController)
+                self.present(navigationController, animated: true, completion: nil)
+                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectApp, itemId: app.id)
+            } else if experience.isType(.audioVisual) {
+                self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
+                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.id)
+            } else if experience.isType(.gallery) {
+                self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
+                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.id)
             }
         }
     }

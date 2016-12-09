@@ -93,7 +93,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
         })
 
         willPlayNextItemObserver = NotificationCenter.default.addObserver(forName: .videoPlayerWillPlayNextItem, object: nil, queue: OperationQueue.main) { [weak self] (notification) -> Void in
-            if let strongSelf = self, let index = notification.userInfo?[NotificationConstants.index] as? Int , index < (strongSelf.experience.childExperiences?.count ?? 0) {
+            if let strongSelf = self, let index = notification.userInfo?[NotificationConstants.index] as? Int , index < (strongSelf.experience.childExperiences?.count ?? 1) {
                 let indexPath = IndexPath(row: index, section: 0)
                 strongSelf.galleryTableView.selectRow(at: indexPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
                 strongSelf.tableView(strongSelf.galleryTableView, didSelectRowAt: indexPath)
@@ -159,12 +159,17 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
         let cell = tableView.dequeueReusableCell(withIdentifier: VideoCell.ReuseIdentifier, for: indexPath) as! VideoCell
         cell.backgroundColor = UIColor.clear
         cell.selectionStyle = .none
-        cell.experience = experience.childExperiences?[indexPath.row]
+        if let childExperiences = experience.childExperiences, childExperiences.count > indexPath.row {
+            cell.experience = childExperiences[indexPath.row]
+        } else {
+            cell.experience = experience
+        }
+        
         return cell
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return experience.childExperiences?.count ?? 0
+        return experience.childExperiences?.count ?? 1
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -190,7 +195,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
             didPlayFirstItem = true
         }
         
-        if let thisExperience = experience.childExperiences?[indexPath.row] {
+        if let thisExperience = experience.childExperiences?[indexPath.row] ?? experience {
             mediaTitleLabel.isHidden = true
             mediaDescriptionLabel?.isHidden = true
             mediaDescriptionTextView?.isHidden = true
@@ -236,7 +241,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
     }
     
     private func playSelectedExperience() {
-        if let selectedIndexPath = galleryTableView.indexPathForSelectedRow, let selectedExperience = experience.childExperiences?[selectedIndexPath.row] {
+        if let selectedIndexPath = galleryTableView.indexPathForSelectedRow, let selectedExperience = experience.childExperiences?[selectedIndexPath.row] ?? experience {
             if let imageURL = selectedExperience.imageURL {
                 previewImageView.sd_setImage(with: imageURL)
             }
@@ -248,7 +253,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
                 
                 videoPlayerViewController.removeCurrentItem()
                 videoPlayerViewController.mode = VideoPlayerMode.supplemental
-                videoPlayerViewController.queueTotalCount = experience.childExperiences?.count ?? 0
+                videoPlayerViewController.queueTotalCount = experience.childExperiences?.count ?? 1
                 videoPlayerViewController.queueCurrentIndex = (selectedIndexPath as NSIndexPath).row
                 
                 if !videoPlayerExists {
