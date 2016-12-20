@@ -243,7 +243,7 @@ class HomeViewController: UIViewController {
         backgroundVideoPreviewImageView = nil
         backgroundVideoLastTimecode = 0
         
-        if let image = backgroundVideoPlayerViewController?.getScreenGrab() {
+        if let image = backgroundVideoPlayerViewController?.screenGrab {
             backgroundVideoLastTimecode = backgroundVideoPlayerViewController!.currentTime
             backgroundVideoPreviewImageView = UIImageView(frame: backgroundVideoView.frame)
             backgroundVideoPreviewImageView!.contentMode = .scaleAspectFill

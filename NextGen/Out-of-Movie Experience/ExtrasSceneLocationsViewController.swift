@@ -200,7 +200,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
         
         if toLandscape {
             if let gallery = currentGallery {
-                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectImage, itemId: gallery.id)
+                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setImageGalleryFullScreen, itemId: gallery.id)
             } else if let video = currentVideo {
                 NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setVideoFullScreen, itemId: video.id)
             }

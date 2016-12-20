@@ -5,6 +5,8 @@
 "label.home" = "Home";
 "label.back" = "Back";
 "label.exit" = "Exit";
+"label.cancel" = "Cancel";
+"label.continue" = "Continue";
 
 // Home
 "label.play_movie" = "Play Movie";
@@ -26,6 +28,9 @@
 "label.commentary" = "Commentary";
 "label.commentary_on" = "Commentary is on";
 "player.message.select_captions" = "Select an option below or choose \"Off\" to disable captions.";
+"player.message.pip.exit" = "Selecting this option will exit your picture-in-picture video. Are you sure you would like to continue?";
+"player.message.pip.unavailable" = "Picture-in-picture mode is currently unavailable because it is in use by another application.";
+"player.message.pip.error" = "Sorry, an error occurred while starting picture-in-picture mode.";
 
 // Menu labels
 "label.all" = "All";
