@@ -89,7 +89,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             var reloadIndexPaths = [IndexPath]()
             
             var newTimedEvents = [NGDMTimedEvent]()
-            for timedEvent in NGDMTimedEvent.findByTimecode(time, type: .any) {
+            for timedEvent in NGDMTimedEvent.findByTimecode(time) {
                 if timedEvent.experience == nil || !timedEvent.experience!.isType(.talentData) {
                     let indexPath = IndexPath(item: newTimedEvents.count, section: 0)
                     

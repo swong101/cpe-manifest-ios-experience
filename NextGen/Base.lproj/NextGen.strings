@@ -28,9 +28,11 @@
 "label.commentary" = "Commentary";
 "label.commentary_on" = "Commentary is on";
 "player.message.select_captions" = "Select an option below or choose \"Off\" to disable captions.";
-"player.message.pip.exit" = "Selecting this option will exit your picture-in-picture video. Are you sure you would like to continue?";
-"player.message.pip.unavailable" = "Picture-in-picture mode is currently unavailable because it is in use by another application.";
-"player.message.pip.error" = "Sorry, an error occurred while starting picture-in-picture mode.";
+"player.message.external.playing" = "Now playing on your TV";
+"player.message.pip.exit" = "Selecting this option will exit your Picture in Picture video. Are you sure you would like to continue?";
+"player.message.pip.external" = "Please return playback from your TV to your iPad to enable Picture in Picture mode.";
+"player.message.pip.unavailable" = "Picture in Picture mode is currently unavailable because it is in use by another application.";
+"player.message.pip.error" = "Sorry, an error occurred while starting Picture in Picture mode.";
 
 // Menu labels
 "label.all" = "All";
