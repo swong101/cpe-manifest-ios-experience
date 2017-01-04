@@ -250,6 +250,12 @@ class VideoPlayerViewController: UIViewController {
             cropToActivePictureButton?.isEnabled = playerControlsEnabled && !isExternalPlaybackActive
             pictureInPictureButton?.isEnabled = (pictureInPictureController == nil || !pictureInPictureController!.isPictureInPictureActive) && playerControlsEnabled
             fullScreenButton?.isEnabled = playerControlsEnabled
+            
+            MPRemoteCommandCenter.shared().playCommand.isEnabled = playerControlsEnabled
+            MPRemoteCommandCenter.shared().pauseCommand.isEnabled = playerControlsEnabled
+            MPRemoteCommandCenter.shared().togglePlayPauseCommand.isEnabled = playerControlsEnabled
+            MPRemoteCommandCenter.shared().skipBackwardCommand.isEnabled = playerControlsEnabled
+            MPRemoteCommandCenter.shared().skipForwardCommand.isEnabled = playerControlsEnabled
         }
     }
     
@@ -507,6 +513,7 @@ class VideoPlayerViewController: UIViewController {
         player?.removeObserver(self, forKeyPath: Constants.Keys.ExternalPlaybackActive)
         removePlayerTimeObserver()
         cancelCountdown()
+        UIApplication.shared.endReceivingRemoteControlEvents()
     }
     
     // MARK: View Lifecycle
@@ -588,6 +595,56 @@ class VideoPlayerViewController: UIViewController {
                 strongSelf.playVideo()
             }
         })
+        
+        MPRemoteCommandCenter.shared().playCommand.addTarget { [weak self] (_) -> MPRemoteCommandHandlerStatus in
+            if let strongSelf = self {
+                strongSelf.onPlay()
+                return .success
+            }
+            
+            return .commandFailed
+        }
+        
+        MPRemoteCommandCenter.shared().pauseCommand.addTarget { [weak self] (_) -> MPRemoteCommandHandlerStatus in
+            if let strongSelf = self {
+                strongSelf.onPause()
+                return .success
+            }
+            
+            return .commandFailed
+        }
+        
+        MPRemoteCommandCenter.shared().togglePlayPauseCommand.addTarget { [weak self] (_) -> MPRemoteCommandHandlerStatus in
+            if let strongSelf = self {
+                if strongSelf.isPlaying {
+                    strongSelf.onPause()
+                } else {
+                    strongSelf.onPlay()
+                }
+                
+                return .success
+            }
+            
+            return .commandFailed
+        }
+        
+        MPRemoteCommandCenter.shared().skipBackwardCommand.addTarget { [weak self] (event) -> MPRemoteCommandHandlerStatus in
+            if let strongSelf = self, let event = event as? MPSkipIntervalCommandEvent {
+                strongSelf.seekPlayer(to: strongSelf.currentTime - event.interval)
+                return .success
+            }
+            
+            return .commandFailed
+        }
+        
+        MPRemoteCommandCenter.shared().skipForwardCommand.addTarget { [weak self] (event) -> MPRemoteCommandHandlerStatus in
+            if let strongSelf = self, let event = event as? MPSkipIntervalCommandEvent {
+                strongSelf.seekPlayer(to: strongSelf.currentTime + event.interval)
+                return .success
+            }
+            
+            return .commandFailed
+        }
         
         if mode == .mainFeature {
             fullScreenButton?.removeFromSuperview()
@@ -719,6 +776,9 @@ class VideoPlayerViewController: UIViewController {
             if playerItemDuration > 1 {
                 durationLabel?.text = timeString(fromSeconds: playerItemDuration)
                 NotificationCenter.default.post(name: .videoPlayerItemDurationDidLoad, object: self, userInfo: [Constants.Keys.Duration: playerItemDuration])
+                
+                // Set data for OS media player and control center widgets
+                MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyPlaybackDuration] = NSNumber(value: playerItemDuration)
             }
         }
         /* AVPlayer "rate" property value observer. */
@@ -1001,6 +1061,7 @@ class VideoPlayerViewController: UIViewController {
         
         if let mainExperience = NGDMManifest.sharedInstance.mainExperience, let videoURL = mainExperience.videoURL {
             NotificationCenter.default.post(name: .videoPlayerDidPlayMainExperience, object: nil)
+            UIApplication.shared.beginReceivingRemoteControlEvents()
             play(url: videoURL)
         }
     }
@@ -1044,6 +1105,9 @@ class VideoPlayerViewController: UIViewController {
                 playerItem.add(AVPlayerItemVideoOutput())
             }
         }
+        
+        // Sync playback time with control center
+        MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPNowPlayingInfoPropertyElapsedPlaybackTime] = NSNumber(value: currentTime)
     }
     
     private func syncPlaybackOverlayImage() {
