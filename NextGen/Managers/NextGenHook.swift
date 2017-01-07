@@ -74,6 +74,26 @@ public enum NextGenAnalyticsAction: String {
     case selectPrevious = "select_previous"
     case selectNext = "select_next"
     case shareVideo = "share_video"
+    
+    // Player
+    case playButton = "play_button"
+    case pauseButton = "pause_button"
+    case remotePlayButton = "remote_play_button"
+    case remotePauseButton = "remote_pause_button"
+    case remoteTogglePlayPauseButton = "remote_toggle_play_pause_button"
+    case remoteSkipBackButton = "remote_skip_back_button"
+    case remoteSkipForwardButton = "remote_skip_forward_button"
+    case showCommentarySelection = "show_commentary_selection"
+    case commentaryOn = "commentary_on"
+    case commentaryOff = "commentary_off"
+    case showCaptionsSelection = "show_captions_selection"
+    case captionsOn = "captions_on"
+    case captionsOff = "captions_off"
+    case cropActiveOn = "crop_active_on"
+    case cropActiveOff = "crop_active_off"
+    case pictureInPictureOn = "picture_in_picture_on"
+    case airPlayOn = "airplay_on"
+    case chromecastOn = "chromecast_on"
 }
 
 struct NextGenAnalyticsLabel {
@@ -109,7 +129,7 @@ public protocol NextGenHookDelegate {
     // Video Player callbacks
     func videoPlayerWillClose(_ mode: VideoPlayerMode, playbackPosition: Double)
     func interstitialShouldPlayMultipleTimes() -> Bool
-    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, isInterstitial: Bool, completion: @escaping (_ asset: AVURLAsset, _ startTime: Double) -> Void)
+    func updatePlaybackAsset(_ playbackAsset: PlaybackAsset, mode: VideoPlayerMode, isInterstitial: Bool, completion: @escaping (PlaybackAsset) -> Void)
     
     // Sharing callbacks
     func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (_ url: URL?) -> Void)

@@ -1091,7 +1091,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="NOW PLAYING ON YOUR TV" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bWb-BU-DFh">
-                                        <rect key="frame" x="412.5" y="458" width="199" height="21"/>
+                                        <rect key="frame" x="413" y="458" width="199" height="21"/>
                                         <fontDescription key="fontDescription" name="RobotoCondensed-Bold" family="Roboto Condensed" pointSize="18"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
@@ -1154,7 +1154,7 @@
                                         <inset key="imageEdgeInsets" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         <state key="normal" image="NextGenPauseButton"/>
                                         <connections>
-                                            <action selector="onPause" destination="FsK-dw-pgC" eventType="touchUpInside" id="hOA-Lc-6nj"/>
+                                            <action selector="onPauseWithSender:" destination="FsK-dw-pgC" eventType="touchUpInside" id="Zmh-LN-xkM"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="r3j-NO-iAX">
@@ -1162,7 +1162,7 @@
                                         <inset key="imageEdgeInsets" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         <state key="normal" image="NextGenPlayButton"/>
                                         <connections>
-                                            <action selector="onPlay" destination="FsK-dw-pgC" eventType="touchUpInside" id="5IX-BI-qXs"/>
+                                            <action selector="onPlayWithSender:" destination="FsK-dw-pgC" eventType="touchUpInside" id="7Jc-kL-KQK"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hQ6-y2-KsL">
@@ -1346,6 +1346,7 @@
                                     <constraint firstItem="aLt-Qu-Yg8" firstAttribute="top" secondItem="VY7-Vu-ikZ" secondAttribute="top" id="1TL-jX-38i"/>
                                     <constraint firstItem="aLt-Qu-Yg8" firstAttribute="leading" secondItem="VY7-Vu-ikZ" secondAttribute="leading" constant="20" id="46K-Qn-bGM"/>
                                     <constraint firstAttribute="trailing" secondItem="noC-SF-mIj" secondAttribute="trailing" priority="750" constant="10" id="5qN-ai-lDz"/>
+                                    <constraint firstItem="tw5-Q3-5PC" firstAttribute="leading" secondItem="f4Q-vv-K5i" secondAttribute="trailing" priority="750" constant="10" id="9Gu-30-VU8"/>
                                     <constraint firstItem="tw5-Q3-5PC" firstAttribute="top" secondItem="VY7-Vu-ikZ" secondAttribute="top" id="9Mb-hb-nRv"/>
                                     <constraint firstAttribute="height" constant="75" id="B0e-oL-JMI"/>
                                     <constraint firstItem="tw5-Q3-5PC" firstAttribute="leading" secondItem="noC-SF-mIj" secondAttribute="trailing" id="HkB-bR-vy1"/>

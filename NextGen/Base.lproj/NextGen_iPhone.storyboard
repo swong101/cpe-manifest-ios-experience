@@ -1106,7 +1106,7 @@
                                         </constraints>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="NOW PLAYING ON YOUR TV" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xp3-ll-WAT">
-                                        <rect key="frame" x="256" y="245.5" width="155" height="16.5"/>
+                                        <rect key="frame" x="256.5" y="245.5" width="155" height="16.5"/>
                                         <fontDescription key="fontDescription" name="RobotoCondensed-Bold" family="Roboto Condensed" pointSize="14"/>
                                         <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
@@ -1160,7 +1160,7 @@
                                         <inset key="imageEdgeInsets" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         <state key="normal" image="NextGenPauseButton"/>
                                         <connections>
-                                            <action selector="onPause" destination="FsK-dw-pgC" eventType="touchUpInside" id="8Hr-4T-yX5"/>
+                                            <action selector="onPauseWithSender:" destination="FsK-dw-pgC" eventType="touchUpInside" id="eoc-aP-NNp"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="r3j-NO-iAX">
@@ -1171,7 +1171,7 @@
                                         <inset key="imageEdgeInsets" minX="10" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         <state key="normal" image="NextGenPlayButton"/>
                                         <connections>
-                                            <action selector="onPlay" destination="FsK-dw-pgC" eventType="touchUpInside" id="HUk-4V-IQP"/>
+                                            <action selector="onPlayWithSender:" destination="FsK-dw-pgC" eventType="touchUpInside" id="NOh-ip-NkJ"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hQ6-y2-KsL">
@@ -1349,6 +1349,7 @@
                                     <constraint firstAttribute="bottom" secondItem="aLt-Qu-Yg8" secondAttribute="bottom" id="gcv-dM-78f"/>
                                     <constraint firstAttribute="bottom" secondItem="Yk0-Fc-alW" secondAttribute="bottom" id="gvh-By-f4l"/>
                                     <constraint firstItem="Yk0-Fc-alW" firstAttribute="top" secondItem="VY7-Vu-ikZ" secondAttribute="top" constant="5" id="lqG-mK-DHX"/>
+                                    <constraint firstItem="3O2-tI-zJ9" firstAttribute="leading" secondItem="zCD-LF-uvI" secondAttribute="trailing" priority="750" constant="8" id="neU-d5-vgm"/>
                                     <constraint firstAttribute="trailing" secondItem="Yk0-Fc-alW" secondAttribute="trailing" priority="750" constant="15" id="rmS-DX-dhc"/>
                                     <constraint firstAttribute="bottom" secondItem="c6z-FM-QjU" secondAttribute="bottom" id="tVi-4k-wae"/>
                                     <constraint firstAttribute="trailing" secondItem="3O2-tI-zJ9" secondAttribute="trailing" constant="15" id="wjg-Xf-P39"/>
