@@ -78,6 +78,7 @@ public enum NextGenAnalyticsAction: String {
     // Player
     case playButton = "play_button"
     case pauseButton = "pause_button"
+    case seekSlider = "seek_slider"
     case remotePlayButton = "remote_play_button"
     case remotePauseButton = "remote_pause_button"
     case remoteTogglePlayPauseButton = "remote_toggle_play_pause_button"

@@ -2,7 +2,6 @@
 //  CastManager.swift
 //
 
-import UIKit
 import GoogleCast
 
 @objc class CastManager: NSObject {

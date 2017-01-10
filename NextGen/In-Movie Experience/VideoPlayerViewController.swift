@@ -98,7 +98,7 @@ class VideoPlayerViewController: UIViewController {
     private var originalContainerView: UIView?
     
     // State
-    private var didPlayInterstitial = false
+    var didPlayInterstitial = false
     private var isManuallyPaused = false
     private var isSeeking = false
     private var lastNotifiedTime = -1.0
@@ -392,9 +392,14 @@ class VideoPlayerViewController: UIViewController {
     fileprivate var pictureInPictureController: AVPictureInPictureController?
     
     // AirPlay & Casting
-    private var isAirPlayActive = false {
-        didSet {
-            isExternalPlaybackActive = isAirPlayActive
+    private var isAirPlayActive: Bool {
+        get {
+            return ExternalPlaybackManager.isAirPlayActive
+        }
+        
+        set {
+            isExternalPlaybackActive = newValue
+            ExternalPlaybackManager.isAirPlayActive = newValue
             airPlayButton?.tintColor = (isAirPlayActive ? UIColor.themePrimary : UIColor.white)
             
             if isAirPlayActive {
@@ -403,9 +408,14 @@ class VideoPlayerViewController: UIViewController {
         }
     }
     
-    fileprivate var isCastingActive = false {
-        didSet {
-            isExternalPlaybackActive = isCastingActive
+    fileprivate var isCastingActive: Bool {
+        get {
+            return ExternalPlaybackManager.isChromecastActive
+        }
+        
+        set {
+            isExternalPlaybackActive = newValue
+            ExternalPlaybackManager.isChromecastActive = newValue
             
             if isCastingActive {
                 logEvent(action: .chromecastOn)
@@ -413,9 +423,15 @@ class VideoPlayerViewController: UIViewController {
         }
     }
     
-    fileprivate var isExternalPlaybackActive = false {
-        didSet {
-            if isExternalPlaybackActive != oldValue && mode != .basicPlayer {
+    fileprivate var isExternalPlaybackActive: Bool {
+        get {
+            return ExternalPlaybackManager.isExternalPlaybackActive
+        }
+        
+        set {
+            if isExternalPlaybackActive != newValue && mode != .basicPlayer {
+                ExternalPlaybackManager.isExternalPlaybackActive = newValue
+                
                 if isExternalPlaybackActive {
                     cropToActivePictureButton?.isEnabled = false
                     
@@ -472,7 +488,7 @@ class VideoPlayerViewController: UIViewController {
         }
     }
     
-    fileprivate var playerItemDuration: Double = 0 {
+    var playerItemDuration: Double = 0 {
         didSet {
             let duration = (playerItemDuration.isFinite ? playerItemDuration : 0)
             durationLabel?.text = timeString(fromSeconds: duration)
@@ -1480,6 +1496,8 @@ class VideoPlayerViewController: UIViewController {
             player?.rate = previousScrubbingRate
             previousScrubbingRate = 0
         }
+        
+        logEvent(action: .seekSlider)
     }
     
     // MARK: Controls
