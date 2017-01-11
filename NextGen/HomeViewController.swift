@@ -30,6 +30,7 @@ class HomeViewController: UIViewController {
     private var titleImageView: UIImageView?
     private var homeScreenViews = [UIView]()
     private var interfaceCreated = false
+    private var onTapHomeViewGestureRecognizer: UITapGestureRecognizer?
     
     private var shouldLaunchExtrasObserver: NSObjectProtocol?
     
@@ -132,6 +133,8 @@ class HomeViewController: UIViewController {
         if !interfaceCreated {
             homeScreenViews.removeAll()
             
+            backgroundImageView.isUserInteractionEnabled = false
+            
             exitButton.setTitle(String.localize("label.exit"), for: UIControlState())
             exitButton.titleLabel?.layer.shadowColor = UIColor.black.cgColor
             exitButton.titleLabel?.layer.shadowOpacity = 0.75
@@ -140,6 +143,9 @@ class HomeViewController: UIViewController {
             exitButton.titleLabel?.layer.masksToBounds = false
             exitButton.titleLabel?.layer.shouldRasterize = true
             homeScreenViews.append(exitButton)
+            
+            onTapHomeViewGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(onTapHomeView))
+            self.view.addGestureRecognizer(onTapHomeViewGestureRecognizer!)
             
             buttonOverlayView = UIView()
             buttonOverlayView.isHidden = true
@@ -447,24 +453,47 @@ class HomeViewController: UIViewController {
     }
     
     // MARK: Helpers
-    private func showHomeScreenViews(animated: Bool) {
+    private func showHomeScreenViews(animated: Bool, exitButtonOnly: Bool = false) {
+        if exitButtonOnly, let exitButtonIndex = homeScreenViews.index(of: exitButton) {
+            homeScreenViews.remove(at: exitButtonIndex)
+        }
+        
         if animated {
-            homeScreenViews.forEach {
-                $0.alpha = 0
-                $0.isHidden = false
+            if exitButtonOnly {
+                exitButton.alpha = 0
+                exitButton.isHidden = false
+            } else {
+                homeScreenViews.forEach {
+                    $0.alpha = 0
+                    $0.isHidden = false
+                }
             }
             
             UIView.animate(withDuration: Constants.OverlayFadeInDuration, animations: {
-                self.homeScreenViews.forEach { $0.alpha = 1 }
+                if exitButtonOnly {
+                    self.exitButton.alpha = 1
+                } else {
+                    self.homeScreenViews.forEach { $0.alpha = 1 }
+                }
             }, completion: { (_) in
-                self.homeScreenViews.removeAll()
+                if !exitButtonOnly {
+                    self.homeScreenViews.removeAll()
+                }
             })
         } else {
-            homeScreenViews.forEach { $0.isHidden = false }
-            homeScreenViews.removeAll()
+            if exitButtonOnly {
+                exitButton.isHidden = false
+            } else {
+                homeScreenViews.forEach { $0.isHidden = false }
+                homeScreenViews.removeAll()
+            }
         }
         
         backgroundVideoPlayerViewController?.activityIndicatorDisabled = true
+        if let tapGestureRecognizer = onTapHomeViewGestureRecognizer {
+            self.view.removeGestureRecognizer(tapGestureRecognizer)
+            onTapHomeViewGestureRecognizer = nil
+        }
     }
     
     private func seekBackgroundVideoToLoopTimecode() {
@@ -508,6 +537,7 @@ class HomeViewController: UIViewController {
                 })
             }
             
+            videoPlayerViewController.view.isUserInteractionEnabled = false
             videoPlayerViewController.shouldMute = interfaceCreated
             videoPlayerViewController.shouldTrackOutput = true
             videoPlayerViewController.play(url: backgroundVideoURL, fromStartTime: backgroundVideoLastTimecode)
@@ -558,6 +588,10 @@ class HomeViewController: UIViewController {
     }
     
     // MARK: Actions
+    func onTapHomeView() {
+        showHomeScreenViews(animated: true, exitButtonOnly: true)
+    }
+    
     func onPlay() {
         self.performSegue(withIdentifier: SegueIdentifier.ShowInMovieExperience, sender: nil)
         NextGenHook.logAnalyticsEvent(.homeAction, action: .launchInMovie)
