@@ -92,6 +92,7 @@ class VideoPlayerViewController: UIViewController {
     var shouldMute = false
     var shouldTrackOutput = false
     
+    fileprivate var playbackAsset: NextGenPlaybackAsset?
     private var player: AVPlayer?
     fileprivate var playerItem: AVPlayerItem?
     private var playerItemVideoOutput: AVPlayerItemVideoOutput?
@@ -102,15 +103,6 @@ class VideoPlayerViewController: UIViewController {
     private var isManuallyPaused = false
     private var isSeeking = false
     private var lastNotifiedTime = -1.0
-    var isMuted: Bool {
-        get {
-            return player?.isMuted ?? true
-        }
-        
-        set {
-            player?.isMuted = newValue
-        }
-    }
     
     private var VideoPlayerStatusObservationContext = 0
     private var VideoPlayerDurationObservationContext = 1
@@ -126,6 +118,7 @@ class VideoPlayerViewController: UIViewController {
                 switch state {
                 case .unknown:
                     removePlayerTimeObserver()
+                    removeAutoHideTimer()
                     syncScrubber()
                     break
                     
@@ -195,7 +188,7 @@ class VideoPlayerViewController: UIViewController {
         return (
             previousScrubbingRate != 0 ||
             (player != nil && player!.rate != 0) ||
-            CastManager.sharedInstance.isPlaying
+            (isCastingActive && CastManager.sharedInstance.isPlaying)
         )
     }
     
@@ -232,6 +225,7 @@ class VideoPlayerViewController: UIViewController {
     @IBOutlet weak fileprivate var commentaryButton: UIButton?
     @IBOutlet weak fileprivate var captionsButton: UIButton?
     @IBOutlet weak private var airPlayButton: MPVolumeView?
+    @IBOutlet weak private var castButton: GCKUICastButton?
     @IBOutlet weak private var playbackToolbar: UIView?
     @IBOutlet weak private var homeButton: UIButton?
     @IBOutlet weak private var scrubber: UISlider?
@@ -258,7 +252,7 @@ class VideoPlayerViewController: UIViewController {
             playButton?.isEnabled = playerControlsEnabled
             pauseButton?.isEnabled = playerControlsEnabled
             commentaryButton?.isEnabled = playerControlsEnabled
-            captionsButton?.isEnabled = playerControlsEnabled && (captionsSelectionGroup != nil)
+            captionsButton?.isEnabled = playerControlsEnabled && (captionsSelectionGroup != nil || ((playbackAsset?.assetTextTracks?.count ?? 0) > 0))
             cropToActivePictureButton?.isEnabled = playerControlsEnabled && !isExternalPlaybackActive
             pictureInPictureButton?.isEnabled = (pictureInPictureController == nil || !pictureInPictureController!.isPictureInPictureActive) && playerControlsEnabled
             fullScreenButton?.isEnabled = playerControlsEnabled
@@ -357,7 +351,27 @@ class VideoPlayerViewController: UIViewController {
     }
     
     fileprivate var captionsSelectionGroup: AVMediaSelectionGroup?
-    fileprivate var currentCaptionsSelectionOption: AVMediaSelectionOption?
+    fileprivate var currentCaptionsSelectionIndex = 0 {
+        didSet {
+            let captionsEnabled = (currentCaptionsSelectionIndex > 0)
+            if let group = captionsSelectionGroup {
+                if captionsEnabled && group.options.count > (currentCaptionsSelectionIndex - 1) {
+                    playerItem?.select(group.options[currentCaptionsSelectionIndex - 1], in: group)
+                } else {
+                    playerItem?.select(nil, in: group)
+                }
+            } else if isCastingActive, let textTracks = playbackAsset?.assetTextTracks {
+                if captionsEnabled && textTracks.count > (currentCaptionsSelectionIndex - 1) {
+                    CastManager.sharedInstance.selectTextTrack(withLanguageCode: textTracks[currentCaptionsSelectionIndex - 1].textTrackLanguageCode)
+                } else {
+                    CastManager.sharedInstance.disableTextTracks()
+                }
+            }
+            
+            captionsButton?.isSelected = captionsEnabled
+            captionsOptionsTableView?.selectRow(at: IndexPath(row: currentCaptionsSelectionIndex, section: 0), animated: false, scrollPosition: .none)
+        }
+    }
     
     // Audio (Commentary)
     @IBOutlet fileprivate var audioOptionsTableView: UITableView?
@@ -400,8 +414,9 @@ class VideoPlayerViewController: UIViewController {
         set {
             isExternalPlaybackActive = newValue
             ExternalPlaybackManager.isAirPlayActive = newValue
-            airPlayButton?.tintColor = (isAirPlayActive ? UIColor.themePrimary : UIColor.white)
             
+            airPlayButton?.tintColor = (isAirPlayActive ? UIColor.themePrimary : UIColor.white)
+            castButton?.isEnabled = !isAirPlayActive
             if isAirPlayActive {
                 logEvent(action: .airPlayOn)
             }
@@ -417,6 +432,7 @@ class VideoPlayerViewController: UIViewController {
             isExternalPlaybackActive = newValue
             ExternalPlaybackManager.isChromecastActive = newValue
             
+            castButton?.tintColor = (isCastingActive ? UIColor.themePrimary : UIColor.white)
             if isCastingActive {
                 logEvent(action: .chromecastOn)
             }
@@ -445,9 +461,7 @@ class VideoPlayerViewController: UIViewController {
                     })
                     
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
-                        if let group = self.captionsSelectionGroup {
-                            self.playerItem?.select(self.currentCaptionsSelectionOption, in: group)
-                        }
+                        self.currentCaptionsSelectionIndex = self.currentCaptionsSelectionIndex
                     }
                 } else {
                     cropToActivePictureButton?.isEnabled = playerControlsEnabled
@@ -564,6 +578,7 @@ class VideoPlayerViewController: UIViewController {
             videoPlayerShouldPauseObserver = nil
         }
         
+        CastManager.sharedInstance.remove(sessionManagerListener: self)
         pictureInPictureController?.stopPictureInPicture()
         playerItem?.removeObserver(self, forKeyPath: Constants.Keys.Status)
         playerItem?.removeObserver(self, forKeyPath: Constants.Keys.Duration)
@@ -573,6 +588,7 @@ class VideoPlayerViewController: UIViewController {
         player?.removeObserver(self, forKeyPath: Constants.Keys.Rate)
         player?.removeObserver(self, forKeyPath: Constants.Keys.ExternalPlaybackActive)
         removePlayerTimeObserver()
+        removeAutoHideTimer()
         cancelCountdown()
         UIApplication.shared.endReceivingRemoteControlEvents()
     }
@@ -677,6 +693,7 @@ class VideoPlayerViewController: UIViewController {
         }
         
         CastManager.sharedInstance.add(remoteMediaClientListener: self)
+        CastManager.sharedInstance.add(sessionManagerListener: self)
         
         if mode == .basicPlayer {
             topToolbar?.removeFromSuperview()
@@ -917,6 +934,7 @@ class VideoPlayerViewController: UIViewController {
     private func assetFailedToPrepareForPlayback(error: NSError?) {
         state = .error
         removePlayerTimeObserver()
+        removeAutoHideTimer()
         syncScrubber()
         playerControlsEnabled = false
         
@@ -976,21 +994,8 @@ class VideoPlayerViewController: UIViewController {
         // Set up the captions options
         if let group = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicLegible), group.options.first(where: { $0.locale != nil }) != nil {
             captionsSelectionGroup = group
-            captionsButton?.isSelected = false
-            captionsOptionsTableView?.reloadData()
-            
-            var selectedIndex = 0
-            if UIAccessibilityIsClosedCaptioningEnabled(), let index = group.options.index(where: { $0.locale == Locale.current }) ?? group.options.index(where: { $0.locale!.languageCode == Locale.current.languageCode }) {
-                selectedIndex = index + 1
-            }
-            
-            if selectedIndex > 0 {
-                currentCaptionsSelectionOption = group.options[selectedIndex - 1]
-                playerItem!.select(currentCaptionsSelectionOption, in: group)
-                captionsButton?.isSelected = true
-            }
-            
-            captionsOptionsTableView?.selectRow(at: IndexPath(row: selectedIndex, section: 0), animated: false, scrollPosition: .none)
+            captionsButton?.isEnabled = true
+            selectInitialCaptions()
         } else {
             captionsButton?.isEnabled = false
         }
@@ -1053,6 +1058,21 @@ class VideoPlayerViewController: UIViewController {
         player?.replaceCurrentItem(with: nil)
     }
     
+    private func selectInitialCaptions() {
+        captionsOptionsTableView?.reloadData()
+        
+        var selectedIndex = 0
+        if UIAccessibilityIsClosedCaptioningEnabled() {
+            if let index = captionsSelectionGroup?.options.index(where: { $0.locale == Locale.current }) ?? captionsSelectionGroup?.options.index(where: { $0.locale!.languageCode == Locale.current.languageCode }) {
+                selectedIndex = index + 1
+            } else if isCastingActive, let index = playbackAsset?.assetTextTracks?.index(where: { Locale(identifier: $0.textTrackLanguageCode) == Locale.current })  {
+                selectedIndex = index + 1
+            }
+        }
+        
+        currentCaptionsSelectionIndex = selectedIndex
+    }
+    
     private func playVideo() {
         isManuallyPaused = false
         
@@ -1089,34 +1109,44 @@ class VideoPlayerViewController: UIViewController {
         showPlayButton()
     }
     
-    func play(playbackAsset: PlaybackAsset) {
-        NextGenHook.delegate?.updatePlaybackAsset(playbackAsset, mode: mode, isInterstitial: !didPlayInterstitial, completion: { [weak self] (playbackAsset) in
+    func playAsset(withURL url: URL, title: String? = nil, imageURL: URL? = nil, fromStartTime startTime: Double? = nil) {
+        NextGenHook.delegate?.playbackAsset(withURL: url, title: title, imageURL: imageURL, forMode: mode, isInterstitial: !didPlayInterstitial, completion: { [weak self] (playbackAsset) in
+            self?.playbackAsset = playbackAsset
+            
             self?.cancelCountdown()
-            SettingsManager.setVideoAsWatched(playbackAsset.url)
-            self?.playbackSyncStartTime = playbackAsset.startTime
+            SettingsManager.setVideoAsWatched(playbackAsset.assetURL)
+            self?.playbackSyncStartTime = startTime ?? playbackAsset.assetPlaybackPosition
             self?.hasSeekedToPlaybackSyncStartTime = false
             
             var nowPlayingInfo = [String: Any]()
-            if let title = playbackAsset.title {
+            if let title = playbackAsset.assetTitle {
                 nowPlayingInfo[MPMediaItemPropertyTitle] = title
             }
             
             if #available(iOS 10.0, *) {
-                nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: playbackAsset.imageSize, requestHandler: { (_) -> UIImage in
-                    return playbackAsset.image
+                nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 768, height: 768), requestHandler: { (_) -> UIImage in
+                    return playbackAsset.assetImage
                 })
             }
             
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
             
-            if let imageUrl = playbackAsset.imageUrl {
-                self?.playbackOverlayImageView.sd_setImage(with: imageUrl)
+            if let imageURL = playbackAsset.assetImageURL {
+                self?.playbackOverlayImageView.sd_setImage(with: imageURL)
             }
             
-            if playbackAsset.isCastAsset {
+            if playbackAsset.assetIsCastable {
                 self?.isCastingActive = true
-                CastManager.sharedInstance.load(playbackAsset.castMediaInfo)
-            } else if let urlAsset = playbackAsset.urlAsset {
+                CastManager.sharedInstance.load(playbackAsset: playbackAsset)
+                
+                if let textTracks = playbackAsset.assetTextTracks, textTracks.count > 0 {
+                    self?.captionsButton?.isEnabled = true
+                    self?.selectInitialCaptions()
+                } else {
+                    self?.captionsButton?.isEnabled = false
+                }
+            } else {
+                let urlAsset = playbackAsset.assetURLAsset ?? AVURLAsset(url: playbackAsset.assetURL)
                 let requestedKeys = [Constants.Keys.Tracks, Constants.Keys.Playable]
                 /* Tells the asset to load the values of any of the specified keys that are not already loaded. */
                 urlAsset.loadValuesAsynchronously(forKeys: requestedKeys) { [weak self] in
@@ -1129,14 +1159,8 @@ class VideoPlayerViewController: UIViewController {
         })
     }
     
-    func play(url: URL, fromStartTime startTime: Double = 0) {
-        let playbackAsset = PlaybackAsset(url: url)
-        playbackAsset.startTime = startTime
-        play(playbackAsset: playbackAsset)
-    }
-    
     // MARK: Main Feature
-    private func playMainExperience() {
+    fileprivate func playMainExperience() {
         // Initial state of controls
         playerControlsVisible = false
         countdownProgressView?.removeFromSuperview()
@@ -1144,7 +1168,7 @@ class VideoPlayerViewController: UIViewController {
         
         if !didPlayInterstitial {
             if let videoURL = NGDMManifest.sharedInstance.mainExperience?.interstitialVideoURL {
-                play(url: videoURL)
+                playAsset(withURL: videoURL)
                 
                 playerControlsLocked = true
                 skipContainerView.isHidden = !SettingsManager.didWatchInterstitial
@@ -1161,7 +1185,7 @@ class VideoPlayerViewController: UIViewController {
         if let mainExperience = NGDMManifest.sharedInstance.mainExperience, let videoURL = mainExperience.videoURL {
             NotificationCenter.default.post(name: .videoPlayerDidPlayMainExperience, object: nil)
             UIApplication.shared.beginReceivingRemoteControlEvents()
-            play(url: videoURL)
+            playAsset(withURL: videoURL)
         }
     }
     
@@ -1204,6 +1228,8 @@ class VideoPlayerViewController: UIViewController {
                 playerItem.add(AVPlayerItemVideoOutput())
             }
         }
+        
+        playbackAsset?.assetPlaybackPosition = currentTime
         
         // Sync playback time with control center
         MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPNowPlayingInfoPropertyElapsedPlaybackTime] = NSNumber(value: currentTime)
@@ -1259,8 +1285,7 @@ class VideoPlayerViewController: UIViewController {
             
             if mode == .mainFeature {
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1.5 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
-                    NextGenHook.delegate?.videoPlayerWillClose(self.mode, playbackPosition: 0)
-                    self.dismiss(animated: true, completion: {
+                    self.dismissPlayer(completion: {
                         NotificationCenter.default.post(name: .outOfMovieExperienceShouldLaunch, object: nil)
                     })
                 }
@@ -1342,6 +1367,13 @@ class VideoPlayerViewController: UIViewController {
         }
     }
     
+    private func dismissPlayer(completion: (() -> Void)? = nil) {
+        if let playbackAsset = playbackAsset {
+            NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
+            self.dismiss(animated: true, completion: completion)
+        }
+    }
+    
     // MARK: Actions
     @objc private func onSingleTapPlayer() {
         if !playerControlsLocked {
@@ -1390,13 +1422,6 @@ class VideoPlayerViewController: UIViewController {
     }
     
     @IBAction private func onDone() {
-        let dismissPlayer = { [weak self] in
-            if let strongSelf = self {
-                NextGenHook.delegate?.videoPlayerWillClose(strongSelf.mode, playbackPosition: strongSelf.currentTime)
-                strongSelf.dismiss(animated: true, completion: nil)
-            }
-        }
-        
         pauseVideo()
         
         if let pictureInPictureController = pictureInPictureController, pictureInPictureController.isPictureInPictureActive {
@@ -1407,8 +1432,8 @@ class VideoPlayerViewController: UIViewController {
                 }
             }))
             
-            alertController.addAction(UIAlertAction(title: String.localize("label.continue"), style: .default, handler: { (_) in
-                dismissPlayer()
+            alertController.addAction(UIAlertAction(title: String.localize("label.continue"), style: .default, handler: { [weak self] (_) in
+                self?.dismissPlayer()
             }))
             
             self.present(alertController, animated: true, completion: nil)
@@ -1468,6 +1493,7 @@ class VideoPlayerViewController: UIViewController {
         
         // Remove previous timer
         removePlayerTimeObserver()
+        removeAutoHideTimer()
     }
     
     /* Set the player current time to match the scrubber position. */
@@ -1554,6 +1580,8 @@ class VideoPlayerViewController: UIViewController {
     }
     
     private func initScrubberTimer() {
+        removePlayerTimeObserver()
+        
         /* Requests invocation of a given block during media playback to update the movie scrubber control. */
         if playerItemDuration > 0 {
             /* Update the scrubber during normal playback. */
@@ -1577,7 +1605,6 @@ class VideoPlayerViewController: UIViewController {
         }
         
         playerTimeObserver = nil
-        removeAutoHideTimer()
     }
     
     /* Cancels the previous ly registered controls auto-hide timer */
@@ -1601,8 +1628,12 @@ extension VideoPlayerViewController: UITableViewDataSource {
             return 2
         }
         
-        if tableView == captionsOptionsTableView, let options = captionsSelectionGroup?.options {
-            return options.count + 1
+        if tableView == captionsOptionsTableView {
+            if let options = captionsSelectionGroup?.options {
+                return options.count + 1
+            } else if let textTracks = playbackAsset?.assetTextTracks {
+                return textTracks.count + 1
+            }
         }
         
         return 0
@@ -1613,15 +1644,19 @@ extension VideoPlayerViewController: UITableViewDataSource {
         
         if tableView == audioOptionsTableView, let option = commentaryAudioSelectionOption {
             cell.title = (indexPath.row == 0 ? String.localize("label.off") : option.displayName)
-        } else if tableView == captionsOptionsTableView, let options = captionsSelectionGroup?.options {
+        } else if tableView == captionsOptionsTableView {
             if indexPath.row == 0 {
                 cell.title = String.localize("label.off")
-                cell.isSelected = (currentCaptionsSelectionOption == nil)
-            } else if options.count > (indexPath.row - 1) {
-                let option = options[indexPath.row - 1]
-                cell.title = option.displayName
-                cell.isSelected = (option == currentCaptionsSelectionOption)
+            } else {
+                if let options = captionsSelectionGroup?.options, options.count > (indexPath.row - 1) {
+                    cell.title = options[indexPath.row - 1].displayName
+                } else if let textTracks = playbackAsset?.assetTextTracks, textTracks.count > (indexPath.row - 1) {
+                    let textTrack = textTracks[indexPath.row - 1]
+                    cell.title = textTrack.textTrackTitle ?? (Locale(identifier: textTrack.textTrackLanguageCode) as NSLocale).displayName(forKey: .identifier, value: textTrack.textTrackLanguageCode)
+                }
             }
+            
+            cell.isSelected = (currentCaptionsSelectionIndex == indexPath.row)
         }
         
         return cell
@@ -1644,17 +1679,8 @@ extension VideoPlayerViewController: UITableViewDelegate {
                 commentaryButton?.isSelected = false
                 logEvent(action: .commentaryOff)
             }
-        } else if tableView == captionsOptionsTableView, let group = captionsSelectionGroup {
-            if indexPath.row > 0 && group.options.count > (indexPath.row - 1) {
-                currentCaptionsSelectionOption = group.options[indexPath.row - 1]
-                logEvent(action: .captionsOn, itemName: currentCaptionsSelectionOption?.displayName)
-            } else {
-                currentCaptionsSelectionOption = nil
-                logEvent(action: .captionsOff)
-            }
-            
-            playerItem?.select(currentCaptionsSelectionOption, in: group)
-            captionsButton?.isSelected = (currentCaptionsSelectionOption != nil)
+        } else if tableView == captionsOptionsTableView {
+            currentCaptionsSelectionIndex = indexPath.row
         }
     }
     
@@ -1674,42 +1700,63 @@ extension VideoPlayerViewController: AVPictureInPictureControllerDelegate {
     
 }
 
+extension VideoPlayerViewController: GCKSessionManagerListener {
+    
+    func sessionManager(_ sessionManager: GCKSessionManager, didStart session: GCKSession) {
+        isCastingActive = true
+        
+        if let playbackAsset = playbackAsset {
+            NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
+        }
+        
+        removeCurrentItem()
+        playMainExperience()
+    }
+    
+    func sessionManager(_ sessionManager: GCKSessionManager, didResumeCastSession session: GCKCastSession) {
+        isCastingActive = true
+    }
+    
+    func sessionManager(_ sessionManager: GCKSessionManager, didEnd session: GCKCastSession, withError error: Error?) {
+        isCastingActive = false
+        
+        if let playbackAsset = playbackAsset {
+            NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
+        }
+        
+        playMainExperience()
+    }
+    
+}
+
 extension VideoPlayerViewController: GCKRemoteMediaClientListener {
     
-    func remoteMediaClient(_ client: GCKRemoteMediaClient, didStartMediaSessionWithID sessionID: Int) {
-        print("Remote media client started with ID: \(sessionID)")
-    }
-    
-    func remoteMediaClientDidUpdatePreloadStatus(_ client: GCKRemoteMediaClient) {
-        print("Remote media client updated preload status")
-    }
-    
     func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus) {
-        print("Remote media client updated media status")
-        
-        if let duration = mediaStatus.mediaInformation?.streamDuration {
-            playerItemDuration = duration
+        if didPlayInterstitial {
+            if let duration = mediaStatus.mediaInformation?.streamDuration {
+                playerItemDuration = duration
+            }
+            
+            switch mediaStatus.playerState {
+            case .unknown, .idle:
+                state = .unknown
+                break
+                
+            case .playing:
+                state = .videoPlaying
+                break
+                
+            case .paused:
+                state = .videoPaused
+                break
+                
+            case .buffering, .loading:
+                state = .videoLoading
+                break
+            }
+            
+            syncPlayPauseButtons()
         }
-        
-        switch mediaStatus.playerState {
-        case .unknown, .idle:
-            state = .unknown
-            break
-            
-        case .playing:
-            state = .videoPlaying
-            break
-            
-        case .paused:
-            state = .videoPaused
-            break
-            
-        case .buffering, .loading:
-            state = .videoLoading
-            break
-        }
-        
-        syncPlayPauseButtons()
     }
     
 }

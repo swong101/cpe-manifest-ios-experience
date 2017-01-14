@@ -216,9 +216,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
     }
     
     private func playVideo(fromExperience experience: NGDMExperience) {
-        if let videoUrl = experience.videoURL {
-            let playbackAsset = PlaybackAsset(url: videoUrl, title: experience.title, imageUrl: experience.imageURL)
-            
+        if let videoURL = experience.videoURL {
             let shouldAnimateOpen = locationDetailView.isHidden
             closeDetailView(animated: false)
             
@@ -243,11 +241,11 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
                     UIView.animate(withDuration: 0.25, animations: {
                         self.locationDetailView.alpha = 1
                     }, completion: { (_) in
-                        self.videoPlayerViewController?.play(playbackAsset: playbackAsset)
+                        self.videoPlayerViewController?.playAsset(withURL: videoURL, title: experience.title, imageURL: experience.imageURL)
                     })
                 } else {
                     locationDetailView.alpha = 1
-                    self.videoPlayerViewController?.play(playbackAsset: playbackAsset)
+                    self.videoPlayerViewController?.playAsset(withURL: videoURL, title: experience.title, imageURL: experience.imageURL)
                 }
             }
         }

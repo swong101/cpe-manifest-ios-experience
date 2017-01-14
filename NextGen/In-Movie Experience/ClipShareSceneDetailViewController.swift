@@ -78,7 +78,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
             self.addChildViewController(videoPlayerViewController)
             videoPlayerViewController.didMove(toParentViewController: self)
             
-            videoPlayerViewController.play(url: videoURL)
+            videoPlayerViewController.playAsset(withURL: videoURL)
             self.videoPlayerViewController = videoPlayerViewController
             
             NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectVideo, itemId: timedEvent?.id)

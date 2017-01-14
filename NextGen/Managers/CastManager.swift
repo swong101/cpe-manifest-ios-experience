@@ -42,12 +42,56 @@ import GoogleCast
         GCKLogger.sharedInstance().delegate = self
     }
     
-    func load(_ media: GCKMediaInformation) {
+    func load(media: GCKMediaInformation) {
         currentSession?.remoteMediaClient?.loadMedia(media)
+    }
+    
+    func load(playbackAsset: NextGenPlaybackAsset) {
+        let metadata = GCKMediaMetadata(metadataType: .movie)
+        metadata.setString(playbackAsset.assetTitle ?? "", forKey: kGCKMetadataKeyTitle)
+        if let imageURL = playbackAsset.assetImageURL {
+            metadata.addImage(GCKImage(url: imageURL, width: 0, height: 0))
+        }
+        
+        var mediaTracks: [GCKMediaTrack]?
+        if let textTracks = playbackAsset.assetTextTracks {
+            mediaTracks = [GCKMediaTrack]()
+            for (identifier, textTrack) in textTracks.enumerated() {
+                mediaTracks!.append(GCKMediaTrack(
+                    identifier: identifier,
+                    contentIdentifier: textTrack.textTrackURL.absoluteString,
+                    contentType: textTrack.textTrackFormat.contentType,
+                    type: .text,
+                    textSubtype: textTrack.textTrackType.gckMediaTextTrackSubtype,
+                    name: (textTrack.textTrackTitle ?? (Locale(identifier: textTrack.textTrackLanguageCode) as NSLocale).displayName(forKey: .identifier, value: textTrack.textTrackLanguageCode)),
+                    languageCode: textTrack.textTrackLanguageCode,
+                    customData: (textTrack.textTrackCastCustomData ?? nil)
+                ))
+            }
+        }
+ 
+        load(media:GCKMediaInformation(
+            contentID: playbackAsset.assetURL.absoluteString,
+            streamType: .buffered,
+            contentType: "application/x-mpegurl",
+            metadata: metadata,
+            streamDuration: 0,
+            mediaTracks: mediaTracks,
+            textTrackStyle: nil,
+            customData: (playbackAsset.assetCastCustomData ?? nil)
+        ))
     }
     
     func add(remoteMediaClientListener listener: GCKRemoteMediaClientListener) {
         currentSession?.remoteMediaClient?.add(listener)
+    }
+    
+    func add(sessionManagerListener listener: GCKSessionManagerListener) {
+        GCKCastContext.sharedInstance().sessionManager.add(listener)
+    }
+    
+    func remove(sessionManagerListener listener: GCKSessionManagerListener) {
+        GCKCastContext.sharedInstance().sessionManager.remove(listener)
     }
     
     func playMedia() {
@@ -59,7 +103,17 @@ import GoogleCast
     }
     
     func seekMedia(to time: Double) {
-        currentSession?.remoteMediaClient?.seek(toTimeInterval: time, resumeState: .unchanged)
+        currentSession?.remoteMediaClient?.seek(toTimeInterval: time, resumeState: .play)
+    }
+    
+    func selectTextTrack(withLanguageCode languageCode: String) {
+        if let mediaID = currentMediaStatus?.mediaInformation?.mediaTracks?.first(where: { $0.languageCode != nil && $0.languageCode! == languageCode })?.identifier {
+            currentSession?.remoteMediaClient?.setActiveTrackIDs([NSNumber(value: mediaID)])
+        }
+    }
+    
+    func disableTextTracks() {
+        currentSession?.remoteMediaClient?.setActiveTrackIDs(nil)
     }
     
 }
@@ -68,30 +122,22 @@ extension CastManager: GCKSessionManagerListener {
     
     func sessionManager(_ sessionManager: GCKSessionManager, didStart session: GCKCastSession) {
         print("Cast session started")
+        ExternalPlaybackManager.isChromecastActive = true
     }
     
     func sessionManager(_ sessionManager: GCKSessionManager, didResumeCastSession session: GCKCastSession) {
         print("Cast session resumed")
+        ExternalPlaybackManager.isChromecastActive = true
     }
     
     func sessionManager(_ sessionManager: GCKSessionManager, didEnd session: GCKCastSession, withError error: Error?) {
         print("Cast session ended with error: \(error)")
+        ExternalPlaybackManager.isChromecastActive = false
     }
     
     func sessionManager(_ sessionManager: GCKSessionManager, didFailToStart session: GCKCastSession, withError error: Error) {
         print("Cast session failed to start: \(error)")
-    }
-    
-}
-
-extension CastManager: GCKRemoteMediaClientListener {
-    
-    func remoteMediaClient(_ client: GCKRemoteMediaClient, didStartMediaSessionWithID sessionID: Int) {
-        print("Remote media client started with ID: \(sessionID)")
-    }
-    
-    func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus) {
-        print("Remote media client updated media status")
+        ExternalPlaybackManager.isChromecastActive = false
     }
     
 }

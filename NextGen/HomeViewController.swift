@@ -446,7 +446,7 @@ class HomeViewController: UIViewController {
         return super.preferredInterfaceOrientationForPresentation
     }
     
-    func didLongPressExtrasButton(_ sender: UILongPressGestureRecognizer) {
+    @objc private func didLongPressExtrasButton(_ sender: UILongPressGestureRecognizer) {
         if sender.state == .began {
             NextGenHook.delegate?.experienceWillEnterDebugMode()
         }
@@ -499,12 +499,12 @@ class HomeViewController: UIViewController {
     private func seekBackgroundVideoToLoopTimecode() {
         if let nodeStyle = nodeStyle, nodeStyle.backgroundVideoLoops, let videoPlayerViewController = backgroundVideoPlayerViewController {
             videoPlayerViewController.seekPlayer(to: nodeStyle.backgroundVideoLoopTimecode)
-            videoPlayerViewController.isMuted = true
+            videoPlayerViewController.shouldMute = true
         }
     }
     
     // MARK: Video Player
-    func loadBackground() {
+    private func loadBackground() {
         if let nodeStyle = nodeStyle, let backgroundVideoURL = backgroundVideo?.url, let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController {
             videoPlayerViewController.mode = .basicPlayer
             
@@ -540,7 +540,7 @@ class HomeViewController: UIViewController {
             videoPlayerViewController.view.isUserInteractionEnabled = false
             videoPlayerViewController.shouldMute = interfaceCreated
             videoPlayerViewController.shouldTrackOutput = true
-            videoPlayerViewController.play(url: backgroundVideoURL, fromStartTime: backgroundVideoLastTimecode)
+            videoPlayerViewController.playAsset(withURL: backgroundVideoURL, fromStartTime: backgroundVideoLastTimecode)
             backgroundVideoPlayerViewController = videoPlayerViewController
         } else {
             showHomeScreenViews(animated: false)
@@ -568,7 +568,7 @@ class HomeViewController: UIViewController {
         }
     }
     
-    func unloadBackground() {
+    private func unloadBackground() {
         if let observer = backgroundVideoTimeObserver {
             NotificationCenter.default.removeObserver(observer)
             backgroundVideoTimeObserver = nil
@@ -588,26 +588,26 @@ class HomeViewController: UIViewController {
     }
     
     // MARK: Actions
-    func onTapHomeView() {
+    @objc private func onTapHomeView() {
         showHomeScreenViews(animated: true, exitButtonOnly: true)
     }
     
-    func onPlay() {
+    @objc private func onPlay() {
         self.performSegue(withIdentifier: SegueIdentifier.ShowInMovieExperience, sender: nil)
         NextGenHook.logAnalyticsEvent(.homeAction, action: .launchInMovie)
     }
     
-    func onExtras() {
+    @objc private func onExtras() {
         self.performSegue(withIdentifier: SegueIdentifier.ShowOutOfMovieExperience, sender: NGDMManifest.sharedInstance.outOfMovieExperience)
         NextGenHook.logAnalyticsEvent(.homeAction, action: .launchExtras)
     }
     
-    func onBuy() {
+    @objc private func onBuy() {
         NextGenHook.delegate?.previewModeShouldLaunchBuy()
         NextGenHook.logAnalyticsEvent(.homeAction, action: .launchBuy)
     }
     
-    @IBAction func onExit() {
+    @IBAction private func onExit() {
         NextGenHook.logAnalyticsEvent(.homeAction, action: .exit)
         NextGenLauncher.sharedInstance?.closeExperience()
     }
