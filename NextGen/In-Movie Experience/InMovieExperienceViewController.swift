@@ -25,14 +25,16 @@ class InMovieExperienceViewController: UIViewController {
         return nil
     }
     
-    private var playbackPercentage: Double? {
+    private var playbackPercentage: Double {
         if let videoPlayerViewController = videoPlayerViewController {
             let currentTime = videoPlayerViewController.currentTime
             let duration = videoPlayerViewController.playerItemDuration
-            return ((currentTime / duration) * 100)
+            if duration > 0 {
+                return ((currentTime / duration) * 100)
+            }
         }
         
-        return nil
+        return 0
     }
     
     private var extrasContainerViewHidden: Bool = false {
@@ -78,10 +80,8 @@ class InMovieExperienceViewController: UIViewController {
             
             var timecodeLabel: String?
             if videoPlayerViewController.didPlayInterstitial {
-                if let playbackPercentage = playbackPercentage {
-                    let roundedPlaybackPercentage = (Int((playbackPercentage + 2.5) / 5) * 5)
-                    timecodeLabel = String(roundedPlaybackPercentage) + "%"
-                }
+                let roundedPlaybackPercentage = (Int((playbackPercentage + 2.5) / 5) * 5)
+                timecodeLabel = String(roundedPlaybackPercentage) + "%"
             } else {
                 timecodeLabel = "interstitial"
             }
