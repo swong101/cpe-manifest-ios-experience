@@ -565,10 +565,7 @@ class VideoPlayerViewController: UIViewController {
         }
         
         pictureInPictureController?.stopPictureInPicture()
-        playerItem?.removeObserver(self, forKeyPath: Constants.Keys.Status)
-        playerItem?.removeObserver(self, forKeyPath: Constants.Keys.Duration)
-        playerItem?.removeObserver(self, forKeyPath: Constants.Keys.PlaybackBufferEmpty)
-        playerItem?.removeObserver(self, forKeyPath: Constants.Keys.PlaybackLikelyToKeepUp)
+        removeCurrentItem()
         player?.removeObserver(self, forKeyPath: Constants.Keys.CurrentItem)
         player?.removeObserver(self, forKeyPath: Constants.Keys.Rate)
         player?.removeObserver(self, forKeyPath: Constants.Keys.ExternalPlaybackActive)
@@ -726,7 +723,12 @@ class VideoPlayerViewController: UIViewController {
             captionsOptionsTableView?.register(UINib(nibName: "DropdownTableViewCell", bundle: nil), forCellReuseIdentifier: DropdownTableViewCell.ReuseIdentifier)
             
             // Picture-in-Picture setup
-            if AVPictureInPictureController.isPictureInPictureSupported(), let playerLayer = playbackView.playerLayer {
+            var pictureInPictureSupported = false
+            if #available(iOS 10.0, *) {
+                pictureInPictureSupported = AVPictureInPictureController.isPictureInPictureSupported()
+            }
+            
+            if pictureInPictureSupported, let playerLayer = playbackView.playerLayer {
                 pictureInPictureController = AVPictureInPictureController(playerLayer: playerLayer)
                 pictureInPictureController?.delegate = self
             } else {
@@ -958,13 +960,7 @@ class VideoPlayerViewController: UIViewController {
         // At this point we're ready to set up for playback of the asset.
             
         // Stop observing our prior AVPlayerItem, if we have one.
-        if let playerItem = playerItem {
-            playerItem.removeObserver(self, forKeyPath: Constants.Keys.Status)
-            playerItem.removeObserver(self, forKeyPath: Constants.Keys.Duration)
-            playerItem.removeObserver(self, forKeyPath: Constants.Keys.PlaybackBufferEmpty)
-            playerItem.removeObserver(self, forKeyPath: Constants.Keys.PlaybackLikelyToKeepUp)
-            NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: playerItem)
-        }
+        removeCurrentItem(skipPlayerReplace: true)
         
         // Create a new instance of AVPlayerItem from the now successfully loaded AVAsset.
         playerItem = AVPlayerItem(asset: asset)
@@ -972,6 +968,10 @@ class VideoPlayerViewController: UIViewController {
         playerItem!.addObserver(self, forKeyPath: Constants.Keys.Duration, options: [.initial, .new], context: &VideoPlayerDurationObservationContext)
         playerItem!.addObserver(self, forKeyPath: Constants.Keys.PlaybackBufferEmpty, options: .new, context: &VideoPlayerBufferEmptyObservationContext)
         playerItem!.addObserver(self, forKeyPath: Constants.Keys.PlaybackLikelyToKeepUp, options: .new, context: &VideoPlayerPlaybackLikelyToKeepUpObservationContext)
+        
+        /* When the player item has played to its end time we'll toggle
+         the movie controller Pause button to be the Play button */
+        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
         
         // Set up the captions options
         if let group = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicLegible), group.options.first(where: { $0.locale != nil }) != nil {
@@ -1006,10 +1006,6 @@ class VideoPlayerViewController: UIViewController {
         } else {
             commentaryButton?.isHidden = true
         }
-        
-        /* When the player item has played to its end time we'll toggle
-         the movie controller Pause button to be the Play button */
-        NotificationCenter.default.addObserver(self, selector: #selector(playerItemDidReachEnd(_:)), name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
         
         /* Create new player, if we don't already have one. */
         if player == nil {
@@ -1049,8 +1045,19 @@ class VideoPlayerViewController: UIViewController {
         scrubber?.value = 0
     }
     
-    func removeCurrentItem() {
-        player?.replaceCurrentItem(with: nil)
+    func removeCurrentItem(skipPlayerReplace: Bool = false) {
+        if let playerItem = playerItem {
+            playerItem.removeObserver(self, forKeyPath: Constants.Keys.Status)
+            playerItem.removeObserver(self, forKeyPath: Constants.Keys.Duration)
+            playerItem.removeObserver(self, forKeyPath: Constants.Keys.PlaybackBufferEmpty)
+            playerItem.removeObserver(self, forKeyPath: Constants.Keys.PlaybackLikelyToKeepUp)
+            NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: playerItem)
+            self.playerItem = nil
+        }
+        
+        if !skipPlayerReplace {
+            player?.replaceCurrentItem(with: nil)
+        }
     }
     
     private func playVideo() {
