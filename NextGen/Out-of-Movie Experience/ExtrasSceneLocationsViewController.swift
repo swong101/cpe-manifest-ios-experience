@@ -6,9 +6,9 @@ import UIKit
 import MapKit
 import NextGenDataManager
 
-class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiMapViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UICollectionViewDataSource {
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let CollectionViewItemSpacing: CGFloat = (DeviceType.IS_IPAD ? 12 : 5)
         static let CollectionViewLineSpacing: CGFloat = (DeviceType.IS_IPAD ? 12 : 15)
         static let CollectionViewPadding: CGFloat = (DeviceType.IS_IPAD ? 15 : 10)
@@ -41,8 +41,8 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
     @IBOutlet private var containerBottomInnerConstraint: NSLayoutConstraint?
     
     private var locationExperiences = [NGDMExperience]()
-    private var markers = [String: MultiMapMarker]() // ExperienceID: MultiMapMarker
-    private var selectedExperience: NGDMExperience? {
+    fileprivate var markers = [String: MultiMapMarker]() // ExperienceID: MultiMapMarker
+    fileprivate var selectedExperience: NGDMExperience? {
         didSet {
             if let selectedExperience = selectedExperience {
                 if let marker = markers[selectedExperience.id] {
@@ -346,17 +346,6 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
         galleryScrollView.gotoPage(galleryPageControl.currentPage, animated: true)
     }
     
-    // MARK: MultiMapViewDelegate
-    func mapView(_ mapView: MultiMapView, didTapMarker marker: MultiMapMarker) {
-        for (experienceId, locationMarker) in markers {
-            if marker == locationMarker {
-                selectedExperience = NGDMExperience.getById(experienceId)
-                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectLocationMarker, itemId: experienceId)
-                return
-            }
-        }
-    }
-    
     // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if let selectedExperience = selectedExperience, selectedExperience.appDataMediaCount > 0 {
@@ -408,7 +397,24 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
         }
     }
     
-    // MARK: UICollectionViewDelegateFlowLayout
+}
+
+extension ExtrasSceneLocationsViewController: MultiMapViewDelegate {
+    
+    func mapView(_ mapView: MultiMapView, didTapMarker marker: MultiMapMarker) {
+        for (experienceId, locationMarker) in markers {
+            if marker == locationMarker {
+                selectedExperience = NGDMExperience.getById(experienceId)
+                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectLocationMarker, itemId: experienceId)
+                return
+            }
+        }
+    }
+    
+}
+
+extension ExtrasSceneLocationsViewController: UICollectionViewDelegateFlowLayout {
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if DeviceType.IS_IPAD {
             let itemHeight = collectionView.frame.height

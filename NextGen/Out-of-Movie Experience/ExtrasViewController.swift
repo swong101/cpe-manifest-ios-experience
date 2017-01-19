@@ -6,16 +6,16 @@
 import UIKit
 import NextGenDataManager
 
-class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource, TalentDetailViewPresenter {
+class ExtrasViewController: ExtrasExperienceViewController {
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let CollectionViewItemSpacing: CGFloat = (DeviceType.IS_IPAD ? 12 : 5)
         static let CollectionViewLineSpacing: CGFloat = (DeviceType.IS_IPAD ? 12 : 25)
         static let CollectionViewPadding: CGFloat = (DeviceType.IS_IPAD ? 15 : 10)
         static let CollectionViewItemAspectRatio: CGFloat = 318 / 224
     }
     
-    private struct SegueIdentifier {
+    fileprivate struct SegueIdentifier {
         static let ShowTalent = "ShowTalentSegueIdentifier"
         static let ShowGallery = "ExtrasGallerySegue"
         static let ShowList = "ExtrasListSegue"
@@ -24,14 +24,14 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
         static let ShowTalentSelector = "TalentSelectorSegueIdentifier"
     }
     
-    @IBOutlet weak var talentTableView: UITableView?
-    @IBOutlet weak var talentDetailView: UIView?
-    @IBOutlet var extrasCollectionView: UICollectionView!
+    @IBOutlet weak private var talentTableView: UITableView?
+    @IBOutlet weak private var talentDetailView: UIView?
+    @IBOutlet private var extrasCollectionView: UICollectionView!
     
     private var talentDetailViewController: TalentDetailViewController?
-    private var selectedIndexPath: IndexPath?
+    fileprivate var selectedIndexPath: IndexPath?
     
-    private var showActorsInGrid: Bool {
+    fileprivate var showActorsInGrid: Bool {
         return !DeviceType.IS_IPAD && NGDMManifest.sharedInstance.hasActors
     }
     
@@ -74,7 +74,7 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
     
     
     // MARK: Talent Details
-    func showTalentDetailView() {
+    fileprivate func showTalentDetailView() {
         if selectedIndexPath != nil, let talent = (talentTableView?.cellForRow(at: selectedIndexPath!) as? TalentTableViewCell)?.talent, let talentDetailView = talentDetailView, let talentDetailViewController = UIStoryboard.getNextGenViewController(TalentDetailViewController.self) as? TalentDetailViewController {
             talentDetailViewController.talent = talent
             
@@ -104,7 +104,7 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
         }
     }
     
-    func hideTalentDetailView(completed: (() -> Void)? = nil) {
+    fileprivate func hideTalentDetailView(completed: (() -> Void)? = nil) {
         if talentDetailViewController != nil {
             if selectedIndexPath != nil {
                 talentTableView?.deselectRow(at: selectedIndexPath!, animated: true)
@@ -137,7 +137,17 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
         }
     }
     
-    // MARK: UITableViewDataSource
+    // MARK: Storyboard
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let viewController = segue.destination as? ExtrasExperienceViewController, let experience = sender as? NGDMExperience {
+            viewController.experience = experience
+        }
+    }
+    
+}
+
+extension ExtrasViewController: UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return NGDMManifest.sharedInstance.mainExperience?.orderedActors?.count ?? 0
     }
@@ -149,7 +159,10 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
         return cell
     }
     
-    // MARK: UITableViewDelegate
+}
+
+extension ExtrasViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if indexPath == selectedIndexPath {
             hideTalentDetailView()
@@ -166,13 +179,18 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
         }
     }
     
-    // MARK: TalentDetailViewPresenter
+}
+
+extension ExtrasViewController: TalentDetailViewPresenter {
+    
     func talentDetailViewShouldClose() {
         hideTalentDetailView()
     }
     
+}
+
+extension ExtrasViewController: UICollectionViewDataSource {
     
-    // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         var experiencesCount = experience.childExperiences?.count ?? 0
         if showActorsInGrid {
@@ -203,7 +221,10 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
         return cell
     }
     
-    // MARK: UICollectionViewDelegate
+}
+
+extension ExtrasViewController: UICollectionViewDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         var childExperienceIndex = indexPath.row
         if showActorsInGrid {
@@ -247,7 +268,10 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
         }
     }
     
-    // MARK: UICollectionViewDelegateFlowLayout
+}
+
+extension ExtrasViewController: UICollectionViewDelegateFlowLayout {
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let containerWidth = collectionView.frame.width - (Constants.CollectionViewPadding * 2)
         let itemWidth: CGFloat = (containerWidth / 2) - Constants.CollectionViewItemSpacing
@@ -264,13 +288,6 @@ class ExtrasViewController: ExtrasExperienceViewController, UICollectionViewDele
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         return UIEdgeInsetsMake(Constants.CollectionViewPadding, Constants.CollectionViewPadding, Constants.CollectionViewPadding, Constants.CollectionViewPadding)
-    }
-    
-    // MARK: Storyboard
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let viewController = segue.destination as? ExtrasExperienceViewController, let experience = sender as? NGDMExperience {
-            viewController.experience = experience
-        }
     }
     
 }

@@ -4,12 +4,12 @@
 
 import UIKit
 
-class MenuedViewController: ExtrasExperienceViewController, UITableViewDelegate, UITableViewDataSource {
+class MenuedViewController: ExtrasExperienceViewController {
     
     @IBOutlet weak internal var menuTableView: UITableView!
     internal var menuSections = [MenuSection]()
-    private var selectedSectionValue: String?
-    private var selectedItemValue: String?
+    fileprivate var selectedSectionValue: String?
+    fileprivate var selectedItemValue: String?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,7 +19,10 @@ class MenuedViewController: ExtrasExperienceViewController, UITableViewDelegate,
         menuTableView.register(UINib(nibName: "MenuItemCell", bundle: nil), forCellReuseIdentifier: MenuItemCell.ReuseIdentifier)
     }
     
-    // MARK: UITableViewDataSource
+}
+
+extension MenuedViewController: UITableViewDataSource {
+
     func numberOfSections(in tableView: UITableView) -> Int {
         return menuSections.count
     }
@@ -46,7 +49,10 @@ class MenuedViewController: ExtrasExperienceViewController, UITableViewDelegate,
         return cell
     }
     
-    // MARK: UITableViewDelegate
+}
+
+extension MenuedViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         cell.backgroundColor = UIColor.clear
     }

@@ -6,7 +6,7 @@ import UIKit
 
 class ExtrasShoppingViewController: MenuedViewController {
     
-    private var _didAutoSelectCategory = false
+    private var didAutoSelectCategory = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,7 +36,7 @@ class ExtrasShoppingViewController: MenuedViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if !_didAutoSelectCategory {
+        if !didAutoSelectCategory {
             let selectedPath = IndexPath(row: 0, section: 0)
             self.menuTableView.selectRow(at: selectedPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
             self.tableView(self.menuTableView, didSelectRowAt: selectedPath)
@@ -48,7 +48,7 @@ class ExtrasShoppingViewController: MenuedViewController {
                 }
             }
             
-            _didAutoSelectCategory = true
+            didAutoSelectCategory = true
         }
     }
     

@@ -8,7 +8,7 @@ import SDWebImage
 
 class ExtrasExperienceViewController: UIViewController {
     
-    struct Constants {
+    internal struct Constants {
         static let HeaderButtonWidth: CGFloat = (DeviceType.IS_IPAD ? 250 : 100)
         static let HeaderIconPadding: CGFloat = (DeviceType.IS_IPAD ? 30 : 15)
         static let TitleImageAspectRatio: CGFloat = 300 / 90
@@ -128,7 +128,7 @@ class ExtrasExperienceViewController: UIViewController {
         showBackButton()
     }
     
-    func headerButton(_ title: String, imageName: String) -> UIButton {
+    internal func headerButton(_ title: String, imageName: String) -> UIButton {
         let button = UIButton(type: .custom)
         button.isHidden = true
         button.frame = CGRect(x: 0, y: 0, width: Constants.HeaderButtonWidth, height: Constants.TitleImageHeight)
@@ -142,12 +142,12 @@ class ExtrasExperienceViewController: UIViewController {
         return button
     }
     
-    func showHomeButton() {
+    internal func showHomeButton() {
         _homeButton.isHidden = false
         _backButton.isHidden = true
     }
     
-    func showBackButton() {
+    internal func showBackButton() {
         _homeButton.isHidden = true
         _backButton.isHidden = false
     }
@@ -161,7 +161,7 @@ class ExtrasExperienceViewController: UIViewController {
     }
     
     // MARK: Actions
-    func close() {
+    internal func close() {
         self.dismiss(animated: true, completion: nil)
     }
 

@@ -5,9 +5,9 @@
 import UIKit
 import NextGenDataManager
 
-class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
+class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let GalleryTableViewImageAspectRatio: CGFloat = 16 / 9
         static let GalleryTableViewLabelHeight: CGFloat = 10
         static let GalleryTableViewPadding: CGFloat = 50
@@ -37,7 +37,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
     @IBOutlet weak private var shareButton: UIButton!
     
     private var didInitialSetup = false
-    private var didPlayFirstItem = false
+    fileprivate var didPlayFirstItem = false
     
     private var willPlayNextItemObserver: NSObjectProtocol?
     private var didEndLastVideoObserver: NSObjectProtocol?
@@ -153,93 +153,6 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
         containerBottomConstraint?.isActive = !toLandscape
     }
     
-    
-    // MARK: UITableViewDataSource
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: VideoCell.ReuseIdentifier, for: indexPath) as! VideoCell
-        cell.backgroundColor = UIColor.clear
-        cell.selectionStyle = .none
-        if let childExperiences = experience.childExperiences, childExperiences.count > indexPath.row {
-            cell.experience = childExperiences[indexPath.row]
-        } else {
-            cell.experience = experience
-        }
-        
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return experience.childExperiences?.count ?? 1
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if DeviceType.IS_IPAD {
-            return (tableView.frame.width / Constants.GalleryTableViewImageAspectRatio) + Constants.GalleryTableViewLabelHeight + Constants.GalleryTableViewPadding
-        }
-        
-        return tableView.frame.width / Constants.GalleryTableViewMobileAspectRatio
-    }
-    
-    
-    // MARK: UITableViewDelegate
-    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
-        if let cell = tableView.cellForRow(at: indexPath), !cell.isSelected {
-            return indexPath
-        }
-        
-        return nil
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if (indexPath as NSIndexPath).row > 0 {
-            didPlayFirstItem = true
-        }
-        
-        if let thisExperience = experience.childExperiences?[indexPath.row] ?? experience {
-            mediaTitleLabel.isHidden = true
-            mediaDescriptionLabel?.isHidden = true
-            mediaDescriptionTextView?.isHidden = true
-            
-            // Reset media detail views
-            shareButton.isHidden = true
-            galleryPageControl.isHidden = true
-            galleryScrollView.isHidden = true
-            videoContainerView.isHidden = false
-            previewImageView.isHidden = didPlayFirstItem
-            previewPlayButton.isHidden = didPlayFirstItem
-            
-            // Set new media detail views
-            if let gallery = thisExperience.gallery {
-                mediaTitleLabel.text = nil
-                galleryScrollView.isHidden = false
-                videoContainerView.isHidden = true
-                previewImageView.isHidden = true
-                previewPlayButton.isHidden = true
-                
-                galleryScrollView.gallery = gallery
-                if !gallery.isTurntable {
-                    shareButton.isHidden = false
-                    shareButton.setTitle(String.localize("gallery.share_button").uppercased(), for: UIControlState())
-                    if gallery.totalCount < 20 {
-                        galleryPageControl.isHidden = false
-                        galleryPageControl.numberOfPages = gallery.totalCount
-                    }
-                }
-                
-                currentGallery = gallery
-                NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .selectImageGallery, itemId: gallery.id)
-            } else if thisExperience.isType(.audioVisual) {
-                mediaTitleLabel.text = thisExperience.metadata?.title
-                mediaDescriptionLabel?.text = thisExperience.metadata?.description
-                mediaDescriptionTextView?.text = thisExperience.metadata?.description
-                mediaTitleLabel.isHidden = false
-                mediaDescriptionLabel?.isHidden = false
-                mediaDescriptionTextView?.isHidden = false
-                playSelectedExperience()
-            }
-        }
-    }
-    
     private func playSelectedExperience() {
         if let selectedIndexPath = galleryTableView.indexPathForSelectedRow, let selectedExperience = experience.childExperiences?[selectedIndexPath.row] ?? experience {
             if let imageURL = selectedExperience.imageURL {
@@ -283,6 +196,50 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
         videoPlayerViewController = nil
     }
     
+    fileprivate func updateView(withExperience experience: NGDMExperience) {
+        mediaTitleLabel.isHidden = true
+        mediaDescriptionLabel?.isHidden = true
+        mediaDescriptionTextView?.isHidden = true
+        
+        // Reset media detail views
+        shareButton.isHidden = true
+        galleryPageControl.isHidden = true
+        galleryScrollView.isHidden = true
+        videoContainerView.isHidden = false
+        previewImageView.isHidden = didPlayFirstItem
+        previewPlayButton.isHidden = didPlayFirstItem
+        
+        // Set new media detail views
+        if let gallery = experience.gallery {
+            mediaTitleLabel.text = nil
+            galleryScrollView.isHidden = false
+            videoContainerView.isHidden = true
+            previewImageView.isHidden = true
+            previewPlayButton.isHidden = true
+            
+            galleryScrollView.gallery = gallery
+            if !gallery.isTurntable {
+                shareButton.isHidden = false
+                shareButton.setTitle(String.localize("gallery.share_button").uppercased(), for: UIControlState())
+                if gallery.totalCount < 20 {
+                    galleryPageControl.isHidden = false
+                    galleryPageControl.numberOfPages = gallery.totalCount
+                }
+            }
+            
+            currentGallery = gallery
+            NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .selectImageGallery, itemId: gallery.id)
+        } else if experience.isType(.audioVisual) {
+            mediaTitleLabel.text = experience.metadata?.title
+            mediaDescriptionLabel?.text = experience.metadata?.description
+            mediaDescriptionTextView?.text = experience.metadata?.description
+            mediaTitleLabel.isHidden = false
+            mediaDescriptionLabel?.isHidden = false
+            mediaDescriptionTextView?.isHidden = false
+            playSelectedExperience()
+        }
+    }
+    
     // MARK: Actions
     @IBAction func onPlay() {
         didPlayFirstItem = true
@@ -310,6 +267,57 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController, UITableV
     
     @IBAction func onPageControlValueChanged() {
         galleryScrollView.gotoPage(galleryPageControl.currentPage, animated: true)
+    }
+    
+}
+
+extension ExtrasVideoGalleryViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: VideoCell.ReuseIdentifier, for: indexPath) as! VideoCell
+        cell.backgroundColor = UIColor.clear
+        cell.selectionStyle = .none
+        if let childExperiences = experience.childExperiences, childExperiences.count > indexPath.row {
+            cell.experience = childExperiences[indexPath.row]
+        } else {
+            cell.experience = experience
+        }
+        
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return experience.childExperiences?.count ?? 1
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if DeviceType.IS_IPAD {
+            return (tableView.frame.width / Constants.GalleryTableViewImageAspectRatio) + Constants.GalleryTableViewLabelHeight + Constants.GalleryTableViewPadding
+        }
+        
+        return tableView.frame.width / Constants.GalleryTableViewMobileAspectRatio
+    }
+    
+}
+
+extension ExtrasVideoGalleryViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        if let cell = tableView.cellForRow(at: indexPath), !cell.isSelected {
+            return indexPath
+        }
+        
+        return nil
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if (indexPath as NSIndexPath).row > 0 {
+            didPlayFirstItem = true
+        }
+        
+        if let thisExperience = experience.childExperiences?[indexPath.row] ?? experience {
+            updateView(withExperience: thisExperience)
+        }
     }
     
 }
