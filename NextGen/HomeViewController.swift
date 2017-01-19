@@ -277,6 +277,7 @@ class HomeViewController: UIViewController {
                             strongSelf.loadBackground()
                         } else {
                             strongSelf.seekBackgroundVideoToLoopTimecode()
+                            strongSelf.showHomeScreenViews(animated: false)
                         }
                     } else {
                         strongSelf.unloadBackground()
@@ -454,45 +455,47 @@ class HomeViewController: UIViewController {
     
     // MARK: Helpers
     private func showHomeScreenViews(animated: Bool, exitButtonOnly: Bool = false) {
-        if exitButtonOnly, let exitButtonIndex = homeScreenViews.index(of: exitButton) {
-            homeScreenViews.remove(at: exitButtonIndex)
-        }
-        
-        if animated {
-            if exitButtonOnly {
-                exitButton.alpha = 0
-                exitButton.isHidden = false
+        if homeScreenViews.count > 0 {
+            if exitButtonOnly, let exitButtonIndex = homeScreenViews.index(of: exitButton) {
+                homeScreenViews.remove(at: exitButtonIndex)
+            }
+            
+            if animated {
+                if exitButtonOnly {
+                    exitButton.alpha = 0
+                    exitButton.isHidden = false
+                } else {
+                    homeScreenViews.forEach {
+                        $0.alpha = 0
+                        $0.isHidden = false
+                    }
+                }
+                
+                UIView.animate(withDuration: Constants.OverlayFadeInDuration, animations: {
+                    if exitButtonOnly {
+                        self.exitButton.alpha = 1
+                    } else {
+                        self.homeScreenViews.forEach { $0.alpha = 1 }
+                    }
+                }, completion: { (_) in
+                    if !exitButtonOnly {
+                        self.homeScreenViews.removeAll()
+                    }
+                })
             } else {
-                homeScreenViews.forEach {
-                    $0.alpha = 0
-                    $0.isHidden = false
+                if exitButtonOnly {
+                    exitButton.isHidden = false
+                } else {
+                    homeScreenViews.forEach { $0.isHidden = false }
+                    homeScreenViews.removeAll()
                 }
             }
             
-            UIView.animate(withDuration: Constants.OverlayFadeInDuration, animations: {
-                if exitButtonOnly {
-                    self.exitButton.alpha = 1
-                } else {
-                    self.homeScreenViews.forEach { $0.alpha = 1 }
-                }
-            }, completion: { (_) in
-                if !exitButtonOnly {
-                    self.homeScreenViews.removeAll()
-                }
-            })
-        } else {
-            if exitButtonOnly {
-                exitButton.isHidden = false
-            } else {
-                homeScreenViews.forEach { $0.isHidden = false }
-                homeScreenViews.removeAll()
+            backgroundVideoPlayerViewController?.activityIndicatorDisabled = true
+            if let tapGestureRecognizer = onTapHomeViewGestureRecognizer {
+                self.view.removeGestureRecognizer(tapGestureRecognizer)
+                onTapHomeViewGestureRecognizer = nil
             }
-        }
-        
-        backgroundVideoPlayerViewController?.activityIndicatorDisabled = true
-        if let tapGestureRecognizer = onTapHomeViewGestureRecognizer {
-            self.view.removeGestureRecognizer(tapGestureRecognizer)
-            onTapHomeViewGestureRecognizer = nil
         }
     }
     
