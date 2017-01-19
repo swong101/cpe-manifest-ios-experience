@@ -200,7 +200,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
         
         if toLandscape {
             if let gallery = currentGallery {
-                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectImage, itemId: gallery.id)
+                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setImageGalleryFullScreen, itemId: gallery.id)
             } else if let video = currentVideo {
                 NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setVideoFullScreen, itemId: video.id)
             }
@@ -215,36 +215,40 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
         return .all
     }
     
-    func playVideo(_ videoURL: URL) {
-        let shouldAnimateOpen = locationDetailView.isHidden
-        closeDetailView(animated: false)
-        
-        if let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController {
-            videoPlayerViewController.mode = VideoPlayerMode.supplemental
+    private func playVideo(fromExperience experience: NGDMExperience) {
+        if let videoUrl = experience.videoURL {
+            let playbackAsset = PlaybackAsset(url: videoUrl, title: experience.title, imageUrl: experience.imageURL)
             
-            videoPlayerViewController.view.frame = videoContainerView.bounds
-            videoContainerView.addSubview(videoPlayerViewController.view)
-            self.addChildViewController(videoPlayerViewController)
-            videoPlayerViewController.didMove(toParentViewController: self)
+            let shouldAnimateOpen = locationDetailView.isHidden
+            closeDetailView(animated: false)
             
-            if !DeviceType.IS_IPAD && videoPlayerViewController.fullScreenButton != nil {
-                videoPlayerViewController.fullScreenButton?.removeFromSuperview()
-            }
-            
-            self.videoPlayerViewController = videoPlayerViewController
-            
-            locationDetailView.alpha = 0
-            locationDetailView.isHidden = false
-            
-            if shouldAnimateOpen {
-                UIView.animate(withDuration: 0.25, animations: {
-                    self.locationDetailView.alpha = 1
-                }, completion: { (_) in
-                    self.videoPlayerViewController?.play(url: videoURL)
-                })
-            } else {
-                locationDetailView.alpha = 1
-                self.videoPlayerViewController?.play(url: videoURL)
+            if let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController {
+                videoPlayerViewController.mode = VideoPlayerMode.supplemental
+                
+                videoPlayerViewController.view.frame = videoContainerView.bounds
+                videoContainerView.addSubview(videoPlayerViewController.view)
+                self.addChildViewController(videoPlayerViewController)
+                videoPlayerViewController.didMove(toParentViewController: self)
+                
+                if !DeviceType.IS_IPAD && videoPlayerViewController.fullScreenButton != nil {
+                    videoPlayerViewController.fullScreenButton?.removeFromSuperview()
+                }
+                
+                self.videoPlayerViewController = videoPlayerViewController
+                
+                locationDetailView.alpha = 0
+                locationDetailView.isHidden = false
+                
+                if shouldAnimateOpen {
+                    UIView.animate(withDuration: 0.25, animations: {
+                        self.locationDetailView.alpha = 1
+                    }, completion: { (_) in
+                        self.videoPlayerViewController?.play(playbackAsset: playbackAsset)
+                    })
+                } else {
+                    locationDetailView.alpha = 1
+                    self.videoPlayerViewController?.play(playbackAsset: playbackAsset)
+                }
             }
         }
     }
@@ -388,8 +392,8 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, MultiM
         
         if let selectedExperience = selectedExperience, selectedExperience.appDataMediaCount > 0 {
             if let experience = selectedExperience.appDataMediaAtIndex(indexPath.row) {
-                if let video = experience.video, let videoURL = video.url {
-                    playVideo(videoURL)
+                if let video = experience.video {
+                    playVideo(fromExperience: experience)
                     currentVideo = video
                     NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectVideo, itemId: video.id)
                 } else if let gallery = experience.gallery {

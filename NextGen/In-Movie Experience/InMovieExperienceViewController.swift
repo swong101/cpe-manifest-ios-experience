@@ -15,14 +15,26 @@ class InMovieExperienceViewController: UIViewController {
     @IBOutlet var playerToExtrasConstarint: NSLayoutConstraint!
     @IBOutlet var playerToSuperviewConstraint: NSLayoutConstraint!
     
-    private var playerCurrentTime: Double? {
+    private var videoPlayerViewController: VideoPlayerViewController? {
         for viewController in self.childViewControllers {
             if let videoPlayerViewController = viewController as? VideoPlayerViewController {
-                return videoPlayerViewController.currentTime
+                return videoPlayerViewController
             }
         }
         
         return nil
+    }
+    
+    private var playbackPercentage: Double {
+        if let videoPlayerViewController = videoPlayerViewController {
+            let currentTime = videoPlayerViewController.currentTime
+            let duration = videoPlayerViewController.playerItemDuration
+            if duration > 0 {
+                return ((currentTime / duration) * 100)
+            }
+        }
+        
+        return 0
     }
     
     private var extrasContainerViewHidden: Bool = false {
@@ -59,18 +71,23 @@ class InMovieExperienceViewController: UIViewController {
         extrasContainerViewHidden = size.width > size.height
         updatePlayerConstraints()
         
-        var videoPlayerTime: String?
-        if let currentTime = playerCurrentTime, !currentTime.isNaN {
-            videoPlayerTime = String(Int(currentTime))
+        if let videoPlayerViewController = videoPlayerViewController {
+            if extrasContainerView.isHidden {
+                NotificationCenter.default.post(name: .inMovieExperienceShouldCloseDetails, object: nil)
+            } else if videoPlayerViewController.didPlayInterstitial {
+                NotificationCenter.default.post(name: .videoPlayerDidChangeTime, object: nil, userInfo: [NotificationConstants.time: videoPlayerViewController.currentTime])
+            }
+            
+            var timecodeLabel: String?
+            if videoPlayerViewController.didPlayInterstitial {
+                let roundedPlaybackPercentage = (Int((playbackPercentage + 2.5) / 5) * 5)
+                timecodeLabel = String(roundedPlaybackPercentage) + "%"
+            } else {
+                timecodeLabel = "interstitial"
+            }
+            
+            NextGenHook.logAnalyticsEvent(.imeAction, action: (extrasContainerView.isHidden ? .rotateHideExtras : .rotateShowExtras), itemName: timecodeLabel)
         }
-        
-        if extrasContainerView.isHidden {
-            NotificationCenter.default.post(name: .inMovieExperienceShouldCloseDetails, object: nil)
-        } else if let timeString = videoPlayerTime, let time = Double(timeString) {
-            NotificationCenter.default.post(name: .videoPlayerDidChangeTime, object: nil, userInfo: [NotificationConstants.time: time])
-        }
-        
-        NextGenHook.logAnalyticsEvent(.imeAction, action: (extrasContainerView.isHidden ? .rotateHideExtras : .rotateShowExtras), itemName: videoPlayerTime)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
