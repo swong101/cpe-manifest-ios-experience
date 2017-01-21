@@ -6,13 +6,17 @@ import GoogleCast
 
 @objc class CastManager: NSObject {
     
+    private struct Keys {
+        static let AssetId = "assetId"
+    }
+    
     static let sharedInstance = CastManager()
     
     private var currentSession: GCKCastSession? {
         return GCKCastContext.sharedInstance().sessionManager.currentCastSession
     }
 
-    private var currentMediaStatus: GCKMediaStatus? {
+    var currentMediaStatus: GCKMediaStatus? {
         return currentSession?.remoteMediaClient?.mediaStatus
     }
     
@@ -26,6 +30,18 @@ import GoogleCast
     
     var streamDuration: Double {
         return currentMediaStatus?.mediaInformation?.streamDuration ?? 0
+    }
+    
+    var currentAssetId: String? {
+        return ((currentMediaStatus?.mediaInformation?.customData as? [String: Any])?[Keys.AssetId] as? String)
+    }
+    
+    var currentAssetURL: URL? {
+        if let contentID = currentMediaStatus?.mediaInformation?.contentID {
+            return URL(string: contentID)
+        }
+        
+        return nil
     }
     
     var isPlaying: Bool {
@@ -69,16 +85,20 @@ import GoogleCast
                 ))
             }
         }
- 
+        
+        var customData = (playbackAsset.assetCastCustomData ?? nil) ?? [String: Any]()
+        customData[Keys.AssetId] = playbackAsset.assetId
+        
+        let contentType = (playbackAsset.assetURL.pathExtension == "m3u8" ? "application/x-mpegurl" : "video/mp4")
         load(media:GCKMediaInformation(
             contentID: playbackAsset.assetURL.absoluteString,
             streamType: .buffered,
-            contentType: "application/x-mpegurl",
+            contentType: contentType,
             metadata: metadata,
             streamDuration: 0,
             mediaTracks: mediaTracks,
             textTrackStyle: nil,
-            customData: (playbackAsset.assetCastCustomData ?? nil)
+            customData: customData
         ))
     }
     
@@ -100,6 +120,10 @@ import GoogleCast
     
     func pauseMedia() {
         currentSession?.remoteMediaClient?.pause()
+    }
+    
+    func stopMedia() {
+        currentSession?.remoteMediaClient?.stop()
     }
     
     func seekMedia(to time: Double) {

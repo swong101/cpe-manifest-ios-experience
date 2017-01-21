@@ -92,7 +92,35 @@ class VideoPlayerViewController: UIViewController {
     var shouldMute = false
     var shouldTrackOutput = false
     
-    fileprivate var playbackAsset: NextGenPlaybackAsset?
+    fileprivate var playbackAsset: NextGenPlaybackAsset? {
+        didSet {
+            if let playbackAsset = playbackAsset {
+                if mode == .supplemental {
+                    SettingsManager.setVideoAsWatched(playbackAsset.assetURL)
+                }
+                
+                var nowPlayingInfo = [String: Any]()
+                if let title = playbackAsset.assetTitle {
+                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                }
+                
+                if #available(iOS 10.0, *) {
+                    nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 768, height: 768), requestHandler: { (_) -> UIImage in
+                        return playbackAsset.assetImage
+                    })
+                }
+                
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+                
+                if let imageURL = playbackAsset.assetImageURL {
+                    playbackOverlayImageView.sd_setImage(with: imageURL)
+                }
+            } else {
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+            }
+        }
+    }
+    
     private var player: AVPlayer?
     fileprivate var playerItem: AVPlayerItem?
     private var playerItemVideoOutput: AVPlayerItemVideoOutput?
@@ -406,14 +434,10 @@ class VideoPlayerViewController: UIViewController {
     fileprivate var pictureInPictureController: AVPictureInPictureController?
     
     // AirPlay & Casting
-    private var isAirPlayActive: Bool {
-        get {
-            return ExternalPlaybackManager.isAirPlayActive
-        }
-        
-        set {
-            isExternalPlaybackActive = newValue
-            ExternalPlaybackManager.isAirPlayActive = newValue
+    private var isAirPlayActive = false {
+        didSet {
+            isExternalPlaybackActive = isAirPlayActive
+            ExternalPlaybackManager.isAirPlayActive = isAirPlayActive
             
             airPlayButton?.tintColor = (isAirPlayActive ? UIColor.themePrimary : UIColor.white)
             castButton?.isEnabled = !isAirPlayActive
@@ -423,14 +447,10 @@ class VideoPlayerViewController: UIViewController {
         }
     }
     
-    fileprivate var isCastingActive: Bool {
-        get {
-            return ExternalPlaybackManager.isChromecastActive
-        }
-        
-        set {
-            isExternalPlaybackActive = newValue
-            ExternalPlaybackManager.isChromecastActive = newValue
+    fileprivate var isCastingActive = false {
+        didSet {
+            isExternalPlaybackActive = isCastingActive
+            ExternalPlaybackManager.isChromecastActive = isCastingActive
             
             castButton?.tintColor = (isCastingActive ? UIColor.themePrimary : UIColor.white)
             if isCastingActive {
@@ -439,14 +459,10 @@ class VideoPlayerViewController: UIViewController {
         }
     }
     
-    fileprivate var isExternalPlaybackActive: Bool {
-        get {
-            return ExternalPlaybackManager.isExternalPlaybackActive
-        }
-        
-        set {
-            if isExternalPlaybackActive != newValue && mode != .basicPlayer {
-                ExternalPlaybackManager.isExternalPlaybackActive = newValue
+    fileprivate var isExternalPlaybackActive = false {
+        didSet {
+            if isExternalPlaybackActive != oldValue && mode != .basicPlayer {
+                ExternalPlaybackManager.isExternalPlaybackActive = isExternalPlaybackActive
                 
                 if isExternalPlaybackActive {
                     cropToActivePictureButton?.isEnabled = false
@@ -556,6 +572,20 @@ class VideoPlayerViewController: UIViewController {
     private var playerTimeObserver: Any?
     
     deinit {
+        destroyPlayer()
+    }
+    
+    private func destroyPlayer() {
+        // Stop controls
+        pictureInPictureController?.stopPictureInPicture()
+        UIApplication.shared.endReceivingRemoteControlEvents()
+        
+        // Remove timers
+        removePlayerTimeObserver()
+        removeAutoHideTimer()
+        cancelCountdown()
+        
+        // Remove observers
         let center = NotificationCenter.default
         
         if let observer = playerItemDurationDidLoadObserver {
@@ -579,7 +609,6 @@ class VideoPlayerViewController: UIViewController {
         }
         
         CastManager.sharedInstance.remove(sessionManagerListener: self)
-        pictureInPictureController?.stopPictureInPicture()
         playerItem?.removeObserver(self, forKeyPath: Constants.Keys.Status)
         playerItem?.removeObserver(self, forKeyPath: Constants.Keys.Duration)
         playerItem?.removeObserver(self, forKeyPath: Constants.Keys.PlaybackBufferEmpty)
@@ -587,10 +616,10 @@ class VideoPlayerViewController: UIViewController {
         player?.removeObserver(self, forKeyPath: Constants.Keys.CurrentItem)
         player?.removeObserver(self, forKeyPath: Constants.Keys.Rate)
         player?.removeObserver(self, forKeyPath: Constants.Keys.ExternalPlaybackActive)
-        removePlayerTimeObserver()
-        removeAutoHideTimer()
-        cancelCountdown()
-        UIApplication.shared.endReceivingRemoteControlEvents()
+        
+        // Nullify objects
+        playerItem = nil
+        player = nil
     }
     
     // MARK: View Lifecycle
@@ -692,13 +721,15 @@ class VideoPlayerViewController: UIViewController {
             return .commandFailed
         }
         
-        CastManager.sharedInstance.add(remoteMediaClientListener: self)
-        CastManager.sharedInstance.add(sessionManagerListener: self)
-        
         if mode == .basicPlayer {
             topToolbar?.removeFromSuperview()
             playbackToolbar?.removeFromSuperview()
         } else {
+            if mode != .supplementalInMovie {
+                CastManager.sharedInstance.add(remoteMediaClientListener: self)
+                CastManager.sharedInstance.add(sessionManagerListener: self)
+            }
+            
             isSeeking = false
             initScrubberTimer()
             syncPlayPauseButtons()
@@ -759,19 +790,18 @@ class VideoPlayerViewController: UIViewController {
             didPlayInterstitial = true
             playerControlsVisible = false
             audioOptionsTableView?.removeFromSuperview()
+            commentaryButton?.removeFromSuperview()
             captionsOptionsTableView?.removeFromSuperview()
             captionsButton?.removeFromSuperview()
             pictureInPictureButton?.removeFromSuperview()
             homeButton?.removeFromSuperview()
+            
             if mode == .supplementalInMovie {
                 fullScreenButton?.removeFromSuperview()
+                castButton?.removeFromSuperview()
+                airPlayButton?.removeFromSuperview()
             }
         }
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        pauseVideo()
-        super.viewWillDisappear(animated)
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -1077,7 +1107,7 @@ class VideoPlayerViewController: UIViewController {
         isManuallyPaused = false
         
         // Play
-        if isCastingActive {
+        if isCastingActive && didPlayInterstitial {
             CastManager.sharedInstance.playMedia()
         } else {
             player?.play()
@@ -1110,53 +1140,55 @@ class VideoPlayerViewController: UIViewController {
     }
     
     func playAsset(withURL url: URL, title: String? = nil, imageURL: URL? = nil, fromStartTime startTime: Double? = nil) {
-        NextGenHook.delegate?.playbackAsset(withURL: url, title: title, imageURL: imageURL, forMode: mode, isInterstitial: !didPlayInterstitial, completion: { [weak self] (playbackAsset) in
-            self?.playbackAsset = playbackAsset
-            
-            self?.cancelCountdown()
-            SettingsManager.setVideoAsWatched(playbackAsset.assetURL)
-            self?.playbackSyncStartTime = startTime ?? playbackAsset.assetPlaybackPosition
-            self?.hasSeekedToPlaybackSyncStartTime = false
-            
-            var nowPlayingInfo = [String: Any]()
-            if let title = playbackAsset.assetTitle {
-                nowPlayingInfo[MPMediaItemPropertyTitle] = title
+        let sendToPlayer = { [weak self] (urlAsset: AVURLAsset) -> Void in
+            let requestedKeys = [Constants.Keys.Tracks, Constants.Keys.Playable]
+            /* Tells the asset to load the values of any of the specified keys that are not already loaded. */
+            urlAsset.loadValuesAsynchronously(forKeys: requestedKeys) { [weak self] in
+                /* IMPORTANT: Must dispatch to main queue in order to operate on the AVPlayer and AVPlayerItem. */
+                DispatchQueue.main.async {
+                    self?.prepareToPlay(asset: urlAsset, withKeys: requestedKeys)
+                }
             }
-            
-            if #available(iOS 10.0, *) {
-                nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 768, height: 768), requestHandler: { (_) -> UIImage in
-                    return playbackAsset.assetImage
-                })
-            }
-            
-            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-            
-            if let imageURL = playbackAsset.assetImageURL {
-                self?.playbackOverlayImageView.sd_setImage(with: imageURL)
-            }
-            
-            if playbackAsset.assetIsCastable {
-                self?.isCastingActive = true
-                CastManager.sharedInstance.load(playbackAsset: playbackAsset)
+        }
+        
+        cancelCountdown()
+        playbackSyncStartTime = startTime ?? 0
+        hasSeekedToPlaybackSyncStartTime = false
+        
+        if mode == .basicPlayer || !didPlayInterstitial {
+            sendToPlayer(AVURLAsset(url: url))
+        } else {
+            NextGenHook.delegate?.playbackAsset(withURL: url, title: title, imageURL: imageURL, forMode: mode, completion: { [weak self] (playbackAsset) in
+                self?.playbackAsset = playbackAsset
                 
-                if let textTracks = playbackAsset.assetTextTracks, textTracks.count > 0 {
-                    self?.captionsButton?.isEnabled = true
-                    self?.selectInitialCaptions()
-                } else {
-                    self?.captionsButton?.isEnabled = false
-                }
-            } else {
-                let urlAsset = playbackAsset.assetURLAsset ?? AVURLAsset(url: playbackAsset.assetURL)
-                let requestedKeys = [Constants.Keys.Tracks, Constants.Keys.Playable]
-                /* Tells the asset to load the values of any of the specified keys that are not already loaded. */
-                urlAsset.loadValuesAsynchronously(forKeys: requestedKeys) { [weak self] in
-                    /* IMPORTANT: Must dispatch to main queue in order to operate on the AVPlayer and AVPlayerItem. */
-                    DispatchQueue.main.async {
-                        self?.prepareToPlay(asset: urlAsset, withKeys: requestedKeys)
+                if CastManager.sharedInstance.hasConnectedCastSession && playbackAsset.assetIsCastable {
+                    if let currentAssetId = CastManager.sharedInstance.currentAssetId, currentAssetId == playbackAsset.assetId {
+                        self?.isCastingActive = true
+                        if let mediaStatus = CastManager.sharedInstance.currentMediaStatus {
+                            self?.updateWithMediaStatus(mediaStatus)
+                        }
+                        
+                        return
                     }
+                    
+                    if playbackAsset.assetIsCastable {
+                        self?.isCastingActive = true
+                        CastManager.sharedInstance.load(playbackAsset: playbackAsset)
+                        
+                        if let textTracks = playbackAsset.assetTextTracks, textTracks.count > 0 {
+                            self?.captionsButton?.isEnabled = true
+                            self?.selectInitialCaptions()
+                        } else {
+                            self?.captionsButton?.isEnabled = false
+                        }
+                        
+                        return
+                    }
+                } else {
+                    sendToPlayer(playbackAsset.assetURLAsset ?? AVURLAsset(url: playbackAsset.assetURL))
                 }
-            }
-        })
+            })
+        }
     }
     
     // MARK: Main Feature
@@ -1369,7 +1401,12 @@ class VideoPlayerViewController: UIViewController {
     
     private func dismissPlayer(completion: (() -> Void)? = nil) {
         if let playbackAsset = playbackAsset {
-            NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
+            if !isCastingActive {
+                pauseVideo()
+                NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
+            }
+            
+            destroyPlayer()
             self.dismiss(animated: true, completion: completion)
         }
     }
@@ -1422,8 +1459,6 @@ class VideoPlayerViewController: UIViewController {
     }
     
     @IBAction private func onDone() {
-        pauseVideo()
-        
         if let pictureInPictureController = pictureInPictureController, pictureInPictureController.isPictureInPictureActive {
             let alertController = UIAlertController(title: "", message: String.localize("player.message.pip.exit"), preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: String.localize("label.cancel"), style: .cancel, handler: { [weak self] (_) in
@@ -1436,6 +1471,7 @@ class VideoPlayerViewController: UIViewController {
                 self?.dismissPlayer()
             }))
             
+            pauseVideo()
             self.present(alertController, animated: true, completion: nil)
         } else {
             dismissPlayer()
@@ -1731,7 +1767,7 @@ extension VideoPlayerViewController: GCKSessionManagerListener {
 
 extension VideoPlayerViewController: GCKRemoteMediaClientListener {
     
-    func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus) {
+    fileprivate func updateWithMediaStatus(_ mediaStatus: GCKMediaStatus) {
         if didPlayInterstitial {
             if let duration = mediaStatus.mediaInformation?.streamDuration {
                 playerItemDuration = duration
@@ -1757,6 +1793,10 @@ extension VideoPlayerViewController: GCKRemoteMediaClientListener {
             
             syncPlayPauseButtons()
         }
+    }
+    
+    func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus) {
+        updateWithMediaStatus(mediaStatus)
     }
     
 }

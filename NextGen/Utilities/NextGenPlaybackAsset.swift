@@ -8,6 +8,7 @@ import GoogleCast
 
 @objc public protocol NextGenPlaybackAsset {
     
+    var assetId: String { get }
     var assetURL: URL { get }
     var assetURLAsset: AVURLAsset? { get }
     var assetTitle: String? { get }
@@ -16,7 +17,7 @@ import GoogleCast
     var assetPlaybackPosition: Double { get set }
     var assetIsCastable: Bool { get }
     var assetTextTracks: [NextGenPlaybackTextTrack]? { get }
-    @objc optional var assetCastCustomData: Any? { get }
+    @objc optional var assetCastCustomData: [String: Any]? { get }
     
 }
 
