@@ -15,6 +15,7 @@ import MBProgressHUD
 import GoogleCast
 
 public enum VideoPlayerMode {
+    case unknown
     case mainFeature
     case supplemental
     case supplementalInMovie
@@ -344,7 +345,7 @@ class VideoPlayerViewController: UIViewController {
         didSet {
             if activityIndicatorVisible && !activityIndicatorDisabled {
                 if activityIndicator == nil {
-                    activityIndicator = MBProgressHUD.showAdded(to: self.playbackView, animated: true)
+                    activityIndicator = MBProgressHUD.showAdded(to: (isExternalPlaybackActive ? playbackOverlayView : playbackView), animated: true)
                 }
             } else {
                 activityIndicator?.hide(true)
@@ -439,10 +440,15 @@ class VideoPlayerViewController: UIViewController {
             isExternalPlaybackActive = isAirPlayActive
             ExternalPlaybackManager.isAirPlayActive = isAirPlayActive
             
-            airPlayButton?.tintColor = (isAirPlayActive ? UIColor.themePrimary : UIColor.white)
-            castButton?.isEnabled = !isAirPlayActive
-            if isAirPlayActive {
-                logEvent(action: .airPlayOn)
+            if isAirPlayActive != oldValue {
+                DispatchQueue.main.async {
+                    self.airPlayButton?.tintColor = (self.isAirPlayActive ? UIColor.themePrimary : UIColor.white)
+                    self.castButton?.isEnabled = !self.isAirPlayActive
+                }
+                
+                if isAirPlayActive {
+                    logEvent(action: .airPlayOn)
+                }
             }
         }
     }
@@ -452,9 +458,14 @@ class VideoPlayerViewController: UIViewController {
             isExternalPlaybackActive = isCastingActive
             ExternalPlaybackManager.isChromecastActive = isCastingActive
             
-            castButton?.tintColor = (isCastingActive ? UIColor.themePrimary : UIColor.white)
-            if isCastingActive {
-                logEvent(action: .chromecastOn)
+            if isCastingActive != oldValue {
+                /*DispatchQueue.main.async {
+                    self.castButton?.tintColor = (self.isCastingActive ? UIColor.themePrimary : UIColor.white)
+                }*/
+                
+                if isCastingActive {
+                    logEvent(action: .chromecastOn)
+                }
             }
         }
     }
@@ -464,30 +475,32 @@ class VideoPlayerViewController: UIViewController {
             if isExternalPlaybackActive != oldValue && mode != .basicPlayer {
                 ExternalPlaybackManager.isExternalPlaybackActive = isExternalPlaybackActive
                 
-                if isExternalPlaybackActive {
-                    cropToActivePictureButton?.isEnabled = false
-                    
-                    playbackOverlayView.alpha = 0
-                    playbackOverlayView.isHidden = false
-                    playbackOverlayView.layer.removeAllAnimations()
-                    syncPlaybackOverlayImage()
-                    
-                    UIView.animate(withDuration: 0.2, animations: {
-                        self.playbackOverlayView.alpha = 1
-                    })
-                    
-                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
-                        self.currentCaptionsSelectionIndex = self.currentCaptionsSelectionIndex
-                    }
-                } else {
-                    cropToActivePictureButton?.isEnabled = playerControlsEnabled
-                    playbackOverlayView.layer.removeAllAnimations()
-                    
-                    UIView.animate(withDuration: 0.2, animations: {
+                DispatchQueue.main.async {
+                    if self.isExternalPlaybackActive {
+                        self.cropToActivePictureButton?.isEnabled = false
+                        
                         self.playbackOverlayView.alpha = 0
-                    }, completion: { (_) in
-                        self.playbackOverlayView.isHidden = true
-                    })
+                        self.playbackOverlayView.isHidden = false
+                        self.playbackOverlayView.layer.removeAllAnimations()
+                        self.syncPlaybackOverlayImage()
+                        
+                        UIView.animate(withDuration: 0.2, animations: {
+                            self.playbackOverlayView.alpha = 1
+                        })
+                        
+                        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + .seconds(1)) {
+                            self.currentCaptionsSelectionIndex = self.currentCaptionsSelectionIndex
+                        }
+                    } else {
+                        self.cropToActivePictureButton?.isEnabled = self.playerControlsEnabled
+                        self.playbackOverlayView.layer.removeAllAnimations()
+                        
+                        UIView.animate(withDuration: 0.2, animations: {
+                            self.playbackOverlayView.alpha = 0
+                        }, completion: { (_) in
+                            self.playbackOverlayView.isHidden = true
+                        })
+                    }
                 }
             }
         }
@@ -575,15 +588,9 @@ class VideoPlayerViewController: UIViewController {
         destroyPlayer()
     }
     
-    private func destroyPlayer() {
+    fileprivate func destroyAVPlayer() {
         // Stop controls
         pictureInPictureController?.stopPictureInPicture()
-        UIApplication.shared.endReceivingRemoteControlEvents()
-        
-        // Remove timers
-        removePlayerTimeObserver()
-        removeAutoHideTimer()
-        cancelCountdown()
         
         // Remove observers
         let center = NotificationCenter.default
@@ -608,7 +615,6 @@ class VideoPlayerViewController: UIViewController {
             videoPlayerShouldPauseObserver = nil
         }
         
-        CastManager.sharedInstance.remove(sessionManagerListener: self)
         playerItem?.removeObserver(self, forKeyPath: Constants.Keys.Status)
         playerItem?.removeObserver(self, forKeyPath: Constants.Keys.Duration)
         playerItem?.removeObserver(self, forKeyPath: Constants.Keys.PlaybackBufferEmpty)
@@ -620,6 +626,22 @@ class VideoPlayerViewController: UIViewController {
         // Nullify objects
         playerItem = nil
         player = nil
+    }
+    
+    private func destroyPlayer() {
+        destroyAVPlayer()
+        
+        // Stop controls
+        UIApplication.shared.endReceivingRemoteControlEvents()
+        
+        // Remove timers
+        removePlayerTimeObserver()
+        removeAutoHideTimer()
+        cancelCountdown()
+        
+        // Remove observers
+        CastManager.sharedInstance.remove(remoteMediaClientListener: self)
+        CastManager.sharedInstance.remove(sessionManagerListener: self)
     }
     
     // MARK: View Lifecycle
@@ -726,7 +748,6 @@ class VideoPlayerViewController: UIViewController {
             playbackToolbar?.removeFromSuperview()
         } else {
             if mode != .supplementalInMovie {
-                CastManager.sharedInstance.add(remoteMediaClientListener: self)
                 CastManager.sharedInstance.add(sessionManagerListener: self)
             }
             
@@ -1141,6 +1162,8 @@ class VideoPlayerViewController: UIViewController {
     
     func playAsset(withURL url: URL, title: String? = nil, imageURL: URL? = nil, fromStartTime startTime: Double? = nil) {
         let sendToPlayer = { [weak self] (urlAsset: AVURLAsset) -> Void in
+            self?.isCastingActive = false
+            
             let requestedKeys = [Constants.Keys.Tracks, Constants.Keys.Playable]
             /* Tells the asset to load the values of any of the specified keys that are not already loaded. */
             urlAsset.loadValuesAsynchronously(forKeys: requestedKeys) { [weak self] in
@@ -1152,6 +1175,7 @@ class VideoPlayerViewController: UIViewController {
         }
         
         cancelCountdown()
+        removeCurrentItem()
         playbackSyncStartTime = startTime ?? 0
         hasSeekedToPlaybackSyncStartTime = false
         
@@ -1159,33 +1183,43 @@ class VideoPlayerViewController: UIViewController {
             sendToPlayer(AVURLAsset(url: url))
         } else {
             NextGenHook.delegate?.playbackAsset(withURL: url, title: title, imageURL: imageURL, forMode: mode, completion: { [weak self] (playbackAsset) in
-                self?.playbackAsset = playbackAsset
-                
-                if CastManager.sharedInstance.hasConnectedCastSession && playbackAsset.assetIsCastable {
-                    if let currentAssetId = CastManager.sharedInstance.currentAssetId, currentAssetId == playbackAsset.assetId {
-                        self?.isCastingActive = true
-                        if let mediaStatus = CastManager.sharedInstance.currentMediaStatus {
-                            self?.updateWithMediaStatus(mediaStatus)
-                        }
-                        
-                        return
+                if let strongSelf = self {
+                    strongSelf.playbackAsset = playbackAsset
+                    if let startTime = startTime {
+                        strongSelf.playbackAsset?.assetPlaybackPosition = startTime
+                    } else if let startTime = strongSelf.playbackAsset?.assetPlaybackPosition {
+                        strongSelf.playbackSyncStartTime = startTime
                     }
                     
-                    if playbackAsset.assetIsCastable {
-                        self?.isCastingActive = true
-                        CastManager.sharedInstance.load(playbackAsset: playbackAsset)
+                    if CastManager.sharedInstance.hasConnectedCastSession && playbackAsset.assetIsCastable {
+                        CastManager.sharedInstance.add(remoteMediaClientListener: strongSelf)
                         
-                        if let textTracks = playbackAsset.assetTextTracks, textTracks.count > 0 {
-                            self?.captionsButton?.isEnabled = true
-                            self?.selectInitialCaptions()
-                        } else {
-                            self?.captionsButton?.isEnabled = false
+                        if let currentAssetId = CastManager.sharedInstance.currentAssetId, currentAssetId == playbackAsset.assetId {
+                            strongSelf.isCastingActive = true
+                            if let mediaStatus = CastManager.sharedInstance.currentMediaStatus {
+                                strongSelf.updateWithMediaStatus(mediaStatus)
+                            }
+                            
+                            return
                         }
                         
-                        return
+                        if playbackAsset.assetIsCastable {
+                            strongSelf.isCastingActive = true
+                            CastManager.sharedInstance.currentVideoPlayerMode = strongSelf.mode
+                            CastManager.sharedInstance.load(playbackAsset: playbackAsset)
+                            
+                            if let textTracks = playbackAsset.assetTextTracks, textTracks.count > 0 {
+                                strongSelf.captionsButton?.isEnabled = true
+                                strongSelf.selectInitialCaptions()
+                            } else {
+                                strongSelf.captionsButton?.isEnabled = false
+                            }
+                            
+                            return
+                        }
+                    } else {
+                        sendToPlayer(playbackAsset.assetURLAsset ?? AVURLAsset(url: playbackAsset.assetURL))
                     }
-                } else {
-                    sendToPlayer(playbackAsset.assetURLAsset ?? AVURLAsset(url: playbackAsset.assetURL))
                 }
             })
         }
@@ -1290,37 +1324,41 @@ class VideoPlayerViewController: UIViewController {
                 return
             }
             
-            queueCurrentIndex += 1
-            if queueCurrentIndex < queueTotalCount {
-                pauseVideo()
-                
-                countdownLabel.isHidden = false
-                countdownLabel.frame.origin = CGPoint(x: 30, y: 20)
-                
-                let progressView = UAProgressView(frame: countdownLabel.frame)
-                progressView.centralView = countdownLabel
-                progressView.borderWidth = 0
-                progressView.lineWidth = 2
-                progressView.fillOnTouch = false
-                progressView.tintColor = UIColor.themePrimary
-                progressView.animationDuration = Double(Constants.CountdownTimeInterval)
-                self.view.addSubview(progressView)
-                countdownProgressView = progressView
-                
-                countdownSeconds = 0
-                countdownTimer = Timer.scheduledTimer(timeInterval: Double(Constants.CountdownTimeInterval), target: self, selector: #selector(onCountdownTimerFired), userInfo: nil, repeats: true)
-            } else {
-                NotificationCenter.default.post(name: .videoPlayerDidEndLastVideo, object: nil)
-            }
+            goToNextVideo()
+        }
+    }
+    
+    fileprivate func goToNextVideo() {
+        queueCurrentIndex += 1
+        if queueCurrentIndex < queueTotalCount {
+            pauseVideo()
             
-            NotificationCenter.default.post(name: .videoPlayerDidEndVideo, object: nil)
+            countdownLabel.isHidden = false
+            countdownLabel.frame.origin = CGPoint(x: 30, y: 20)
             
-            if mode == .mainFeature {
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1.5 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
-                    self.dismissPlayer(completion: {
-                        NotificationCenter.default.post(name: .outOfMovieExperienceShouldLaunch, object: nil)
-                    })
-                }
+            let progressView = UAProgressView(frame: countdownLabel.frame)
+            progressView.centralView = countdownLabel
+            progressView.borderWidth = 0
+            progressView.lineWidth = 2
+            progressView.fillOnTouch = false
+            progressView.tintColor = UIColor.themePrimary
+            progressView.animationDuration = Double(Constants.CountdownTimeInterval)
+            self.view.addSubview(progressView)
+            countdownProgressView = progressView
+            
+            countdownSeconds = 0
+            countdownTimer = Timer.scheduledTimer(timeInterval: Double(Constants.CountdownTimeInterval), target: self, selector: #selector(onCountdownTimerFired), userInfo: nil, repeats: true)
+        } else {
+            NotificationCenter.default.post(name: .videoPlayerDidEndLastVideo, object: nil)
+        }
+        
+        NotificationCenter.default.post(name: .videoPlayerDidEndVideo, object: nil)
+        
+        if mode == .mainFeature {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1.5 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
+                self.dismissPlayer(completion: {
+                    NotificationCenter.default.post(name: .outOfMovieExperienceShouldLaunch, object: nil)
+                })
             }
         }
     }
@@ -1739,14 +1777,11 @@ extension VideoPlayerViewController: AVPictureInPictureControllerDelegate {
 extension VideoPlayerViewController: GCKSessionManagerListener {
     
     func sessionManager(_ sessionManager: GCKSessionManager, didStart session: GCKSession) {
-        isCastingActive = true
-        
         if let playbackAsset = playbackAsset {
             NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
+            destroyAVPlayer()
+            playAsset(withURL: playbackAsset.assetURL, title: playbackAsset.assetTitle, imageURL: playbackAsset.assetImageURL, fromStartTime: playbackAsset.assetPlaybackPosition)
         }
-        
-        removeCurrentItem()
-        playMainExperience()
     }
     
     func sessionManager(_ sessionManager: GCKSessionManager, didResumeCastSession session: GCKCastSession) {
@@ -1754,13 +1789,11 @@ extension VideoPlayerViewController: GCKSessionManagerListener {
     }
     
     func sessionManager(_ sessionManager: GCKSessionManager, didEnd session: GCKCastSession, withError error: Error?) {
-        isCastingActive = false
-        
         if let playbackAsset = playbackAsset {
+            CastManager.sharedInstance.currentPlaybackAsset = nil
             NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
+            playAsset(withURL: playbackAsset.assetURL, title: playbackAsset.assetTitle, imageURL: playbackAsset.assetImageURL, fromStartTime: playbackAsset.assetPlaybackPosition)
         }
-        
-        playMainExperience()
     }
     
 }
@@ -1774,8 +1807,17 @@ extension VideoPlayerViewController: GCKRemoteMediaClientListener {
             }
             
             switch mediaStatus.playerState {
-            case .unknown, .idle:
+            case .unknown:
                 state = .unknown
+                break
+                
+            case .idle:
+                if mediaStatus.idleReason == .finished {
+                    goToNextVideo()
+                    state = .videoPaused
+                } else {
+                    state = .unknown
+                }
                 break
                 
             case .playing:

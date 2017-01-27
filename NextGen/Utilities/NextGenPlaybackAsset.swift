@@ -11,6 +11,7 @@ import GoogleCast
     var assetId: String { get }
     var assetURL: URL { get }
     var assetURLAsset: AVURLAsset? { get }
+    var assetContentType: String? { get }
     var assetTitle: String? { get }
     var assetImageURL: URL? { get }
     var assetImage: UIImage { get }

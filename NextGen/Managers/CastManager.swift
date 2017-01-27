@@ -52,14 +52,17 @@ import GoogleCast
         return false
     }
     
-    func start() {
-        GCKCastContext.setSharedInstanceWith(GCKCastOptions(receiverApplicationID: "560D7400"))
+    var currentPlaybackAsset: NextGenPlaybackAsset?
+    var currentVideoPlayerMode = VideoPlayerMode.unknown
+    
+    func start(withReceiverAppID receiverAppID: String) {
+        GCKCastContext.setSharedInstanceWith(GCKCastOptions(receiverApplicationID: receiverAppID))
         GCKCastContext.sharedInstance().sessionManager.add(self)
         GCKLogger.sharedInstance().delegate = self
     }
     
-    func load(media: GCKMediaInformation) {
-        currentSession?.remoteMediaClient?.loadMedia(media)
+    func load(media: GCKMediaInformation, playPosition: Double = 0) {
+        currentSession?.remoteMediaClient?.loadMedia(media, autoplay: true, playPosition: playPosition)
     }
     
     func load(playbackAsset: NextGenPlaybackAsset) {
@@ -89,17 +92,18 @@ import GoogleCast
         var customData = (playbackAsset.assetCastCustomData ?? nil) ?? [String: Any]()
         customData[Keys.AssetId] = playbackAsset.assetId
         
-        let contentType = (playbackAsset.assetURL.pathExtension == "m3u8" ? "application/x-mpegurl" : "video/mp4")
         load(media:GCKMediaInformation(
             contentID: playbackAsset.assetURL.absoluteString,
             streamType: .buffered,
-            contentType: contentType,
+            contentType: (playbackAsset.assetContentType ?? "video/mp4"),
             metadata: metadata,
             streamDuration: 0,
             mediaTracks: mediaTracks,
             textTrackStyle: nil,
             customData: customData
-        ))
+        ), playPosition: playbackAsset.assetPlaybackPosition)
+        
+        currentPlaybackAsset = playbackAsset
     }
     
     func add(remoteMediaClientListener listener: GCKRemoteMediaClientListener) {
@@ -108,6 +112,10 @@ import GoogleCast
     
     func add(sessionManagerListener listener: GCKSessionManagerListener) {
         GCKCastContext.sharedInstance().sessionManager.add(listener)
+    }
+    
+    func remove(remoteMediaClientListener listener: GCKRemoteMediaClientListener) {
+        currentSession?.remoteMediaClient?.remove(listener)
     }
     
     func remove(sessionManagerListener listener: GCKSessionManagerListener) {
@@ -157,11 +165,18 @@ extension CastManager: GCKSessionManagerListener {
     func sessionManager(_ sessionManager: GCKSessionManager, didEnd session: GCKCastSession, withError error: Error?) {
         print("Cast session ended with error: \(error)")
         ExternalPlaybackManager.isChromecastActive = false
+        
+        if let playbackAsset = currentPlaybackAsset {
+            NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: currentVideoPlayerMode)
+            currentPlaybackAsset = nil
+        }
     }
     
     func sessionManager(_ sessionManager: GCKSessionManager, didFailToStart session: GCKCastSession, withError error: Error) {
         print("Cast session failed to start: \(error)")
         ExternalPlaybackManager.isChromecastActive = false
+        
+        currentPlaybackAsset = nil
     }
     
 }
