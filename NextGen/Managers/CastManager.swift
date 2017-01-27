@@ -44,6 +44,10 @@ import GoogleCast
         return nil
     }
     
+    var currentTextTracks: [GCKMediaTrack]? {
+        return currentMediaStatus?.mediaInformation?.mediaTracks?.filter({ $0.type == .text })
+    }
+    
     var isPlaying: Bool {
         if let playerState = currentMediaStatus?.playerState {
             return playerState == .playing
@@ -61,8 +65,8 @@ import GoogleCast
         GCKLogger.sharedInstance().delegate = self
     }
     
-    func load(media: GCKMediaInformation, playPosition: Double = 0) {
-        currentSession?.remoteMediaClient?.loadMedia(media, autoplay: true, playPosition: playPosition)
+    func load(mediaInfo: GCKMediaInformation, playPosition: Double = 0) {
+        currentSession?.remoteMediaClient?.loadMedia(mediaInfo, autoplay: true, playPosition: playPosition)
     }
     
     func load(playbackAsset: NextGenPlaybackAsset) {
@@ -92,7 +96,7 @@ import GoogleCast
         var customData = (playbackAsset.assetCastCustomData ?? nil) ?? [String: Any]()
         customData[Keys.AssetId] = playbackAsset.assetId
         
-        load(media:GCKMediaInformation(
+        load(mediaInfo: GCKMediaInformation(
             contentID: playbackAsset.assetURL.absoluteString,
             streamType: .buffered,
             contentType: (playbackAsset.assetContentType ?? "video/mp4"),
@@ -139,9 +143,13 @@ import GoogleCast
     }
     
     func selectTextTrack(withLanguageCode languageCode: String) {
-        if let mediaID = currentMediaStatus?.mediaInformation?.mediaTracks?.first(where: { $0.languageCode != nil && $0.languageCode! == languageCode })?.identifier {
-            currentSession?.remoteMediaClient?.setActiveTrackIDs([NSNumber(value: mediaID)])
+        if let identifier = currentMediaStatus?.mediaInformation?.mediaTracks?.first(where: { $0.languageCode != nil && $0.languageCode! == languageCode })?.identifier {
+            selectTextTrack(withIdentifier: identifier)
         }
+    }
+    
+    func selectTextTrack(withIdentifier identifier: Int) {
+        currentSession?.remoteMediaClient?.setActiveTrackIDs([NSNumber(value: identifier)])
     }
     
     func disableTextTracks() {

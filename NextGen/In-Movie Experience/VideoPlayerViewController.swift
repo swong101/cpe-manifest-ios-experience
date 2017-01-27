@@ -281,7 +281,7 @@ class VideoPlayerViewController: UIViewController {
             playButton?.isEnabled = playerControlsEnabled
             pauseButton?.isEnabled = playerControlsEnabled
             commentaryButton?.isEnabled = playerControlsEnabled
-            captionsButton?.isEnabled = playerControlsEnabled && (captionsSelectionGroup != nil || ((playbackAsset?.assetTextTracks?.count ?? 0) > 0))
+            captionsButton?.isEnabled = playerControlsEnabled && (captionsSelectionGroup != nil || ((CastManager.sharedInstance.currentTextTracks?.count ?? 0) > 0))
             cropToActivePictureButton?.isEnabled = playerControlsEnabled && !isExternalPlaybackActive
             pictureInPictureButton?.isEnabled = (pictureInPictureController == nil || !pictureInPictureController!.isPictureInPictureActive) && playerControlsEnabled
             fullScreenButton?.isEnabled = playerControlsEnabled
@@ -389,9 +389,9 @@ class VideoPlayerViewController: UIViewController {
                 } else {
                     playerItem?.select(nil, in: group)
                 }
-            } else if isCastingActive, let textTracks = playbackAsset?.assetTextTracks {
+            } else if let textTracks = CastManager.sharedInstance.currentTextTracks {
                 if captionsEnabled && textTracks.count > (currentCaptionsSelectionIndex - 1) {
-                    CastManager.sharedInstance.selectTextTrack(withLanguageCode: textTracks[currentCaptionsSelectionIndex - 1].textTrackLanguageCode)
+                    CastManager.sharedInstance.selectTextTrack(withIdentifier: textTracks[currentCaptionsSelectionIndex - 1].identifier)
                 } else {
                     CastManager.sharedInstance.disableTextTracks()
                 }
@@ -623,7 +623,13 @@ class VideoPlayerViewController: UIViewController {
         player?.removeObserver(self, forKeyPath: Constants.Keys.Rate)
         player?.removeObserver(self, forKeyPath: Constants.Keys.ExternalPlaybackActive)
         
-        // Nullify objects
+        // Nullify stored objects
+        previousScrubbingRate = 0
+        captionsSelectionGroup = nil
+        audioSelectionGroup = nil
+        mainAudioSelectionOption = nil
+        commentaryAudioSelectionOption = nil
+        playerItemVideoOutput = nil
         playerItem = nil
         player = nil
     }
@@ -1109,14 +1115,14 @@ class VideoPlayerViewController: UIViewController {
         player?.replaceCurrentItem(with: nil)
     }
     
-    private func selectInitialCaptions() {
+    fileprivate func selectInitialCaptions() {
         captionsOptionsTableView?.reloadData()
         
         var selectedIndex = 0
         if UIAccessibilityIsClosedCaptioningEnabled() {
-            if let index = captionsSelectionGroup?.options.index(where: { $0.locale == Locale.current }) ?? captionsSelectionGroup?.options.index(where: { $0.locale!.languageCode == Locale.current.languageCode }) {
+            if let index = captionsSelectionGroup?.options.index(where: { $0.locale?.identifier == Locale.current.identifier }) ?? captionsSelectionGroup?.options.index(where: { $0.locale?.identifier == Locale.current.identifier }) {
                 selectedIndex = index + 1
-            } else if isCastingActive, let index = playbackAsset?.assetTextTracks?.index(where: { Locale(identifier: $0.textTrackLanguageCode) == Locale.current })  {
+            } else if let index = CastManager.sharedInstance.currentTextTracks?.index(where: { $0.languageCode != nil && Locale(identifier: $0.languageCode!).identifier == Locale.current.identifier })  {
                 selectedIndex = index + 1
             }
         }
@@ -1192,30 +1198,16 @@ class VideoPlayerViewController: UIViewController {
                     }
                     
                     if CastManager.sharedInstance.hasConnectedCastSession && playbackAsset.assetIsCastable {
+                        strongSelf.isCastingActive = true
+                        CastManager.sharedInstance.currentVideoPlayerMode = strongSelf.mode
                         CastManager.sharedInstance.add(remoteMediaClientListener: strongSelf)
                         
-                        if let currentAssetId = CastManager.sharedInstance.currentAssetId, currentAssetId == playbackAsset.assetId {
-                            strongSelf.isCastingActive = true
-                            if let mediaStatus = CastManager.sharedInstance.currentMediaStatus {
-                                strongSelf.updateWithMediaStatus(mediaStatus)
-                            }
-                            
-                            return
-                        }
-                        
-                        if playbackAsset.assetIsCastable {
-                            strongSelf.isCastingActive = true
-                            CastManager.sharedInstance.currentVideoPlayerMode = strongSelf.mode
+                        if let currentAssetId = CastManager.sharedInstance.currentAssetId, currentAssetId == playbackAsset.assetId, let mediaStatus = CastManager.sharedInstance.currentMediaStatus {
+                            strongSelf.captionsButton?.isEnabled = (CastManager.sharedInstance.currentTextTracks != nil && CastManager.sharedInstance.currentTextTracks!.count > 0)
+                            strongSelf.selectInitialCaptions()
+                            strongSelf.updateWithMediaStatus(mediaStatus)
+                        } else {
                             CastManager.sharedInstance.load(playbackAsset: playbackAsset)
-                            
-                            if let textTracks = playbackAsset.assetTextTracks, textTracks.count > 0 {
-                                strongSelf.captionsButton?.isEnabled = true
-                                strongSelf.selectInitialCaptions()
-                            } else {
-                                strongSelf.captionsButton?.isEnabled = false
-                            }
-                            
-                            return
                         }
                     } else {
                         sendToPlayer(playbackAsset.assetURLAsset ?? AVURLAsset(url: playbackAsset.assetURL))
@@ -1277,9 +1269,7 @@ class VideoPlayerViewController: UIViewController {
             }
         }
         
-        if mode == .mainFeature || mode == .basicPlayer, let player = player {
-            player.isMuted = shouldMute
-            
+        if mode == .mainFeature || mode == .basicPlayer {
             if lastNotifiedTime != currentTime {
                 lastNotifiedTime = currentTime
                 NotificationCenter.default.post(name: .videoPlayerDidChangeTime, object: nil, userInfo: [NotificationConstants.time: Double(currentTime)])
@@ -1290,6 +1280,7 @@ class VideoPlayerViewController: UIViewController {
                 activityIndicator?.removeFromSuperview()
             }
             
+            player?.isMuted = shouldMute
             if shouldTrackOutput, let playerItem = playerItem, playerItem.outputs.count == 0 {
                 playerItem.add(AVPlayerItemVideoOutput())
             }
@@ -1705,7 +1696,7 @@ extension VideoPlayerViewController: UITableViewDataSource {
         if tableView == captionsOptionsTableView {
             if let options = captionsSelectionGroup?.options {
                 return options.count + 1
-            } else if let textTracks = playbackAsset?.assetTextTracks {
+            } else if let textTracks = CastManager.sharedInstance.currentTextTracks {
                 return textTracks.count + 1
             }
         }
@@ -1724,9 +1715,15 @@ extension VideoPlayerViewController: UITableViewDataSource {
             } else {
                 if let options = captionsSelectionGroup?.options, options.count > (indexPath.row - 1) {
                     cell.title = options[indexPath.row - 1].displayName
-                } else if let textTracks = playbackAsset?.assetTextTracks, textTracks.count > (indexPath.row - 1) {
+                } else if let textTracks = CastManager.sharedInstance.currentTextTracks, textTracks.count > (indexPath.row - 1) {
                     let textTrack = textTracks[indexPath.row - 1]
-                    cell.title = textTrack.textTrackTitle ?? (Locale(identifier: textTrack.textTrackLanguageCode) as NSLocale).displayName(forKey: .identifier, value: textTrack.textTrackLanguageCode)
+                    if let title = textTrack.name {
+                        cell.title = title
+                    } else if let languageCode = textTrack.languageCode {
+                        cell.title = (Locale(identifier: languageCode) as NSLocale).displayName(forKey: .identifier, value: languageCode)
+                    } else {
+                        cell.title = "CC"
+                    }
                 }
             }
             
@@ -1835,6 +1832,11 @@ extension VideoPlayerViewController: GCKRemoteMediaClientListener {
             
             syncPlayPauseButtons()
         }
+    }
+    
+    func remoteMediaClient(_ client: GCKRemoteMediaClient, didStartMediaSessionWithID sessionID: Int) {
+        captionsButton?.isEnabled = ((CastManager.sharedInstance.currentTextTracks?.count ?? 0) > 0)
+        selectInitialCaptions()
     }
     
     func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus) {
