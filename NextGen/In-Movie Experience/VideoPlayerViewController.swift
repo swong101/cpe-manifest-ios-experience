@@ -456,7 +456,6 @@ class VideoPlayerViewController: UIViewController {
     fileprivate var isCastingActive = false {
         didSet {
             isExternalPlaybackActive = isCastingActive
-            ExternalPlaybackManager.isChromecastActive = isCastingActive
             
             if isCastingActive != oldValue {
                 /*DispatchQueue.main.async {
@@ -473,8 +472,6 @@ class VideoPlayerViewController: UIViewController {
     fileprivate var isExternalPlaybackActive = false {
         didSet {
             if isExternalPlaybackActive != oldValue && mode != .basicPlayer {
-                ExternalPlaybackManager.isExternalPlaybackActive = isExternalPlaybackActive
-                
                 DispatchQueue.main.async {
                     if self.isExternalPlaybackActive {
                         self.cropToActivePictureButton?.isEnabled = false
@@ -1197,7 +1194,7 @@ class VideoPlayerViewController: UIViewController {
                         strongSelf.playbackSyncStartTime = startTime
                     }
                     
-                    if CastManager.sharedInstance.hasConnectedCastSession && playbackAsset.assetIsCastable {
+                    if strongSelf.mode != .supplementalInMovie && CastManager.sharedInstance.hasConnectedCastSession && playbackAsset.assetIsCastable {
                         strongSelf.isCastingActive = true
                         CastManager.sharedInstance.currentVideoPlayerMode = strongSelf.mode
                         CastManager.sharedInstance.add(remoteMediaClientListener: strongSelf)

@@ -15,6 +15,8 @@ class InMovieExperienceViewController: UIViewController {
     @IBOutlet var playerToExtrasConstarint: NSLayoutConstraint!
     @IBOutlet var playerToSuperviewConstraint: NSLayoutConstraint!
     
+    private var externalPlaybackDidToggleObserver: NSObjectProtocol?
+    
     private var videoPlayerViewController: VideoPlayerViewController? {
         for viewController in self.childViewControllers {
             if let videoPlayerViewController = viewController as? VideoPlayerViewController {
@@ -47,6 +49,23 @@ class InMovieExperienceViewController: UIViewController {
         }
     }
     
+    deinit {
+        if let observer = externalPlaybackDidToggleObserver {
+            NotificationCenter.default.removeObserver(observer)
+            externalPlaybackDidToggleObserver = nil
+        }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        externalPlaybackDidToggleObserver = NotificationCenter.default.addObserver(forName: .externalPlaybackDidToggle, object: nil, queue: OperationQueue.main, using: { (_) in
+            if ExternalPlaybackManager.isExternalPlaybackActive {
+                UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+            }
+        })
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -59,8 +78,20 @@ class InMovieExperienceViewController: UIViewController {
         playerToSuperviewConstraint.isActive = !playerToExtrasConstarint.isActive
     }
     
-    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
-        return UIInterfaceOrientationMask.all
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        if ExternalPlaybackManager.isExternalPlaybackActive {
+            return [.portrait, .portraitUpsideDown]
+        }
+        
+        return .all
+    }
+    
+    override var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation {
+        if ExternalPlaybackManager.isExternalPlaybackActive {
+            return .portrait
+        }
+        
+        return super.preferredInterfaceOrientationForPresentation
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {

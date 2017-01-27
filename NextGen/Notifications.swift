@@ -26,6 +26,7 @@ extension Notification.Name {
     static let videoPlayerItemReadyToPlayer = Notification.Name("nextgen.notifications.videoPlayerItemReadyToPlayer")
     static let videoPlayerPlaybackBufferEmpty = Notification.Name("nextgen.notifications.videoPlayerPlaybackBufferEmpty")
     static let videoPlayerPlaybackLikelyToKeepUp = Notification.Name("nextgen.notifications.videoPlayerPlaybackLikelyToKeepUp")
+    static let externalPlaybackDidToggle = Notification.Name("nextgen.notifications.externalPlaybackDidToggle")
     
     // Image Gallery
     static let imageGalleryDidScrollToPage = Notification.Name("nextgen.notifications.imageGalleryDidScrollToPage")
@@ -48,4 +49,5 @@ struct NotificationConstants {
     static let page = "page"
     static let time = "time"
     static let videoUrl = "videoUrl"
+    static let isExternalPlaybackActive = "isExternalPlaybackActive"
 }
