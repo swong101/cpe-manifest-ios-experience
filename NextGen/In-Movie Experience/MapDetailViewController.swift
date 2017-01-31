@@ -104,7 +104,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
             self.addChildViewController(videoPlayerViewController)
             videoPlayerViewController.didMove(toParentViewController: self)
             
-            videoPlayerViewController.play(url: videoURL)
+            videoPlayerViewController.playAsset(withURL: videoURL)
             
             locationDetailView.isHidden = false
             self.videoPlayerViewController = videoPlayerViewController

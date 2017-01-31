@@ -176,8 +176,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
                     videoPlayerViewController.didMove(toParentViewController: self)
                 }
                 
-                let playbackAsset = PlaybackAsset(url: videoURL, title: selectedExperience.title, imageUrl: selectedExperience.imageURL)
-                videoPlayerViewController.play(playbackAsset: playbackAsset)
+                videoPlayerViewController.playAsset(withURL: videoURL, title: selectedExperience.title, imageURL: selectedExperience.imageURL)
                 if !DeviceType.IS_IPAD && videoPlayerViewController.fullScreenButton != nil {
                     videoPlayerViewController.fullScreenButton?.removeFromSuperview()
                 }

@@ -1313,7 +1313,7 @@
                                         </connections>
                                     </button>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="right" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="aWF-KT-qE2">
-                                        <rect key="frame" x="674" y="0.0" width="150" height="75"/>
+                                        <rect key="frame" x="614" y="0.0" width="150" height="75"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="150" id="ot0-FZ-HAq"/>
                                         </constraints>
@@ -1339,6 +1339,13 @@
                                             <constraint firstAttribute="width" constant="40" id="OXl-dZ-Ral"/>
                                         </constraints>
                                     </view>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kiZ-Ah-tat" customClass="GCKUICastButton">
+                                        <rect key="frame" x="774" y="0.0" width="60" height="75"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="60" id="n8Y-cj-PVg"/>
+                                        </constraints>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.90000000000000002" colorSpace="custom" customColorSpace="sRGB"/>
                                 <color key="tintColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1352,19 +1359,22 @@
                                     <constraint firstItem="tw5-Q3-5PC" firstAttribute="leading" secondItem="noC-SF-mIj" secondAttribute="trailing" id="HkB-bR-vy1"/>
                                     <constraint firstAttribute="bottom" secondItem="noC-SF-mIj" secondAttribute="bottom" id="KKt-mJ-Ith"/>
                                     <constraint firstAttribute="bottom" secondItem="aWF-KT-qE2" secondAttribute="bottom" id="L16-vY-Dye"/>
-                                    <constraint firstItem="f4Q-vv-K5i" firstAttribute="leading" secondItem="aWF-KT-qE2" secondAttribute="trailing" constant="20" id="NXF-4t-9wL"/>
+                                    <constraint firstItem="f4Q-vv-K5i" firstAttribute="leading" secondItem="kiZ-Ah-tat" secondAttribute="trailing" constant="10" id="MjM-5q-qyP"/>
                                     <constraint firstItem="noC-SF-mIj" firstAttribute="leading" secondItem="f4Q-vv-K5i" secondAttribute="trailing" constant="10" id="SEK-Gs-vFH"/>
                                     <constraint firstItem="noC-SF-mIj" firstAttribute="top" secondItem="VY7-Vu-ikZ" secondAttribute="top" constant="5" id="UkE-0M-ZRM"/>
                                     <constraint firstItem="f4Q-vv-K5i" firstAttribute="top" secondItem="VY7-Vu-ikZ" secondAttribute="top" constant="23" id="VN2-GQ-NoZ"/>
                                     <constraint firstAttribute="trailing" secondItem="tw5-Q3-5PC" secondAttribute="trailing" constant="10" id="VxH-7Q-ITN"/>
                                     <constraint firstItem="aWF-KT-qE2" firstAttribute="top" secondItem="VY7-Vu-ikZ" secondAttribute="top" id="cdD-tn-wpC"/>
                                     <constraint firstAttribute="bottom" secondItem="aLt-Qu-Yg8" secondAttribute="bottom" id="gcv-dM-78f"/>
+                                    <constraint firstItem="kiZ-Ah-tat" firstAttribute="leading" secondItem="aWF-KT-qE2" secondAttribute="trailing" constant="10" id="imo-81-yth"/>
                                     <constraint firstAttribute="bottom" secondItem="f4Q-vv-K5i" secondAttribute="bottom" constant="20" id="iox-lV-48G"/>
                                     <constraint firstAttribute="bottom" secondItem="tw5-Q3-5PC" secondAttribute="bottom" id="tR2-jO-EeZ"/>
+                                    <constraint firstItem="kiZ-Ah-tat" firstAttribute="top" secondItem="VY7-Vu-ikZ" secondAttribute="top" id="vqm-iJ-Afz"/>
+                                    <constraint firstAttribute="bottom" secondItem="kiZ-Ah-tat" secondAttribute="bottom" id="zKF-gF-exs"/>
                                 </constraints>
                             </view>
                             <tableView hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="on4-j0-VVN">
-                                <rect key="frame" x="578" y="65" width="256" height="87"/>
+                                <rect key="frame" x="518" y="65" width="256" height="87"/>
                                 <color key="backgroundColor" red="0.13333333333333333" green="0.13333333333333333" blue="0.13333333333333333" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="87" id="ElU-Kc-H0y"/>
@@ -1424,6 +1434,7 @@
                         <outlet property="audioOptionsTableView" destination="on4-j0-VVN" id="kQD-JV-zNA"/>
                         <outlet property="captionsButton" destination="noC-SF-mIj" id="5KO-QZ-dRB"/>
                         <outlet property="captionsOptionsTableView" destination="Wqw-p1-bRv" id="KZh-xg-h0w"/>
+                        <outlet property="castButton" destination="kiZ-Ah-tat" id="Rff-lb-HyL"/>
                         <outlet property="commentaryButton" destination="aWF-KT-qE2" id="hld-pk-Zxx"/>
                         <outlet property="countdownLabel" destination="IcY-NN-IUH" id="bdY-t4-wu6"/>
                         <outlet property="cropToActivePictureButton" destination="tw5-Q3-5PC" id="uDN-X2-J6h"/>
