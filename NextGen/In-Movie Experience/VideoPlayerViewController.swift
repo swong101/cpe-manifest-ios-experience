@@ -857,6 +857,14 @@ class VideoPlayerViewController: UIViewController {
         }
     }
     
+    override func willMove(toParentViewController parent: UIViewController?) {
+        super.willMove(toParentViewController: parent)
+        
+        if parent == nil && !isCastingActive {
+            pauseVideo()
+        }
+    }
+    
     private func setViewDisplayName() {
         /* If the item has a AVMetadataCommonKeyTitle metadata, use that instead. */
         if let items = playerItem?.asset.commonMetadata {

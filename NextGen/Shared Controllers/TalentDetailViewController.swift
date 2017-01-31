@@ -42,8 +42,8 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
     @IBOutlet weak private var galleryCollectionView: UICollectionView?
     
     @IBOutlet weak private var filmographyContainerView: UIView?
-    @IBOutlet weak private var filmographyHeaderLabel: UILabel!
-    @IBOutlet weak private var filmographyCollectionView: UICollectionView!
+    @IBOutlet weak private var filmographyHeaderLabel: UILabel?
+    @IBOutlet weak private var filmographyCollectionView: UICollectionView?
     
     @IBOutlet weak private var twitterButton: SocialButton?
     @IBOutlet weak private var facebookButton: SocialButton?
@@ -57,6 +57,8 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         return (mode == .Synced ? .imeTalentAction : .extrasTalentAction)
     }
     
+    private var hud: MBProgressHUD?
+    
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,7 +66,7 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         // Localizations
         talentBiographyHeaderLabel?.text = String.localize("talentdetail.biography").uppercased()
         galleryHeaderLabel?.text = String.localize("talentdetail.gallery").uppercased()
-        filmographyHeaderLabel.text = String.localize("talentdetail.filmography").uppercased()
+        filmographyHeaderLabel?.text = String.localize("talentdetail.filmography").uppercased()
         
         // Mode Layout
         let talentHasGallery = talent.images != nil && talent.images!.count > 1
@@ -101,16 +103,16 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
             talentImageView?.removeFromSuperview()
         }
         
-        filmographyCollectionView.register(UINib(nibName: "SimpleImageCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: SimpleImageCollectionViewCell.BaseReuseIdentifier)
+        filmographyCollectionView?.register(UINib(nibName: "SimpleImageCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: SimpleImageCollectionViewCell.BaseReuseIdentifier)
         
         if !talent.detailsLoaded {
-            MBProgressHUD.showAdded(to: self.view, animated: true)
+            hud = MBProgressHUD.showAdded(to: self.view, animated: true)
         }
         
         DispatchQueue.global(qos: .userInteractive).async {
             self.talent.getTalentDetails({ (biography, socialAccounts, films) in
                 DispatchQueue.main.async(execute: {
-                    if let biography = biography {
+                    if let biography = biography, !biography.isEmpty {
                         self.talentBiographyContainerView?.isHidden = false
                         self.talentBiographyLabel?.text = biography
                         self.talentBiographyLabel?.scrollRectToVisible(CGRect.zero, animated: false)
@@ -157,13 +159,13 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
                     let hasFilms = films != nil && films!.count > 0
                     if hasFilms {
                         self.filmographyContainerView?.isHidden = false
-                        self.filmographyCollectionView.reloadData()
-                        self.filmographyCollectionView.setContentOffset(CGPoint(), animated: false)
+                        self.filmographyCollectionView?.reloadData()
+                        self.filmographyCollectionView?.setContentOffset(CGPoint(), animated: false)
                     } else {
                         self.filmographyContainerView?.removeFromSuperview()
                     }
                     
-                    MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
+                    self.hud?.hide(true)
                 })
             })
         }
@@ -172,11 +174,11 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
     }
     
     // MARK: Actions
-    override func close() {
+    override internal func onClose() {
         if self.parent is TalentDetailViewPresenter {
             (self.parent as! TalentDetailViewPresenter).talentDetailViewShouldClose()
         } else {
-            super.close()
+            super.onClose()
         }
     }
     
@@ -202,7 +204,7 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SimpleImageCollectionViewCell.BaseReuseIdentifier, for: indexPath) as! SimpleImageCollectionViewCell
         if collectionView == filmographyCollectionView {
             cell.imageURL = talent?.films?[indexPath.row].imageURL
-        } else {
+        } else if collectionView == galleryCollectionView {
             cell.imageURL = talent?.additionalImages?[indexPath.row].thumbnailImageURL
         }
         
@@ -211,26 +213,20 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
     
     // MARK: UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if collectionView == galleryCollectionView {
-            self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: (indexPath as NSIndexPath).row + 1)
-        } else if collectionView == filmographyCollectionView {
+        if collectionView == filmographyCollectionView {
             if let film = talent?.films?[indexPath.row], let delegate = NextGenHook.delegate {
                 delegate.didTapFilmography(forTitle: film.title, fromViewController: self)
                 NextGenHook.logAnalyticsEvent(currentAnalyticsEvent, action: .selectFilm, itemId: talent.id, itemName: film.title)
             }
+        } else if collectionView == galleryCollectionView {
+            self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: (indexPath as NSIndexPath).row + 1)
         }
     }
     
     // MARK: UICollectionViewDelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.height
-        var width: CGFloat
-        if collectionView == filmographyCollectionView {
-            width = height * Constants.FilmographyCollectionViewItemAspectRatio
-        } else {
-            width = height * Constants.GalleryCollectionViewItemAspectRatio
-        }
-        
+        let width = (height * (collectionView == filmographyCollectionView ? Constants.FilmographyCollectionViewItemAspectRatio : Constants.GalleryCollectionViewItemAspectRatio))
         return CGSize(width: width, height: height)
     }
     

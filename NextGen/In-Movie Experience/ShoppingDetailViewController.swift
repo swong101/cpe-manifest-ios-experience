@@ -97,9 +97,7 @@ class ShoppingDetailViewController: SceneDetailViewController, UICollectionViewD
         disclaimerLabel.text = String.localize("shopping.disclaimer").uppercased()
         
         closeDetailsViewObserver = NotificationCenter.default.addObserver(forName: .shoppingShouldCloseDetails, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
-            if let strongSelf = self {
-                strongSelf.close()
-            }
+            self?.onClose()
         })
     }
     
