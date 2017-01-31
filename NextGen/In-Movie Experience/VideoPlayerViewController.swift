@@ -280,9 +280,9 @@ class VideoPlayerViewController: UIViewController {
             durationLabel?.isEnabled = playerControlsEnabled
             playButton?.isEnabled = playerControlsEnabled
             pauseButton?.isEnabled = playerControlsEnabled
-            commentaryButton?.isEnabled = playerControlsEnabled
-            captionsButton?.isEnabled = playerControlsEnabled && (captionsSelectionGroup != nil || ((CastManager.sharedInstance.currentTextTracks?.count ?? 0) > 0))
-            cropToActivePictureButton?.isEnabled = playerControlsEnabled && !isExternalPlaybackActive
+            commentaryButton?.isEnabled = (playerControlsEnabled && !isCastingActive)
+            captionsButton?.isEnabled = (playerControlsEnabled && (captionsSelectionGroup != nil || ((CastManager.sharedInstance.currentTextTracks?.count ?? 0) > 0)))
+            cropToActivePictureButton?.isEnabled = (playerControlsEnabled && !isExternalPlaybackActive)
             pictureInPictureButton?.isEnabled = (pictureInPictureController == nil || !pictureInPictureController!.isPictureInPictureActive) && playerControlsEnabled
             fullScreenButton?.isEnabled = playerControlsEnabled
             
@@ -456,6 +456,9 @@ class VideoPlayerViewController: UIViewController {
     fileprivate var isCastingActive = false {
         didSet {
             isExternalPlaybackActive = isCastingActive
+            commentaryButton?.isEnabled = !isCastingActive
+            airPlayButton?.tintColor = (isCastingActive ? UIColor.gray : UIColor.white)
+            airPlayButton?.isUserInteractionEnabled = !isCastingActive
             
             if isCastingActive != oldValue {
                 /*DispatchQueue.main.async {
@@ -463,6 +466,7 @@ class VideoPlayerViewController: UIViewController {
                 }*/
                 
                 if isCastingActive {
+                    destroyAVPlayer()
                     logEvent(action: .chromecastOn)
                 }
             }
@@ -621,6 +625,7 @@ class VideoPlayerViewController: UIViewController {
         player?.removeObserver(self, forKeyPath: Constants.Keys.ExternalPlaybackActive)
         
         // Nullify stored objects
+        removeCurrentItem()
         previousScrubbingRate = 0
         captionsSelectionGroup = nil
         audioSelectionGroup = nil
@@ -1110,6 +1115,7 @@ class VideoPlayerViewController: UIViewController {
     
     func removeCurrentItem() {
         player?.replaceCurrentItem(with: nil)
+        state = .unknown
     }
     
     fileprivate func selectInitialCaptions() {
@@ -1203,6 +1209,7 @@ class VideoPlayerViewController: UIViewController {
                             strongSelf.captionsButton?.isEnabled = (CastManager.sharedInstance.currentTextTracks != nil && CastManager.sharedInstance.currentTextTracks!.count > 0)
                             strongSelf.selectInitialCaptions()
                             strongSelf.updateWithMediaStatus(mediaStatus)
+                            strongSelf.syncScrubber()
                         } else {
                             CastManager.sharedInstance.load(playbackAsset: playbackAsset)
                         }
@@ -1245,7 +1252,6 @@ class VideoPlayerViewController: UIViewController {
     }
     
     private func skipInterstitial() {
-        pauseVideo()
         removeCurrentItem()
         didPlayInterstitial = true
         playMainExperience()
@@ -1431,10 +1437,10 @@ class VideoPlayerViewController: UIViewController {
                 pauseVideo()
                 NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
             }
-            
-            destroyPlayer()
-            self.dismiss(animated: true, completion: completion)
         }
+        
+        destroyPlayer()
+        self.dismiss(animated: true, completion: completion)
     }
     
     // MARK: Actions
