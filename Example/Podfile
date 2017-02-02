@@ -9,18 +9,27 @@ target 'NextGenExample' do
     
     use_frameworks!
     
-    # For example project only
+    ##############################
+    ## For example project only ##
+    ##############################
     pod 'MBProgressHUD',            '~> 0.9.2'
     
-    # Required NextGen libraries
+    ################################
+    ## Required NextGen libraries ##
+    ################################
+    # Base Data
     pod 'NextGenDataManager',       :path => '../../cpe-manifest-ios-data'
+    
+    # Playback
+    pod 'google-cast-sdk',          '~> 3.3'
     
     # UI
     pod 'GoogleMaps'
-    pod 'SDWebImage',               '~> 3.0'
+    pod 'SDWebImage',               '~> 4.0'
     pod 'UAProgressView'
     
     # Helpers
+    pod 'Alamofire',                '~> 4.0'
     pod 'PromiseKit',               '~> 4.0'
     pod 'ReachabilitySwift'
 

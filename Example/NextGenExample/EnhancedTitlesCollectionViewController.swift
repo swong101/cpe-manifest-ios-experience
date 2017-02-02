@@ -76,7 +76,7 @@ class EnhancedTitlesCollectionViewController: UICollectionViewController, UIColl
         let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                try NextGenDataLoader.sharedInstance.loadTitle(cid: Array(NextGenDataLoader.ManifestData.keys)[indexPath.row], completionHandler: { [weak self] (success) in
+                try NextGenDataLoader.sharedInstance.loadTitle(id: Array(NextGenDataLoader.ManifestData.keys)[indexPath.row], completion: { [weak self] (success) in
                     if success, let strongSelf = self {
                         DispatchQueue.main.async {
                             NextGenLauncher.sharedInstance?.launchExperience(fromViewController: strongSelf)

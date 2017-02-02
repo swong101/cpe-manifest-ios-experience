@@ -3,7 +3,7 @@
 //
 
 import Foundation
-import AVKit
+import AVFoundation
 import GoogleCast
 
 @objc public protocol NextGenPlaybackAsset {
