@@ -39,7 +39,6 @@ class TheTakeProduct: NSObject {
     var productImageURL: URL?
     var sceneImageURL: URL?
     var exactMatch = false
-    private var theTakeURLString: String?
     var theTakeURL: URL?
     var bullseyePoint = CGPoint.zero
     

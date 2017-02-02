@@ -33,7 +33,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         shareButton.setTitle(String.localize("clipshare.share_button").uppercased(), for: UIControlState())
     }
     
-    private func reloadClipViews() {
+    private func destroyVideoPlayer() {
         videoPlayerViewController?.willMove(toParentViewController: nil)
         videoPlayerViewController?.view.removeFromSuperview()
         videoPlayerViewController?.removeFromParentViewController()
@@ -41,6 +41,10 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         videoContainerView.isHidden = true
         previewImageView.isHidden = false
         previewPlayButton.isHidden = false
+    }
+    
+    private func reloadClipViews() {
+        destroyVideoPlayer()
         
         if let imageURL = timedEvent?.imageURL {
             previewImageView.sd_setImage(with: imageURL)
@@ -64,6 +68,12 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
     }
     
     // MARK: Actions
+    override internal func onClose() {
+        super.onClose()
+        
+        destroyVideoPlayer()
+    }
+    
     @IBAction private func onPlay() {
         previewImageView.isHidden = true
         previewPlayButton.isHidden = true
@@ -78,7 +88,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
             self.addChildViewController(videoPlayerViewController)
             videoPlayerViewController.didMove(toParentViewController: self)
             
-            videoPlayerViewController.play(url: videoURL)
+            videoPlayerViewController.playAsset(withURL: videoURL)
             self.videoPlayerViewController = videoPlayerViewController
             
             NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectVideo, itemId: timedEvent?.id)

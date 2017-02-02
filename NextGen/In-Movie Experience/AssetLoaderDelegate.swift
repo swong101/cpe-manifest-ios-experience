@@ -21,7 +21,7 @@ import AVFoundation
     static let didPersistContentKeyNotification = NSNotification.Name(rawValue: "handleAssetLoaderDelegateDidPersistContentKeyNotification")
     
     /// The AVURLAsset associated with the asset.
-    fileprivate let asset: AVURLAsset
+    let asset: AVURLAsset
     
     /// The name associated with the asset.
     fileprivate let assetName: String

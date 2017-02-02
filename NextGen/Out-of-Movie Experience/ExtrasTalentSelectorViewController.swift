@@ -7,13 +7,13 @@ import UIKit
 import AVFoundation
 import NextGenDataManager
 
-class ExtrasTalentSelectorViewController: ExtrasExperienceViewController, UITableViewDelegate, UITableViewDataSource, TalentDetailViewPresenter {
+class ExtrasTalentSelectorViewController: ExtrasExperienceViewController {
     
-    @IBOutlet weak var talentTableView: UITableView!
-    @IBOutlet weak var talentDetailView: UIView!
+    @IBOutlet private weak var talentTableView: UITableView!
+    @IBOutlet private weak var talentDetailView: UIView!
     
     private var talentDetailViewController: TalentDetailViewController?
-    private var selectedIndexPath: IndexPath?
+    fileprivate var selectedIndexPath: IndexPath?
     
     // MARK: View Lifecycle
     override func viewDidLoad() {
@@ -35,7 +35,7 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController, UITabl
     }
     
     // MARK: Talent Details
-    func showTalentDetailView() {
+    fileprivate func showTalentDetailView() {
         if selectedIndexPath != nil, let talent = (talentTableView?.cellForRow(at: selectedIndexPath!) as? TalentTableViewCell)?.talent, let talentDetailViewController = UIStoryboard.getNextGenViewController(TalentDetailViewController.self) as? TalentDetailViewController {
             talentDetailViewController.talent = talent
             
@@ -64,7 +64,7 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController, UITabl
         }
     }
     
-    func hideTalentDetailView(completed: (() -> Void)? = nil) {
+    fileprivate func hideTalentDetailView(completed: (() -> Void)? = nil) {
         if talentDetailViewController != nil {
             if selectedIndexPath != nil {
                 talentTableView?.deselectRow(at: selectedIndexPath!, animated: true)
@@ -97,7 +97,10 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController, UITabl
         }
     }
     
-    // MARK: UITableViewDataSource
+}
+
+extension ExtrasTalentSelectorViewController: UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return NGDMManifest.sharedInstance.mainExperience?.orderedActors?.count ?? 0
     }
@@ -109,7 +112,10 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController, UITabl
         return cell
     }
     
-    // MARK: UITableViewDelegate
+}
+
+extension ExtrasTalentSelectorViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         return (indexPath != selectedIndexPath ? indexPath : nil)
     }
@@ -121,7 +127,10 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController, UITabl
         }
     }
     
-    // MARK: TalentDetailViewPresenter
+}
+
+extension ExtrasTalentSelectorViewController: TalentDetailViewPresenter {
+    
     func talentDetailViewShouldClose() {
         hideTalentDetailView()
     }

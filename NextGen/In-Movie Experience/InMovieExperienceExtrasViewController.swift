@@ -5,14 +5,14 @@
 import UIKit
 import NextGenDataManager
 
-class InMovieExperienceExtrasViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIViewControllerTransitioningDelegate {
+class InMovieExperienceExtrasViewController: UIViewController {
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let HeaderHeight: CGFloat = 35
         static let FooterHeight: CGFloat = 50
     }
     
-    private struct SegueIdentifier {
+    fileprivate struct SegueIdentifier {
         static let ShowTalent = "ShowTalentSegueIdentifier"
     }
     
@@ -22,9 +22,9 @@ class InMovieExperienceExtrasViewController: UIViewController, UITableViewDataSo
     @IBOutlet weak private var showLessButton: UIButton!
     @IBOutlet weak private var showLessGradientView: UIView!
     private var showLessGradient = CAGradientLayer()
-    private var currentTalents = [NGDMTalent]()
+    fileprivate var currentTalents = [NGDMTalent]()
     private var hiddenTalents: [NGDMTalent]?
-    private var isShowingMore = false
+    fileprivate var isShowingMore = false
     
     private var currentTime: Double = -1
     private var didChangeTimeObserver: NSObjectProtocol?
@@ -78,7 +78,7 @@ class InMovieExperienceExtrasViewController: UIViewController, UITableViewDataSo
         showLessGradient.frame = showLessGradientView.bounds
     }
     
-    func processTimedEvents(_ time: Double) {
+    private func processTimedEvents(_ time: Double) {
         if !self.view.isHidden {
             DispatchQueue.global(qos: .userInteractive).async {
                 self.currentTime = time
@@ -101,7 +101,46 @@ class InMovieExperienceExtrasViewController: UIViewController, UITableViewDataSo
         }
     }
     
-    // MARK: UITableViewDataSource
+    // MARK: Actions
+    @objc fileprivate func onTapFooter() {
+        toggleShowMore()
+    }
+    
+    @IBAction private func onTapShowLess() {
+        toggleShowMore()
+    }
+    
+    private func toggleShowMore() {
+        isShowingMore = !isShowingMore
+        showLessContainer.isHidden = !isShowingMore
+        
+        if isShowingMore {
+            hiddenTalents = currentTalents
+            currentTalents = NGDMManifest.sharedInstance.mainExperience?.orderedActors ?? [NGDMTalent]()
+            NextGenHook.logAnalyticsEvent(.imeTalentAction, action: .showMore)
+        } else {
+            currentTalents = hiddenTalents ?? [NGDMTalent]()
+            NextGenHook.logAnalyticsEvent(.imeTalentAction, action: .showLess)
+        }
+        
+        talentTableView?.contentOffset = CGPoint.zero
+        talentTableView?.reloadData()
+    }
+    
+    // MARK: Storyboard Methods
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == SegueIdentifier.ShowTalent {
+            let talentDetailViewController = segue.destination as! TalentDetailViewController
+            talentDetailViewController.title = String.localize("talentdetail.title")
+            talentDetailViewController.talent = sender as! NGDMTalent
+            talentDetailViewController.mode = TalentDetailMode.Synced
+        }
+    }
+
+}
+
+extension InMovieExperienceExtrasViewController: UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return currentTalents.count
     }
@@ -131,7 +170,10 @@ class InMovieExperienceExtrasViewController: UIViewController, UITableViewDataSo
         return (isShowingMore ? nil : String.localize("talent.show_more"))
     }
     
-    // MARK: UITableViewDelegate
+}
+
+extension InMovieExperienceExtrasViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         if let header = view as? UITableViewHeaderFooterView {
             header.textLabel?.textAlignment = .center
@@ -161,40 +203,4 @@ class InMovieExperienceExtrasViewController: UIViewController, UITableViewDataSo
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-    // MARK: Actions
-    func onTapFooter() {
-        toggleShowMore()
-    }
-    
-    @IBAction func onTapShowLess() {
-        toggleShowMore()
-    }
-    
-    func toggleShowMore() {
-        isShowingMore = !isShowingMore
-        showLessContainer.isHidden = !isShowingMore
-        
-        if isShowingMore {
-            hiddenTalents = currentTalents
-            currentTalents = NGDMManifest.sharedInstance.mainExperience?.orderedActors ?? [NGDMTalent]()
-            NextGenHook.logAnalyticsEvent(.imeTalentAction, action: .showMore)
-        } else {
-            currentTalents = hiddenTalents ?? [NGDMTalent]()
-            NextGenHook.logAnalyticsEvent(.imeTalentAction, action: .showLess)
-        }
-        
-        talentTableView?.contentOffset = CGPoint.zero
-        talentTableView?.reloadData()
-    }
-    
-    // MARK: Storyboard Methods
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == SegueIdentifier.ShowTalent {
-            let talentDetailViewController = segue.destination as! TalentDetailViewController
-            talentDetailViewController.title = String.localize("talentdetail.title")
-            talentDetailViewController.talent = sender as! NGDMTalent
-            talentDetailViewController.mode = TalentDetailMode.Synced
-        }
-    }
-
 }

@@ -45,7 +45,7 @@ class SceneDetailViewController: UIViewController {
         closeButton.contentEdgeInsets = UIEdgeInsetsMake(0, -35, 0, 0)
         closeButton.titleEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 25)
         closeButton.imageEdgeInsets = UIEdgeInsetsMake(0, Constants.CloseButtonWidth, 0, 0)
-        closeButton.addTarget(self, action: #selector(SceneDetailViewController.close), for: UIControlEvents.touchUpInside)
+        closeButton.addTarget(self, action: #selector(onClose), for: UIControlEvents.touchUpInside)
         self.view.addSubview(closeButton)
         
         if let title = self.title {
@@ -55,7 +55,7 @@ class SceneDetailViewController: UIViewController {
         }
         
         shouldCloseDetailsObserver = NotificationCenter.default.addObserver(forName: .inMovieExperienceShouldCloseDetails, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
-            self?.close()
+            self?.onClose()
         })
     }
     
@@ -68,7 +68,7 @@ class SceneDetailViewController: UIViewController {
     }
     
     // MARK: Actions
-    internal func close() {
+    internal func onClose() {
         self.dismiss(animated: true, completion: nil)
         NotificationCenter.default.post(name: .inMovieExperienceWillCloseDetails, object: nil)
     }

@@ -4,7 +4,8 @@
 
 import Foundation
 import UIKit
-import AVFoundation
+import AVKit
+import MediaPlayer
 import GoogleMaps
 import NextGenDataManager
 import PromiseKit
@@ -13,13 +14,11 @@ import MBProgressHUD
 @objc class NextGenDataLoader: NSObject {
     
     private enum DataLoaderError: Error {
-        case TitleNotFound
-        case FileMissing
+        case titleNotFound
+        case fileMissing
     }
     
     private struct Constants {
-        static let XMLBaseURI = "https://your-domain.com"
-        
         struct ConfigKey {
             static let TheTakeAPI = "thetake_api_key"
             static let BaselineAPI = "baseline_api_key"
@@ -31,9 +30,9 @@ import MBProgressHUD
         "man_of_steel": [
             "title": "Man of Steel",
             "image": "MOS-Onesheet",
-            "manifest": "path-to-manifest.xml",
-            "appdata": "path-to-appdata.xml",
-            "cpestyle": "path-to-cpestyle.xml"
+            "manifest": "https://cpe-manifest.s3.amazonaws.com/xml/urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_manifest-2.3.xml",
+            "appdata": "https://cpe-manifest.s3.amazonaws.com/xml/urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_appdata-2.3.xml",
+            "cpestyle": "https://cpe-manifest.s3.amazonaws.com/xml/urn:dece:cid:eidr-s:DAFF-8AB8-3AF0-FD3A-29EF-Q/mos_cpestyle-2.4.xml"
         ]
     ]
     
@@ -77,14 +76,12 @@ import MBProgressHUD
         }
     }
     
-    func loadTitle(cid: String, completionHandler: @escaping (_ success: Bool) -> Void) throws {
-        guard let titleData = NextGenDataLoader.ManifestData[cid] else { throw DataLoaderError.TitleNotFound }
+    func loadTitle(id: String, completion: @escaping (_ success: Bool) -> Void) throws {
+        guard let titleData = NextGenDataLoader.ManifestData[id] else { throw DataLoaderError.titleNotFound }
         
-        guard let manifestFileName = titleData["manifest"] else { throw NGDMError.manifestMissing }
-        loadXMLFile(fileName: manifestFileName).then { localFilePath -> Void in
+        guard let manifestXMLPath = titleData["manifest"] else { throw NGDMError.manifestMissing }
+        loadXMLFile(manifestXMLPath).then(on: DispatchQueue.global(qos: .userInteractive), execute: { localFilePath -> Void in
             do {
-                NGDMManifest.createInstance()
-                
                 try NGDMManifest.sharedInstance.loadManifestXMLFile(localFilePath)
                 
                 if TheTakeAPIUtil.sharedInstance.apiKey != nil, let mediaId = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(Namespaces.TheTake) {
@@ -115,17 +112,17 @@ import MBProgressHUD
             var promises = [Promise<String>]()
             var hasAppData = false
             
-            if let appDataFileName = titleData["appdata"] {
-                promises.append(self.loadXMLFile(fileName: appDataFileName))
+            if let appDataXMLPath = titleData["appdata"] {
+                promises.append(self.loadXMLFile(appDataXMLPath))
                 hasAppData = true
             }
             
-            if let cpeStyleFileName = titleData["cpestyle"] {
-                promises.append(self.loadXMLFile(fileName: cpeStyleFileName))
+            if let styleXMLPath = titleData["cpestyle"] {
+                promises.append(self.loadXMLFile(styleXMLPath))
             }
             
             if promises.count > 0 {
-                _ = when(fulfilled: promises).then(on: DispatchQueue.global(qos: .userInitiated), execute: { results -> Void in
+                _ = when(fulfilled: promises).then(on: DispatchQueue.global(qos: .userInteractive), execute: { results -> Void in
                     var appDataFilePath: String?
                     var cpeStyleFilePath: String?
                     if hasAppData {
@@ -153,37 +150,41 @@ import MBProgressHUD
                         }
                     }
                     
-                    self.currentCid = cid
-                    completionHandler(true)
+                    completion(true)
                 })
             } else {
-                self.currentCid = cid
-                completionHandler(true)
+                completion(true)
             }
-        }.catch { error in
-            completionHandler(false)
+        }).catch { error in
+            completion(false)
         }
     }
     
-    private func loadXMLFile(fileName: String) -> Promise<String> {
+    private func loadXMLFile(_ filePath: String) -> Promise<String> {
         return Promise { fulfill, reject in
-            if let remoteURL = URL(string: Constants.XMLBaseURI + "/" + fileName), let applicationSupportFileURL = NextGenCacheManager.applicationSupportFileURL(remoteURL) {
-                if NextGenCacheManager.fileExists(applicationSupportFileURL) {
-                    fulfill(applicationSupportFileURL.path)
-                    NextGenCacheManager.storeApplicationSupportFile(remoteURL, completionHandler: { (localFileURL) in
-                        
-                    })
+            if let fileUrl = URL(string: filePath) {
+                if let manifestXMLPath = Bundle.main.path(forResource: "Data/Manifests/" + fileUrl.lastPathComponent.replacingOccurrences(of: ".xml", with: ""), ofType: "xml") {
+                    fulfill(manifestXMLPath)
+                } else if let applicationSupportFileURL = NextGenCacheManager.applicationSupportFileURL(fileUrl) {
+                    if NextGenCacheManager.fileExists(applicationSupportFileURL) {
+                        fulfill(applicationSupportFileURL.path)
+                        NextGenCacheManager.storeApplicationSupportFile(fileUrl, completionHandler: { (_) in
+                            
+                        })
+                    } else {
+                        NextGenCacheManager.storeApplicationSupportFile(fileUrl, completionHandler: { (localFileURL) in
+                            if let filePath = localFileURL?.path {
+                                fulfill(filePath)
+                            } else {
+                                reject(DataLoaderError.fileMissing)
+                            }
+                        })
+                    }
                 } else {
-                    NextGenCacheManager.storeApplicationSupportFile(remoteURL, completionHandler: { (localFileURL) in
-                        if let filePath = localFileURL?.path {
-                            fulfill(filePath)
-                        } else {
-                            reject(DataLoaderError.FileMissing)
-                        }
-                    })
+                    reject(DataLoaderError.fileMissing)
                 }
             } else {
-                reject(DataLoaderError.FileMissing)
+                reject(DataLoaderError.fileMissing)
             }
         }
     }
@@ -217,27 +218,9 @@ extension NextGenDataLoader: NextGenHookDelegate {
         // Callback for when the user taps the home screen buy button
     }
     
-    func videoPlayerWillClose(_ mode: VideoPlayerMode, playbackPosition: Double) {
-        // Handle end of playback
-    }
-    
     func interstitialShouldPlayMultipleTimes() -> Bool {
         // Return true if interstitial video should play again after user has already seen it (with ability to skip)
         return true
-    }
-    
-    func videoAsset(forUrl url: URL, mode: VideoPlayerMode, isInterstitial: Bool, completion: @escaping (AVURLAsset, Double) -> Void) {
-        // Handle DRM
-        if mode == .mainFeature && !isInterstitial {
-            if DeviceType.IS_SIMULATOR {
-                completion(AVURLAsset(url: URL(string: "http://pdl.warnerbros.com/digitalcopy2/s/bbb/big_buck_bunny_480p_h264.mov")!), 0)
-            } else {
-                // TODO: Handle DRM
-                completion(AVURLAsset(url: url), 0)
-            }
-        } else {
-            completion(AVURLAsset(url: url), 0)
-        }
     }
     
     func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (URL?) -> Void) {
@@ -251,6 +234,24 @@ extension NextGenDataLoader: NextGenHookDelegate {
         
         shareUrl += "/" + id
         completion(URL(string: shareUrl))
+    }
+    
+    func didFinishPlayingAsset(_ playbackAsset: NextGenPlaybackAsset, mode: VideoPlayerMode) {
+        // Handle end of playback
+        
+        if mode == .mainFeature {
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        }
+    }
+    
+    func playbackAsset(withURL url: URL, title: String?, imageURL: URL?, forMode mode: VideoPlayerMode, completion: @escaping (NextGenPlaybackAsset) -> Void) {
+        // Handle DRM
+        if mode == .mainFeature {
+            // TODO: Replace the this asset handler with your DRM flow
+            completion(NextGenExamplePlaybackAsset(id: url.absoluteString, url: URL(string: "http://pdl.warnerbros.com/digitalcopy2/s/bbb/big_buck_bunny_480p_h264.mov")!, title: "Big Buck Bunny"))
+        } else {
+            completion(NextGenExamplePlaybackAsset(id: url.absoluteString, url: url, title: title, imageURL: imageURL))
+        }
     }
     
     func didTapFilmography(forTitle title: String, fromViewController viewController: UIViewController) {
