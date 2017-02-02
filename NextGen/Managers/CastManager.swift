@@ -12,8 +12,18 @@ import GoogleCast
     
     static let sharedInstance = CastManager()
     
+    var isInitialized = false
+    
+    var hasDiscoveredDevices: Bool {
+        return (isInitialized && GCKCastContext.sharedInstance().discoveryManager.hasDiscoveredDevices)
+    }
+    
     private var currentSession: GCKCastSession? {
-        return GCKCastContext.sharedInstance().sessionManager.currentCastSession
+        if isInitialized {
+            return GCKCastContext.sharedInstance().sessionManager.currentCastSession
+        }
+        
+        return nil
     }
 
     var currentMediaStatus: GCKMediaStatus? {
@@ -21,15 +31,15 @@ import GoogleCast
     }
     
     var hasConnectedCastSession: Bool {
-        return GCKCastContext.sharedInstance().sessionManager.hasConnectedCastSession()
+        return (isInitialized && GCKCastContext.sharedInstance().sessionManager.hasConnectedCastSession())
     }
     
     var currentTime: Double {
-        return currentSession?.remoteMediaClient?.approximateStreamPosition() ?? 0
+        return (currentSession?.remoteMediaClient?.approximateStreamPosition() ?? 0)
     }
     
     var streamDuration: Double {
-        return currentMediaStatus?.mediaInformation?.streamDuration ?? 0
+        return (currentMediaStatus?.mediaInformation?.streamDuration ?? 0)
     }
     
     var currentAssetId: String? {
@@ -49,11 +59,7 @@ import GoogleCast
     }
     
     var isPlaying: Bool {
-        if let playerState = currentMediaStatus?.playerState {
-            return playerState == .playing
-        }
-        
-        return false
+        return (currentMediaStatus != nil && currentMediaStatus!.playerState == .playing)
     }
     
     var currentPlaybackAsset: NextGenPlaybackAsset?
@@ -63,6 +69,7 @@ import GoogleCast
         GCKCastContext.setSharedInstanceWith(GCKCastOptions(receiverApplicationID: receiverAppID))
         GCKCastContext.sharedInstance().sessionManager.add(self)
         GCKLogger.sharedInstance().delegate = self
+        isInitialized = true
     }
     
     func load(mediaInfo: GCKMediaInformation, playPosition: Double = 0) {
@@ -115,7 +122,15 @@ import GoogleCast
     }
     
     func add(sessionManagerListener listener: GCKSessionManagerListener) {
-        GCKCastContext.sharedInstance().sessionManager.add(listener)
+        if isInitialized {
+            GCKCastContext.sharedInstance().sessionManager.add(listener)
+        }
+    }
+    
+    func add(discoveryManagerListener listener: GCKDiscoveryManagerListener) {
+        if isInitialized {
+            GCKCastContext.sharedInstance().discoveryManager.add(listener)
+        }
     }
     
     func remove(remoteMediaClientListener listener: GCKRemoteMediaClientListener) {
@@ -123,7 +138,15 @@ import GoogleCast
     }
     
     func remove(sessionManagerListener listener: GCKSessionManagerListener) {
-        GCKCastContext.sharedInstance().sessionManager.remove(listener)
+        if isInitialized {
+            GCKCastContext.sharedInstance().sessionManager.remove(listener)
+        }
+    }
+    
+    func remove(discoveryManagerListener listener: GCKDiscoveryManagerListener) {
+        if isInitialized {
+            GCKCastContext.sharedInstance().discoveryManager.remove(listener)
+        }
     }
     
     func playMedia() {
