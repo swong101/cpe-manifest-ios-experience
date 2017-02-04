@@ -4,6 +4,7 @@
 
 import UIKit
 import MBProgressHUD
+import NextGenDataManager
 
 class ExtrasShoppingItemsViewController: ExtrasExperienceViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
@@ -16,7 +17,7 @@ class ExtrasShoppingItemsViewController: ExtrasExperienceViewController, UIColle
     
     @IBOutlet weak private var productsCollectionView: UICollectionView!
     
-    private var products: [TheTakeProduct]?
+    private var products: [ProductItem]?
     private var productListSessionDataTask: URLSessionDataTask?
     private var didSelectCategoryObserver: NSObjectProtocol?
     
@@ -41,18 +42,20 @@ class ExtrasShoppingItemsViewController: ExtrasExperienceViewController, UIColle
                     currentTask.cancel()
                 }
                 
-                DispatchQueue.global(qos: .userInteractive).async {
-                    strongSelf.productListSessionDataTask = TheTakeAPIUtil.sharedInstance.getCategoryProducts(categoryId, successBlock: { (products) in
-                        strongSelf.productListSessionDataTask = nil
-                        DispatchQueue.main.async {
-                            strongSelf.products = products
-                            strongSelf.productsCollectionView.reloadData()
-                            let newIndex = IndexPath(item: 0, section: 0)
-                            strongSelf.productsCollectionView.scrollToItem(at: newIndex, at: .top, animated: false)
-                            strongSelf.productsCollectionView.isUserInteractionEnabled = true
-                            MBProgressHUD.hideAllHUDs(for: strongSelf.productsCollectionView, animated: true)
-                        }
-                    })
+                if let productAPIUtil = NGDMConfiguration.productAPIUtil {
+                    DispatchQueue.global(qos: .userInteractive).async {
+                        strongSelf.productListSessionDataTask = productAPIUtil.getCategoryProducts(categoryId, completion: { (products) in
+                            strongSelf.productListSessionDataTask = nil
+                            DispatchQueue.main.async {
+                                strongSelf.products = products
+                                strongSelf.productsCollectionView.reloadData()
+                                let newIndex = IndexPath(item: 0, section: 0)
+                                strongSelf.productsCollectionView.scrollToItem(at: newIndex, at: .top, animated: false)
+                                strongSelf.productsCollectionView.isUserInteractionEnabled = true
+                                MBProgressHUD.hideAllHUDs(for: strongSelf.productsCollectionView, animated: true)
+                            }
+                        })
+                    }
                 }
             }
         })
@@ -79,7 +82,7 @@ class ExtrasShoppingItemsViewController: ExtrasExperienceViewController, UIColle
         cell.productImageType = .scene
         
         if let product = products?[(indexPath as NSIndexPath).row] {
-            cell.theTakeProducts = [product]
+            cell.products = [product]
         }
         
         return cell
@@ -89,7 +92,7 @@ class ExtrasShoppingItemsViewController: ExtrasExperienceViewController, UIColle
      func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let shoppingDetailViewController = UIStoryboard.getNextGenViewController(ShoppingDetailViewController.self) as? ShoppingDetailViewController, let cell = collectionView.cellForItem(at: indexPath) as? ShoppingSceneDetailCollectionViewCell {
             shoppingDetailViewController.experience = experience
-            shoppingDetailViewController.products = cell.theTakeProducts
+            shoppingDetailViewController.products = cell.products
             shoppingDetailViewController.modalPresentationStyle = (DeviceType.IS_IPAD ? .overCurrentContext : .overFullScreen)
             shoppingDetailViewController.modalTransitionStyle = .crossDissolve
             self.present(shoppingDetailViewController, animated: true, completion: nil)

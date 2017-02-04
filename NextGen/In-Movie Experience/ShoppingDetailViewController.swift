@@ -3,6 +3,7 @@
 //
 
 import UIKit
+import NextGenDataManager
 
 class ShoppingDetailCell: UICollectionViewCell {
     
@@ -12,7 +13,7 @@ class ShoppingDetailCell: UICollectionViewCell {
     @IBOutlet weak var productBrandLabel: UILabel!
     @IBOutlet weak var productNameLabel: UILabel!
     
-    var product: TheTakeProduct? {
+    var product: ProductItem? {
         didSet {
             productBrandLabel.text = product?.brand
             productNameLabel.text = product?.name
@@ -37,7 +38,7 @@ class ShoppingDetailCell: UICollectionViewCell {
     
 }
 
-class ShoppingDetailViewController: SceneDetailViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+class ShoppingDetailViewController: SceneDetailViewController {
     
     @IBOutlet weak private var productMatchIcon: UIView!
     @IBOutlet weak private var productMatchLabel: UILabel!
@@ -51,7 +52,7 @@ class ShoppingDetailViewController: SceneDetailViewController, UICollectionViewD
     @IBOutlet weak private var disclaimerLabel: UILabel!
     @IBOutlet weak private var productsCollectionView: UICollectionView?
     
-    var products: [TheTakeProduct]?
+    var products: [ProductItem]?
     private var closeDetailsViewObserver: NSObjectProtocol?
     
     deinit {
@@ -60,27 +61,29 @@ class ShoppingDetailViewController: SceneDetailViewController, UICollectionViewD
         }
     }
     
-    var currentProduct: TheTakeProduct? {
+    var currentProduct: ProductItem? {
         didSet {
-            if let product = currentProduct {
-                productMatchIcon.backgroundColor = (product.exactMatch ? UIColor(netHex: 0x2c97de) : UIColor(netHex: 0xf1c115))
-                productMatchLabel.text = (product.exactMatch ? String.localize("shopping.exact_match") : String.localize("shopping.close_match"))
-            } else {
-                productMatchIcon.backgroundColor = UIColor.clear
-                productMatchLabel.text = nil
-            }
-            
-            productBrandLabel.text = currentProduct?.brand
-            productNameLabel.text = currentProduct?.name
-            productPriceLabel.text = currentProduct?.price
-            if let imageURL = currentProduct?.productImageURL {
-                productImageView.sd_setImage(with: imageURL, completed: { [weak self] (image, _, _, _) in
-                    self?.productImageView.backgroundColor = image?.getPixelColor(CGPoint.zero)
-                })
-            } else {
-                productImageView.sd_cancelCurrentImageLoad()
-                productImageView.image = nil
-                productImageView.backgroundColor = UIColor.clear
+            if currentProduct?.id != oldValue?.id {
+                if let product = currentProduct {
+                    productMatchIcon.backgroundColor = (product.exactMatch ? UIColor(netHex: 0x2c97de) : UIColor(netHex: 0xf1c115))
+                    productMatchLabel.text = (product.exactMatch ? String.localize("shopping.exact_match") : String.localize("shopping.close_match"))
+                } else {
+                    productMatchIcon.backgroundColor = UIColor.clear
+                    productMatchLabel.text = nil
+                }
+                
+                productBrandLabel.text = currentProduct?.brand
+                productNameLabel.text = currentProduct?.name
+                productPriceLabel.text = currentProduct?.price
+                if let imageURL = currentProduct?.productImageURL {
+                    productImageView.sd_setImage(with: imageURL, completed: { [weak self] (image, _, _, _) in
+                        self?.productImageView.backgroundColor = image?.getPixelColor(CGPoint.zero)
+                    })
+                } else {
+                    productImageView.sd_cancelCurrentImageLoad()
+                    productImageView.image = nil
+                    productImageView.backgroundColor = UIColor.clear
+                }
             }
         }
     }
@@ -117,16 +120,16 @@ class ShoppingDetailViewController: SceneDetailViewController, UICollectionViewD
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         
-        productMatchIcon.layer.cornerRadius = productMatchIcon.frame.width / 2
+        productMatchIcon.layer.cornerRadius = (productMatchIcon.frame.width / 2)
     }
     
     
     // MARK: Actions
-    @IBAction func onShop(_ sender: AnyObject) {
-        currentProduct?.theTakeURL?.promptLaunch()
+    @IBAction private func onShop(_ sender: AnyObject) {
+        currentProduct?.externalURL?.promptLaunch()
     }
     
-    @IBAction func onSendLink(_ sender: AnyObject) {
+    @IBAction private func onSendLink(_ sender: AnyObject) {
         if let button = sender as? UIButton, let product = currentProduct {
             let activityViewController = UIActivityViewController(activityItems: [product.shareText], applicationActivities: nil)
             activityViewController.popoverPresentationController?.sourceView = button
@@ -134,8 +137,10 @@ class ShoppingDetailViewController: SceneDetailViewController, UICollectionViewD
         }
     }
     
+}
+
+extension ShoppingDetailViewController: UICollectionViewDataSource {
     
-    // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return products?.count ?? 0
     }
@@ -147,12 +152,12 @@ class ShoppingDetailViewController: SceneDetailViewController, UICollectionViewD
         return cell
     }
     
+}
+
+extension ShoppingDetailViewController: UICollectionViewDelegate {
     
-    // MARK: UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if let product = products?[(indexPath as NSIndexPath).row] , product != currentProduct {
-            currentProduct = product
-        }
+        currentProduct = products?[(indexPath as NSIndexPath).row]
     }
     
 }

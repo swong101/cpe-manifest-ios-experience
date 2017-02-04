@@ -75,8 +75,8 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         }
     }
     
-    private var currentGallery: NGDMGallery?
-    private var currentVideo: NGDMVideo?
+    private var currentGalleryAnalyticsIdentifier: String?
+    private var currentVideoAnalyticsIdentifier: String?
     
     deinit {
         let center = NotificationCenter.default
@@ -139,7 +139,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         
         videoPlayerDidToggleFullScreenObserver = NotificationCenter.default.addObserver(forName: .videoPlayerDidToggleFullScreen, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
             if let isFullScreen = notification.userInfo?[NotificationConstants.isFullScreen] as? Bool, isFullScreen {
-                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setVideoFullScreen, itemId: self?.currentVideo?.id)
+                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setVideoFullScreen, itemId: self?.currentVideoAnalyticsIdentifier)
             }
         })
         
@@ -153,7 +153,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
                 self?.galleryPageControl.isHidden = isFullScreen
                 
                 if isFullScreen {
-                    NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setImageGalleryFullScreen, itemId: self?.currentGallery?.id)
+                    NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setImageGalleryFullScreen, itemId: self?.currentGalleryAnalyticsIdentifier)
                 }
             }
         })
@@ -161,7 +161,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         galleryDidScrollToPageObserver = NotificationCenter.default.addObserver(forName: .imageGalleryDidScrollToPage, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
             if let page = notification.userInfo?[NotificationConstants.page] as? Int {
                 self?.galleryPageControl.currentPage = page
-                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectImage, itemId: self?.currentGallery?.id)
+                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectImage, itemId: self?.currentGalleryAnalyticsIdentifier)
             }
         })
         
@@ -199,16 +199,16 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         })
         
         if toLandscape {
-            if let gallery = currentGallery {
-                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setImageGalleryFullScreen, itemId: gallery.id)
-            } else if let video = currentVideo {
-                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setVideoFullScreen, itemId: video.id)
+            if let galleryAnalyticsIdentifier = currentGalleryAnalyticsIdentifier {
+                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setImageGalleryFullScreen, itemId: galleryAnalyticsIdentifier)
+            } else if let videoAnalyticsIdentifier = currentVideoAnalyticsIdentifier {
+                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .setVideoFullScreen, itemId: videoAnalyticsIdentifier)
             }
         }
     }
     
     override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
-        if DeviceType.IS_IPAD || (currentGallery == nil && currentVideo == nil) {
+        if DeviceType.IS_IPAD || (currentGalleryAnalyticsIdentifier == nil && currentVideoAnalyticsIdentifier == nil) {
             return super.supportedInterfaceOrientations
         }
         
@@ -336,8 +336,8 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
     @IBAction func onTapBreadcrumb(_ sender: UIButton) {
         closeDetailView(animated: false)
         selectedExperience = nil
-        currentVideo = nil
-        currentGallery = nil
+        currentVideoAnalyticsIdentifier = nil
+        currentGalleryAnalyticsIdentifier = nil
     }
     
     @IBAction func onPageControlValueChanged() {
@@ -374,24 +374,24 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        currentVideo = nil
-        currentGallery = nil
+        currentVideoAnalyticsIdentifier = nil
+        currentGalleryAnalyticsIdentifier = nil
         
         if let selectedExperience = selectedExperience, selectedExperience.appDataMediaCount > 0 {
             if let experience = selectedExperience.appDataMediaAtIndex(indexPath.row) {
-                if let video = experience.video {
+                if experience.videoURL != nil {
                     playVideo(fromExperience: experience)
-                    currentVideo = video
-                    NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectVideo, itemId: video.id)
+                    currentVideoAnalyticsIdentifier = experience.videoAnalyticsIdentifier
+                    NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectVideo, itemId: currentVideoAnalyticsIdentifier)
                 } else if let gallery = experience.gallery {
                     showGallery(gallery)
-                    currentGallery = gallery
-                    NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectImageGallery, itemId: gallery.id)
+                    currentGalleryAnalyticsIdentifier = gallery.analyticsIdentifier
+                    NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectImageGallery, itemId: currentGalleryAnalyticsIdentifier)
                 }
             }
         } else {
             selectedExperience = locationExperiences[indexPath.row]
-            NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectLocationThumbnail, itemId: selectedExperience?.id)
+            NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectLocationThumbnail, itemId: selectedExperience?.analyticsIdentifier)
         }
     }
     

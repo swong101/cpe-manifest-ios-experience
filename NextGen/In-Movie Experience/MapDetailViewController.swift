@@ -162,14 +162,14 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
         if (indexPath as NSIndexPath).row == 0 {
             closeDetailView()
             animateToCenter()
-            NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectMap, itemId: appData.id)
+            NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectMap, itemId: appData.analyticsIdentifier)
         } else if let experience = appData.mediaAtIndex(indexPath.row - 1) {
-            if let video = experience.video, let url = experience.videoURL {
+            if let url = experience.videoURL {
                 playVideo(url)
-                NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectVideo, itemId: video.id)
+                NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectVideo, itemId: experience.videoID)
             } else if let gallery = experience.gallery {
                 showGallery(gallery)
-                NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectImageGallery, itemId: gallery.id)
+                NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectImageGallery, itemId: gallery.analyticsIdentifier)
             }
         }
     }

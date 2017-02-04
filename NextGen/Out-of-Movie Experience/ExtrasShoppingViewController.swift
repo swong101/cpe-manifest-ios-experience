@@ -3,33 +3,44 @@
 //
 
 import UIKit
+import NextGenDataManager
 
 class ExtrasShoppingViewController: MenuedViewController {
     
+    private var productCategoriesSessionDataTask: URLSessionDataTask?
     private var didAutoSelectCategory = false
+    
+    deinit {
+        if let currentTask = productCategoriesSessionDataTask {
+            currentTask.cancel()
+            productCategoriesSessionDataTask = nil
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         menuSections.append(MenuSection(info: [MenuSection.Keys.Title: String.localize("label.all"), MenuSection.Keys.Value: "-1"]))
         
-        for category in TheTakeAPIUtil.sharedInstance.productCategories {
-            let info = NSMutableDictionary()
-            info[MenuSection.Keys.Title] = category.name
-            info[MenuSection.Keys.Value] = String(category.id)
-            
-            if let children = category.children {
-                if children.count > 1 {
-                    var rows = [[MenuItem.Keys.Title: String.localize("label.all"), MenuItem.Keys.Value: String(category.id)]]
-                    for child in children {
-                        rows.append([MenuItem.Keys.Title: child.name, MenuItem.Keys.Value: String(child.id)])
+        if let productCategories = experience.app?.productCategories {
+            for category in productCategories {
+                let info = NSMutableDictionary()
+                info[MenuSection.Keys.Title] = category.name
+                info[MenuSection.Keys.Value] = String(category.id)
+                
+                if let children = category.childCategories {
+                    if children.count > 1 {
+                        var rows = [[MenuItem.Keys.Title: String.localize("label.all"), MenuItem.Keys.Value: String(category.id)]]
+                        for child in children {
+                            rows.append([MenuItem.Keys.Title: child.name, MenuItem.Keys.Value: String(child.id)])
+                        }
+                        
+                        info[MenuSection.Keys.Rows] = rows
                     }
-                    
-                    info[MenuSection.Keys.Rows] = rows
                 }
+                
+                menuSections.append(MenuSection(info: info))
             }
-            
-            menuSections.append(MenuSection(info: info))
         }
     }
     

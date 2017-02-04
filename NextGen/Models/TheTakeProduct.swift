@@ -4,8 +4,9 @@
 
 import Foundation
 import CoreGraphics
+import NextGenDataManager
 
-class TheTakeProduct: NSObject {
+class TheTakeProduct: NSObject, ProductItem {
     
     private struct Constants {
         static let ProductURLPrefix = "http://www.thetake.com/product/"
@@ -32,19 +33,23 @@ class TheTakeProduct: NSObject {
         }
     }
     
-    private var id: String
+    var id: String
     var name: String
     var brand: String?
     var price: String?
     var productImageURL: URL?
     var sceneImageURL: URL?
     var exactMatch = false
-    var theTakeURL: URL?
+    var externalURL: URL?
     var bullseyePoint = CGPoint.zero
-    
     var shareText: String {
         get {
-            return name + " - " + (theTakeURL?.absoluteString ?? "")
+            var shareText = name
+            if let externalURLString = externalURL?.absoluteString {
+                shareText += " - " + externalURLString
+            }
+            
+            return shareText
         }
     }
     
@@ -77,9 +82,9 @@ class TheTakeProduct: NSObject {
         }
         
         if let purchaseLink = data[Constants.Keys.PurchaseLink] as? String , purchaseLink.characters.count > 0 {
-            theTakeURL = URL(string: purchaseLink)
+            externalURL = URL(string: purchaseLink)
         } else {
-            theTakeURL = URL(string: Constants.ProductURLPrefix + id)
+            externalURL = URL(string: Constants.ProductURLPrefix + id)
         }
     }
     

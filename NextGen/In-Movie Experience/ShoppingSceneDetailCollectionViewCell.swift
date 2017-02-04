@@ -4,6 +4,7 @@
 
 import Foundation
 import UIKit
+import NextGenDataManager
 
 enum ShoppingProductImageType {
     case product
@@ -49,47 +50,47 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
         }
     }
     
-    private var currentProduct: TheTakeProduct?
-    private var currentProductFrameTime = -1.0
-    private var currentProductSessionDataTask: URLSessionDataTask?
-    var theTakeProducts: [TheTakeProduct]? {
+    private var currentProduct: ProductItem? {
         didSet {
-            if let products = theTakeProducts, let product = products.first {
-                if currentProduct != product {
-                    currentProduct = product
-                    descriptionText = product.brand
-                    extraDescription = product.name
-                    imageURL = (productImageType == .scene ? product.sceneImageURL : product.productImageURL as URL?)
-                }
-            } else {
-                currentProduct = nil
-                imageURL = nil
-                descriptionText = nil
-                extraDescription = nil
-                currentProductFrameTime = -1.0
+            if currentProduct?.id != oldValue?.id {
+                descriptionText = currentProduct?.brand
+                extraDescription = currentProduct?.name
+                imageURL = (productImageType == .scene ? currentProduct?.sceneImageURL : currentProduct?.productImageURL)
+            }
+            
+            if currentProduct == nil {
+                currentProductFrameTime = -1
             }
         }
     }
     
+    private var currentProductFrameTime = -1.0
+    private var currentProductSessionDataTask: URLSessionDataTask?
+    var products: [ProductItem]? {
+        didSet {
+            currentProduct = products?.first
+        }
+    }
+    
     override func currentTimeDidChange() {
-        DispatchQueue.global(qos: .userInteractive).async {
-            if self.timedEvent != nil && self.timedEvent!.isType(.product) {
-                let newFrameTime = TheTakeAPIUtil.sharedInstance.closestFrameTime(self.currentTime)
-                if newFrameTime != self.currentProductFrameTime {
-                    self.currentProductFrameTime = newFrameTime
-                    
-                    if let currentTask = self.currentProductSessionDataTask {
-                        currentTask.cancel()
-                    }
-                    
-                    self.currentProductSessionDataTask = TheTakeAPIUtil.sharedInstance.getFrameProducts(self.currentProductFrameTime, successBlock: { [weak self] (products) -> Void in
-                        if let strongSelf = self {
-                            strongSelf.currentProductSessionDataTask = nil
-                            DispatchQueue.main.async {
-                                strongSelf.theTakeProducts = products
-                            }
+        if let productAPIUtil = NGDMConfiguration.productAPIUtil {
+            DispatchQueue.global(qos: .userInteractive).async {
+                if self.timedEvent != nil && self.timedEvent!.isType(.product) {
+                    let newFrameTime = productAPIUtil.closestFrameTime(self.currentTime)
+                    if newFrameTime != self.currentProductFrameTime {
+                        self.currentProductFrameTime = newFrameTime
+                        
+                        if let currentTask = self.currentProductSessionDataTask {
+                            currentTask.cancel()
                         }
-                    })
+                        
+                        self.currentProductSessionDataTask = productAPIUtil.getFrameProducts(self.currentProductFrameTime, completion: { [weak self] (products) -> Void in
+                            self?.currentProductSessionDataTask = nil
+                            DispatchQueue.main.async {
+                                self?.products = products
+                            }
+                        })
+                    }
                 }
             }
         }
@@ -98,7 +99,7 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         
-        theTakeProducts = nil
+        products = nil
         bullseyeImageView.isHidden = true
         
         if let task = currentProductSessionDataTask {

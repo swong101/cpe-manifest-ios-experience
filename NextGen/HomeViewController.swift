@@ -49,24 +49,16 @@ class HomeViewController: UIViewController {
     }
     
     private var nodeStyle: NGDMNodeStyle? {
-        return NGDMManifest.sharedInstance?.mainExperience?.getNodeStyle(UIApplication.shared.statusBarOrientation)
+        return NGDMManifest.sharedInstance.mainExperience?.getNodeStyle(UIApplication.shared.statusBarOrientation)
     }
     
-    private var backgroundImage: NGDMImage? {
-        return nodeStyle?.backgroundImage
+    private var backgroundVideoSize: CGSize {
+        return (nodeStyle?.backgroundVideoSize ?? CGSize.zero)
     }
     
     private var observedBackgroundImageSize: CGSize?
     private var backgroundImageSize: CGSize {
-        return backgroundImage?.size ?? observedBackgroundImageSize ?? CGSize.zero
-    }
-    
-    private var backgroundVideo: NGDMVideo? {
-        return nodeStyle?.backgroundVideo
-    }
-    
-    private var backgroundVideoSize: CGSize {
-        return backgroundVideo?.size ?? CGSize.zero
+        return (nodeStyle?.backgroundImageSize ?? observedBackgroundImageSize ?? CGSize.zero)
     }
     
     private var playButtonImage: NGDMImage? {
@@ -271,8 +263,8 @@ class HomeViewController: UIViewController {
         if self.view.window != nil && !self.isBeingDismissed {
             coordinator.animate(alongsideTransition: { [weak self] (_) in
                 if let strongSelf = self, strongSelf.interfaceCreated {
-                    if let currentUrl = strongSelf.backgroundVideoPlayerViewController?.url {
-                        if let newUrl = strongSelf.backgroundVideo?.url, currentUrl != newUrl {
+                    if let currentURL = strongSelf.backgroundVideoPlayerViewController?.url {
+                        if let newURL = self?.nodeStyle?.backgroundVideoURL, currentURL != newURL {
                             strongSelf.unloadBackground()
                             strongSelf.loadBackground()
                         } else {
@@ -301,19 +293,19 @@ class HomeViewController: UIViewController {
                 var backgroundSize = CGSize.zero
                 let backgroundVideoAspectRatio = backgroundVideoSize.width / backgroundVideoSize.height
                 
-                if nodeStyle?.backgroundScaleMethod == .Full {
+                if nodeStyle?.backgroundScaleMethod == .full {
                     if (backgroundVideoAspectRatio > viewAspectRatio) {
                         backgroundSize.width = viewWidth
                         backgroundSize.height = backgroundSize.width / backgroundVideoAspectRatio
                         
-                        if nodeStyle?.backgroundPositionMethod == .Centered {
+                        if nodeStyle?.backgroundPositionMethod == .centered {
                             backgroundPoint.y = (viewHeight - backgroundSize.height) / 2
                         }
                     } else {
                         backgroundSize.height = viewHeight
                         backgroundSize.width = backgroundSize.height * backgroundVideoAspectRatio
                         
-                        if nodeStyle?.backgroundPositionMethod == .Centered {
+                        if nodeStyle?.backgroundPositionMethod == .centered {
                             backgroundPoint.x = (viewWidth - backgroundSize.width) / 2
                         }
                     }
@@ -326,7 +318,7 @@ class HomeViewController: UIViewController {
                         backgroundSize.height = backgroundSize.width / backgroundVideoAspectRatio
                     }
                     
-                    if nodeStyle?.backgroundPositionMethod == .Centered {
+                    if nodeStyle?.backgroundPositionMethod == .centered {
                         backgroundPoint.x = (backgroundSize.width - viewWidth) / -2
                         backgroundPoint.y = (backgroundSize.height - viewHeight) / -2
                     }
@@ -341,19 +333,19 @@ class HomeViewController: UIViewController {
                 var backgroundSize = CGSize.zero
                 let backgroundImageAspectRatio = backgroundImageSize.width / backgroundImageSize.height
                 
-                if nodeStyle?.backgroundScaleMethod == .Full && backgroundVideo == nil {
+                if nodeStyle?.backgroundScaleMethod == .full && nodeStyle?.backgroundVideoURL == nil {
                     if (backgroundImageAspectRatio > viewAspectRatio) {
                         backgroundSize.width = viewWidth
                         backgroundSize.height = backgroundSize.width / backgroundImageAspectRatio
                         
-                        if nodeStyle?.backgroundPositionMethod == .Centered {
+                        if nodeStyle?.backgroundPositionMethod == .centered {
                             backgroundPoint.y = (viewHeight - backgroundSize.height) / 2
                         }
                     } else {
                         backgroundSize.height = viewHeight
                         backgroundSize.width = backgroundSize.height * backgroundImageAspectRatio
                         
-                        if nodeStyle?.backgroundPositionMethod == .Centered {
+                        if nodeStyle?.backgroundPositionMethod == .centered {
                             backgroundPoint.x = (viewWidth - backgroundSize.width) / 2
                         }
                     }
@@ -366,7 +358,7 @@ class HomeViewController: UIViewController {
                         backgroundSize.height = backgroundSize.width / backgroundImageAspectRatio
                     }
                     
-                    if nodeStyle == nil || backgroundVideo != nil || nodeStyle?.backgroundPositionMethod == .Centered {
+                    if nodeStyle == nil || nodeStyle?.backgroundVideoURL != nil || nodeStyle?.backgroundPositionMethod == .centered {
                         backgroundPoint.x = (backgroundSize.width - viewWidth) / -2
                         backgroundPoint.y = (backgroundSize.height - viewHeight) / -2
                     }
@@ -508,7 +500,7 @@ class HomeViewController: UIViewController {
     
     // MARK: Video Player
     private func loadBackground() {
-        if let nodeStyle = nodeStyle, let backgroundVideoURL = backgroundVideo?.url, let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController {
+        if let nodeStyle = nodeStyle, let backgroundVideoURL = nodeStyle.backgroundVideoURL, let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController {
             videoPlayerViewController.mode = .basicPlayer
             
             videoPlayerViewController.view.frame = backgroundVideoView.bounds
@@ -549,9 +541,9 @@ class HomeViewController: UIViewController {
             showHomeScreenViews(animated: false)
         }
         
-        if let backgroundImageURL = backgroundImage?.url {
+        if let backgroundImageURL = nodeStyle?.backgroundImageURL {
             backgroundImageView.sd_setImage(with: backgroundImageURL)
-        } else if backgroundVideo == nil {
+        } else if nodeStyle?.backgroundVideoURL == nil {
             if let backgroundImageURL = NGDMManifest.sharedInstance.outOfMovieExperience?.imageURL {
                 backgroundImageView.sd_setImage(with: backgroundImageURL, completed: { [weak self] (image, _, _, _) in
                     if let image = image {
@@ -564,7 +556,7 @@ class HomeViewController: UIViewController {
             }
         }
         
-        if !interfaceCreated, let backgroundAudioUrl = nodeStyle?.backgroundAudio?.url {
+        if !interfaceCreated, let backgroundAudioUrl = nodeStyle?.backgroundAudioURL {
             let audioPlayerItem = AVPlayerItem(asset: AVAsset(url: backgroundAudioUrl))
             backgroundAudioPlayer = AVPlayer(playerItem: audioPlayerItem)
             backgroundAudioPlayer?.play()

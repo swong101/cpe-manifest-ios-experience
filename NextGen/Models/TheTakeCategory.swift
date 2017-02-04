@@ -3,8 +3,9 @@
 //
 
 import Foundation
+import NextGenDataManager
 
-class TheTakeCategory: NSObject {
+class TheTakeCategory: ProductCategory {
     
     struct Keys {
         static let CategoryID = "categoryId"
@@ -12,21 +13,16 @@ class TheTakeCategory: NSObject {
         static let ChildCategories = "childCategories"
     }
     
-    var id: Int!
-    var name: String!
-    var children: [TheTakeCategory]?
+    var id: Int
+    var name: String
+    var childCategories: [ProductCategory]?
     
-    convenience init(info: NSDictionary) {
-        self.init()
-        
+    init(info: NSDictionary) {
         id = (info[Keys.CategoryID] as! NSNumber).intValue
         name = info[Keys.CategoryName] as! String
         
         if let childCategories = info[Keys.ChildCategories] as? [NSDictionary] {
-            children = [TheTakeCategory]()
-            for childCategory in childCategories {
-                children!.append(TheTakeCategory(info: childCategory))
-            }
+            self.childCategories = childCategories.map({ return TheTakeCategory(info: $0) })
         }
     }
     
