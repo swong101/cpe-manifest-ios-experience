@@ -1,5 +1,4 @@
 PODS:
-  - Alamofire (4.3.0)
   - google-cast-sdk (3.3.0):
     - google-cast-sdk/Core (= 3.3.0)
   - google-cast-sdk/Core (3.3.0)
@@ -28,7 +27,6 @@ PODS:
   - UAProgressView (0.1.3)
 
 DEPENDENCIES:
-  - Alamofire (~> 4.0)
   - google-cast-sdk (~> 3.3)
   - GoogleMaps
   - MBProgressHUD (~> 0.9.2)
@@ -43,7 +41,6 @@ EXTERNAL SOURCES:
     :path: "../../cpe-manifest-ios-data"
 
 SPEC CHECKSUMS:
-  Alamofire: 856a113053a7bc9cbe5d6367a555d773fc5cfef7
   google-cast-sdk: da1989cbc1b9ff7b50ddb9dae5b1969d95a65a0f
   GoogleMaps: a5b5bbe47734e2443bde781a6aa64e69fdb6d785
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
@@ -53,6 +50,6 @@ SPEC CHECKSUMS:
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
   UAProgressView: ce49aee47c14df6dc372f6fd57852f570ca97e6b
 
-PODFILE CHECKSUM: a42f8a4373785ddb29befa17e9c5ae32bda8e8a7
+PODFILE CHECKSUM: 6eaf70597fddee450d14304272ef086d2c4f8ee1
 
 COCOAPODS: 1.2.0
