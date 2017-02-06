@@ -10,16 +10,16 @@ PODS:
     - GoogleMaps/Base
   - MBProgressHUD (0.9.2)
   - NextGenDataManager (2.1.6)
-  - PromiseKit (4.1.4):
-    - PromiseKit/Foundation (= 4.1.4)
-    - PromiseKit/QuartzCore (= 4.1.4)
-    - PromiseKit/UIKit (= 4.1.4)
-  - PromiseKit/CorePromise (4.1.4)
-  - PromiseKit/Foundation (4.1.4):
+  - PromiseKit (4.1.7):
+    - PromiseKit/Foundation (= 4.1.7)
+    - PromiseKit/QuartzCore (= 4.1.7)
+    - PromiseKit/UIKit (= 4.1.7)
+  - PromiseKit/CorePromise (4.1.7)
+  - PromiseKit/Foundation (4.1.7):
     - PromiseKit/CorePromise
-  - PromiseKit/QuartzCore (4.1.4):
+  - PromiseKit/QuartzCore (4.1.7):
     - PromiseKit/CorePromise
-  - PromiseKit/UIKit (4.1.4):
+  - PromiseKit/UIKit (4.1.7):
     - PromiseKit/CorePromise
   - ReachabilitySwift (3)
   - SDWebImage (4.0.0):
@@ -48,7 +48,7 @@ SPEC CHECKSUMS:
   GoogleMaps: a5b5bbe47734e2443bde781a6aa64e69fdb6d785
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
   NextGenDataManager: d2fbcc701530a1adabbd4f396a1081fceb67ad69
-  PromiseKit: e69aead34c817988ea688b1085aee21300d6dcb8
+  PromiseKit: 779f2e41faf62d854e7593026ddbcb0bb5c5002d
   ReachabilitySwift: f5b9bb30a0777fac8f09ce8b067e32faeb29bb64
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
   UAProgressView: ce49aee47c14df6dc372f6fd57852f570ca97e6b
