@@ -10,13 +10,13 @@
 		495CF36A1CC042BA006AE290 /* CoreText.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 495CF3691CC042BA006AE290 /* CoreText.framework */; };
 		49C1E65F1C7FA9930076E9F3 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49C1E65E1C7FA9930076E9F3 /* MessageUI.framework */; };
 		7021D3691D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */; };
+		70239EFF1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70239EFE1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib */; };
 		703876431DAC1C1000544D5B /* NextGenLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703876421DAC1C1000544D5B /* NextGenLauncher.swift */; };
 		708488DC1D0F7EC900670B45 /* NextGenDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */; };
 		708D535F1D525944009CED95 /* NextGenHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708D535E1D525944009CED95 /* NextGenHook.swift */; };
 		70977FEF1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70977FEE1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift */; };
 		70977FF11DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70977FF01DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib */; };
 		70A217D21DDF6FE50006815C /* AssetLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A217D11DDF6FE50006815C /* AssetLoaderDelegate.swift */; };
-		70A5FBAB1D62895D00EE7847 /* EnhancedTitlesCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70A5FBAA1D62895D00EE7847 /* EnhancedTitlesCollectionViewCell.xib */; };
 		70A5FBAD1D62899C00EE7847 /* VideoCell_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70A5FBAC1D62899C00EE7847 /* VideoCell_iPhone.xib */; };
 		70A5FBB01D6289B800EE7847 /* AVPlayerItem+Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A5FBAE1D6289B800EE7847 /* AVPlayerItem+Cache.swift */; };
 		70A5FBB11D6289B800EE7847 /* DeviceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A5FBAF1D6289B800EE7847 /* DeviceType.swift */; };
@@ -125,6 +125,7 @@
 		49C1E65E1C7FA9930076E9F3 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		49F502541C890E6500DFAD88 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
 		7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ClipShareSceneDetailCollectionViewCell.xib; sourceTree = "<group>"; };
+		70239EFE1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EnhancedTitlesCollectionViewCell.xib; sourceTree = "<group>"; };
 		703876421DAC1C1000544D5B /* NextGenLauncher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenLauncher.swift; sourceTree = "<group>"; };
 		7071C54B1C6BCC11006F4275 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenDataLoader.swift; sourceTree = "<group>"; };
@@ -133,7 +134,6 @@
 		70977FEE1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtrasTalentSelectorViewController.swift; sourceTree = "<group>"; };
 		70977FF01DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = "TalentTableViewCell-Narrow_iPhone.xib"; sourceTree = "<group>"; };
 		70A217D11DDF6FE50006815C /* AssetLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AssetLoaderDelegate.swift; sourceTree = "<group>"; };
-		70A5FBAA1D62895D00EE7847 /* EnhancedTitlesCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EnhancedTitlesCollectionViewCell.xib; sourceTree = "<group>"; };
 		70A5FBAC1D62899C00EE7847 /* VideoCell_iPhone.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = VideoCell_iPhone.xib; sourceTree = "<group>"; };
 		70A5FBAE1D6289B800EE7847 /* AVPlayerItem+Cache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AVPlayerItem+Cache.swift"; sourceTree = "<group>"; };
 		70A5FBAF1D6289B800EE7847 /* DeviceType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceType.swift; sourceTree = "<group>"; };
@@ -469,7 +469,6 @@
 			children = (
 				7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */,
 				70BB99121E416BDD008D9027 /* DropdownTableViewCell.xib */,
-				70A5FBAA1D62895D00EE7847 /* EnhancedTitlesCollectionViewCell.xib */,
 				70C0930C1D0F60DF00BFC1E4 /* ImageSceneDetailCollectionViewCell.xib */,
 				70C0930D1D0F60DF00BFC1E4 /* MapItemCell.xib */,
 				70C0930E1D0F60DF00BFC1E4 /* MapSceneDetailCollectionViewCell.xib */,
@@ -502,9 +501,10 @@
 			isa = PBXGroup;
 			children = (
 				70C9EA691D08A2D7002299B3 /* AppDelegate.swift */,
-				70C9EA6A1D08A2D7002299B3 /* EnhancedTitlesCollectionViewController.swift */,
 				708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */,
 				70BB990E1E415DE7008D9027 /* NextGenExamplePlaybackAsset.swift */,
+				70C9EA6A1D08A2D7002299B3 /* EnhancedTitlesCollectionViewController.swift */,
+				70239EFE1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib */,
 				70C9EA6D1D08A3C5002299B3 /* LaunchScreen.storyboard */,
 				70C9EA6E1D08A3C5002299B3 /* Main.storyboard */,
 				7084E1E41D0F18EE00B1B5B7 /* Info.plist */,
@@ -594,6 +594,7 @@
 				70C093711D0F60DF00BFC1E4 /* TitledImageCell.xib in Resources */,
 				70C093171D0F60DF00BFC1E4 /* NextGen.storyboard in Resources */,
 				70B101A21D2D7B84003D0424 /* SimpleMapCollectionViewCell.xib in Resources */,
+				70239EFF1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib in Resources */,
 				70C093161D0F60DF00BFC1E4 /* NextGen.strings in Resources */,
 				70BB99151E416BF8008D9027 /* TextSceneDetailCollectionViewCell.xib in Resources */,
 				70977FF11DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib in Resources */,
@@ -607,7 +608,6 @@
 				70A5FBAD1D62899C00EE7847 /* VideoCell_iPhone.xib in Resources */,
 				70C9EA701D08A3C5002299B3 /* Main.storyboard in Resources */,
 				70C0933D1D0F60DF00BFC1E4 /* Assets.xcassets in Resources */,
-				70A5FBAB1D62895D00EE7847 /* EnhancedTitlesCollectionViewCell.xib in Resources */,
 				70C9EA601D08A18C002299B3 /* Assets.xcassets in Resources */,
 				70C093721D0F60DF00BFC1E4 /* VideoCell.xib in Resources */,
 				70C093411D0F60DF00BFC1E4 /* RobotoCondensed-Regular.ttf in Resources */,
