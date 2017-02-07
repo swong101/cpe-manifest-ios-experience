@@ -442,9 +442,26 @@ class VideoPlayerViewController: UIViewController {
     fileprivate var commentaryAudioSelectionOption: AVMediaSelectionOption?
     
     // Picture-in-Picture
-    fileprivate var pictureInPictureController: AVPictureInPictureController?
+    fileprivate var pictureInPictureController: Any?
+    
     private var isPictureInPictureActive: Bool {
-        return (pictureInPictureController != nil && pictureInPictureController!.isPictureInPictureActive)
+        if #available(iOS 9.0, *) {
+            if let pictureInPictureController = pictureInPictureController as? AVPictureInPictureController {
+                return pictureInPictureController.isPictureInPictureActive
+            }
+        }
+        
+        return false
+    }
+    
+    private var isPictureInPicturePossible: Bool {
+        if #available(iOS 9.0, *) {
+            if let pictureInPictureController = pictureInPictureController as? AVPictureInPictureController {
+                return pictureInPictureController.isPictureInPicturePossible
+            }
+        }
+        
+        return false
     }
     
     // AirPlay & Casting
@@ -606,7 +623,9 @@ class VideoPlayerViewController: UIViewController {
     
     fileprivate func destroyAVPlayer() {
         // Stop controls
-        pictureInPictureController?.stopPictureInPicture()
+        if #available(iOS 9.0, *) {
+            (pictureInPictureController as? AVPictureInPictureController)?.stopPictureInPicture()
+        }
         
         // Remove observers
         let center = NotificationCenter.default
@@ -843,14 +862,13 @@ class VideoPlayerViewController: UIViewController {
                 captionsOptionsTableView?.register(UINib(nibName: "DropdownTableViewCell", bundle: nil), forCellReuseIdentifier: DropdownTableViewCell.ReuseIdentifier)
                 
                 // Picture-in-Picture setup
-                var pictureInPictureSupported = false
-                if #available(iOS 10.0, *) {
-                    pictureInPictureSupported = AVPictureInPictureController.isPictureInPictureSupported()
-                }
-                
-                if pictureInPictureSupported, let playerLayer = playbackView.playerLayer {
-                    pictureInPictureController = AVPictureInPictureController(playerLayer: playerLayer)
-                    pictureInPictureController?.delegate = self
+                if #available(iOS 9.0, *) {
+                    if AVPictureInPictureController.isPictureInPictureSupported(), let playerLayer = playbackView.playerLayer {
+                        pictureInPictureController = AVPictureInPictureController(playerLayer: playerLayer)
+                        (pictureInPictureController as? AVPictureInPictureController)?.delegate = self
+                    } else {
+                        pictureInPictureButton?.removeFromSuperview()
+                    }
                 } else {
                     pictureInPictureButton?.removeFromSuperview()
                 }
@@ -1574,7 +1592,7 @@ class VideoPlayerViewController: UIViewController {
     }
     
     @IBAction private func onDone() {
-        if let pictureInPictureController = pictureInPictureController, pictureInPictureController.isPictureInPictureActive {
+        if isPictureInPictureActive {
             let alertController = UIAlertController(title: "", message: String.localize("player.message.pip.exit"), preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: String.localize("label.cancel"), style: .cancel, handler: { [weak self] (_) in
                 if let strongSelf = self, !strongSelf.isManuallyPaused {
@@ -1626,8 +1644,11 @@ class VideoPlayerViewController: UIViewController {
     }
     
     @IBAction private func onPictureInPicture() {
-        if let pictureInPictureController = pictureInPictureController, pictureInPictureController.isPictureInPicturePossible {
-            pictureInPictureController.startPictureInPicture()
+        if isPictureInPicturePossible {
+            if #available(iOS 9.0, *) {
+                (pictureInPictureController as? AVPictureInPictureController)?.startPictureInPicture()
+            }
+            
             pictureInPictureButton?.isEnabled = false
             logEvent(action: .pictureInPictureOn)
         } else {
@@ -1639,7 +1660,7 @@ class VideoPlayerViewController: UIViewController {
     
     /* The user is dragging the movie controller thumb to scrub through the movie. */
     @IBAction private func beginScrubbing() {
-        previousScrubbingRate = player?.rate ?? 0
+        previousScrubbingRate = (player?.rate ?? 0)
         pauseVideo()
         
         // Remove previous timer
@@ -1843,6 +1864,7 @@ extension VideoPlayerViewController: UITableViewDelegate {
     
 }
 
+@available(iOS 9.0, *)
 extension VideoPlayerViewController: AVPictureInPictureControllerDelegate {
     
     func pictureInPictureControllerDidStopPictureInPicture(_ pictureInPictureController: AVPictureInPictureController) {
