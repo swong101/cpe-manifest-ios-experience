@@ -11,6 +11,7 @@
 		49C1E65F1C7FA9930076E9F3 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49C1E65E1C7FA9930076E9F3 /* MessageUI.framework */; };
 		7021D3691D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */; };
 		70239EFF1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70239EFE1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib */; };
+		70239F041E496876006B9B9A /* AirPlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70239F031E496876006B9B9A /* AirPlayButton.swift */; };
 		703876431DAC1C1000544D5B /* NextGenLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703876421DAC1C1000544D5B /* NextGenLauncher.swift */; };
 		708488DC1D0F7EC900670B45 /* NextGenDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */; };
 		708D535F1D525944009CED95 /* NextGenHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708D535E1D525944009CED95 /* NextGenHook.swift */; };
@@ -126,6 +127,7 @@
 		49F502541C890E6500DFAD88 /* Twitter.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Twitter.framework; path = System/Library/Frameworks/Twitter.framework; sourceTree = SDKROOT; };
 		7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ClipShareSceneDetailCollectionViewCell.xib; sourceTree = "<group>"; };
 		70239EFE1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EnhancedTitlesCollectionViewCell.xib; sourceTree = "<group>"; };
+		70239F031E496876006B9B9A /* AirPlayButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AirPlayButton.swift; sourceTree = "<group>"; };
 		703876421DAC1C1000544D5B /* NextGenLauncher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenLauncher.swift; sourceTree = "<group>"; };
 		7071C54B1C6BCC11006F4275 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenDataLoader.swift; sourceTree = "<group>"; };
@@ -420,6 +422,7 @@
 		70C092EA1D0F60DF00BFC1E4 /* Shared Views */ = {
 			isa = PBXGroup;
 			children = (
+				70239F031E496876006B9B9A /* AirPlayButton.swift */,
 				70BB99101E4164A1008D9027 /* DropdownTableViewCell.swift */,
 				70C092ED1D0F60DF00BFC1E4 /* ImageGalleryScrollView.swift */,
 				70C092EE1D0F60DF00BFC1E4 /* MapItemCell.swift */,
@@ -692,6 +695,7 @@
 				70C093251D0F60DF00BFC1E4 /* SceneDetailCollectionViewController.swift in Sources */,
 				70A5FBB31D6289EB00EE7847 /* TextSceneDetailCollectionViewCell.swift in Sources */,
 				70C0931F1D0F60DF00BFC1E4 /* InMovieExperienceExtrasViewController.swift in Sources */,
+				70239F041E496876006B9B9A /* AirPlayButton.swift in Sources */,
 				70C093601D0F60DF00BFC1E4 /* String+Utils.swift in Sources */,
 				70C9EA6C1D08A2D7002299B3 /* EnhancedTitlesCollectionViewController.swift in Sources */,
 				70C093381D0F60DF00BFC1E4 /* ExtrasSceneLocationsViewController.swift in Sources */,

@@ -27,6 +27,7 @@ extension Notification.Name {
     static let videoPlayerPlaybackBufferEmpty = Notification.Name("nextgen.notifications.videoPlayerPlaybackBufferEmpty")
     static let videoPlayerPlaybackLikelyToKeepUp = Notification.Name("nextgen.notifications.videoPlayerPlaybackLikelyToKeepUp")
     static let externalPlaybackDidToggle = Notification.Name("nextgen.notifications.externalPlaybackDidToggle")
+    static let availableWirelessRoutesDidChange = Notification.Name("nextgen.notifications.availableWirelessRoutesDidChange")
     
     // Image Gallery
     static let imageGalleryDidScrollToPage = Notification.Name("nextgen.notifications.imageGalleryDidScrollToPage")

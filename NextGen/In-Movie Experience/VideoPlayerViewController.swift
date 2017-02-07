@@ -142,7 +142,6 @@ class VideoPlayerViewController: UIViewController {
     private var VideoPlayerCurrentItemObservationContext = 5
     private var VideoPlayerRateObservationContext = 6
     private var VideoPlayerExternalPlaybackObservationContext = 7
-    private var VideoPlayerWirelessRoutesObservationContext = 8
     
     fileprivate var state = VideoPlayerState.unknown {
         didSet {
@@ -256,7 +255,7 @@ class VideoPlayerViewController: UIViewController {
     @IBOutlet weak private var topToolbar: UIView?
     @IBOutlet weak fileprivate var commentaryButton: UIButton?
     @IBOutlet weak fileprivate var captionsButton: UIButton?
-    @IBOutlet weak private var airPlayButton: MPVolumeView?
+    @IBOutlet weak private var airPlayButton: AirPlayButton?
     @IBOutlet weak private var castButtonContainerView: UIView?
     private var castButton: UIButton?
     @IBOutlet weak private var playbackToolbar: UIView?
@@ -449,6 +448,8 @@ class VideoPlayerViewController: UIViewController {
     }
     
     // AirPlay & Casting
+    private var availableWirelessRoutesDidChangeObserver: NSObjectProtocol?
+    
     private var isAirPlayActive = false {
         didSet {
             isExternalPlaybackActive = isAirPlayActive
@@ -666,7 +667,11 @@ class VideoPlayerViewController: UIViewController {
         cancelCountdown()
         
         // Remove observers
-        airPlayButton?.removeObserver(self, forKeyPath: Constants.Keys.AreWirelessRoutesAvailable)
+        if let observer = availableWirelessRoutesDidChangeObserver {
+            NotificationCenter.default.removeObserver(observer)
+            availableWirelessRoutesDidChangeObserver = nil
+        }
+        
         CastManager.sharedInstance.remove(discoveryManagerListener: self)
         CastManager.sharedInstance.remove(sessionManagerListener: self)
         CastManager.sharedInstance.remove(remoteMediaClientListener: self)
@@ -783,6 +788,8 @@ class VideoPlayerViewController: UIViewController {
         
         if mode == .basicPlayer {
             playbackView.isCroppingToActivePicture = true
+            didPlayInterstitial = true
+            playerControlsVisible = false
         } else {
             if mode != .supplementalInMovie {
                 CastManager.sharedInstance.add(discoveryManagerListener: self)
@@ -817,19 +824,11 @@ class VideoPlayerViewController: UIViewController {
                 castButtonContainerView?.removeFromSuperview()
             }
             
-            if let airPlayButton = airPlayButton {
-                airPlayButton.showsVolumeSlider = false
-                airPlayButton.sizeToFit()
-                
-                if let airplayButtonTemplatedImage = (airPlayButton.subviews.last as? UIButton)?.image(for: .selected)?.withRenderingMode(.alwaysTemplate) {
-                    airPlayButton.setRouteButtonImage(airplayButtonTemplatedImage, for: .normal)
-                    airPlayButton.setRouteButtonImage(airplayButtonTemplatedImage, for: .highlighted)
-                    airPlayButton.setRouteButtonImage(airplayButtonTemplatedImage, for: .selected)
-                    airPlayButton.tintColor = UIColor.white
-                }
-                
-                airPlayButton.addObserver(self, forKeyPath: Constants.Keys.AreWirelessRoutesAvailable, options: .new, context: &VideoPlayerWirelessRoutesObservationContext)
-            }
+            
+            airPlayButton?.tintColor = UIColor.white
+            availableWirelessRoutesDidChangeObserver = NotificationCenter.default.addObserver(forName: .availableWirelessRoutesDidChange, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
+                self?.updateToolbarButtons()
+            })
             
             let singleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(onSingleTapPlayer))
             singleTapGestureRecognizer.numberOfTapsRequired = 1
@@ -1059,7 +1058,7 @@ class VideoPlayerViewController: UIViewController {
                     playVideo()
                 }
             }
-        } else if context == &VideoPlayerPresentationSizeContext || context == &VideoPlayerWirelessRoutesObservationContext {
+        } else if context == &VideoPlayerPresentationSizeContext {
             updateToolbarButtons()
         }
         else {
@@ -1071,7 +1070,6 @@ class VideoPlayerViewController: UIViewController {
         if mode == .basicPlayer {
             player?.actionAtItemEnd = .none
         }
-        
     }
     
     /* --------------------------------------------------------------
