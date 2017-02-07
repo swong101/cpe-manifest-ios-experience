@@ -1262,7 +1262,7 @@ class VideoPlayerViewController: UIViewController {
         
         removeCurrentItem()
         cancelCountdown()
-        playbackSyncStartTime = startTime ?? 0
+        playbackSyncStartTime = (startTime ?? 0)
         hasSeekedToPlaybackSyncStartTime = false
         
         if mode == .basicPlayer || !didPlayInterstitial {
@@ -1271,8 +1271,9 @@ class VideoPlayerViewController: UIViewController {
             NextGenHook.delegate?.playbackAsset(withURL: url, title: title, imageURL: imageURL, forMode: mode, completion: { [weak self] (playbackAsset) in
                 if let strongSelf = self {
                     strongSelf.playbackAsset = playbackAsset
-                    if let startTime = startTime {
-                        strongSelf.playbackAsset?.assetPlaybackPosition = startTime
+                    
+                    if strongSelf.playbackSyncStartTime > 0 {
+                        strongSelf.playbackAsset?.assetPlaybackPosition = strongSelf.playbackSyncStartTime
                     } else if let startTime = strongSelf.playbackAsset?.assetPlaybackPosition {
                         strongSelf.playbackSyncStartTime = startTime
                     }
@@ -1288,6 +1289,10 @@ class VideoPlayerViewController: UIViewController {
                             strongSelf.updateWithMediaStatus(mediaStatus)
                             strongSelf.syncScrubber()
                         } else {
+                            if let currentCastPlaybackAsset = CastManager.sharedInstance.currentPlaybackAsset {
+                                NextGenHook.delegate?.didFinishPlayingAsset(currentCastPlaybackAsset, mode: CastManager.sharedInstance.currentVideoPlayerMode)
+                            }
+                            
                             CastManager.sharedInstance.load(playbackAsset: playbackAsset)
                         }
                     } else {
