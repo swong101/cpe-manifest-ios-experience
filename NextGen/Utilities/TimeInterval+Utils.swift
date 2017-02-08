@@ -1,5 +1,5 @@
 //
-//  NSTimeInterval+Utils.swift
+//  TimeInterval+Utils.swift
 //
 
 import Foundation
