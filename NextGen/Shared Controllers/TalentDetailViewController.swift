@@ -114,8 +114,26 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
                 DispatchQueue.main.async(execute: {
                     if let biography = biography, !biography.isEmpty {
                         self.talentBiographyContainerView?.isHidden = false
-                        self.talentBiographyLabel?.text = biography
                         self.talentBiographyLabel?.scrollRectToVisible(CGRect.zero, animated: false)
+                        
+                        // Wrap the full biography in an HTML element with the font in CSS to preserve all the italic and bold tags of the original HTML
+                        let biographyHTML = "<span style=\"color: #fff; font-family: \(UIFont.themeCondensedFont(14).fontName); font-size: 14\">\(biography)</span>"
+                        if let biographyData = biographyHTML.data(using: .utf8) {
+                            do {
+                                
+                                let options: [String: Any] = [
+                                    NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
+                                    NSCharacterEncodingDocumentAttribute: NSNumber(value: String.Encoding.utf8.rawValue)
+                                ]
+                                
+                                let attributedString = try NSAttributedString(data: biographyData, options: options, documentAttributes: nil)
+                                self.talentBiographyLabel?.attributedText = attributedString
+                            } catch {
+                                self.talentBiographyLabel?.text = biography
+                            }
+                        } else {
+                            self.talentBiographyLabel?.text = biography
+                        }
                     } else {
                         self.talentBiographyContainerView?.removeFromSuperview()
                     }

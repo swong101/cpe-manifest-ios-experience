@@ -29,9 +29,11 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        let path = IndexPath(row: 0, section: 0)
-        self.talentTableView.selectRow(at: path, animated: false, scrollPosition: .top)
-        self.tableView(self.talentTableView, didSelectRowAt: path)
+        if selectedIndexPath == nil {
+            let path = IndexPath(row: 0, section: 0)
+            self.talentTableView.selectRow(at: path, animated: false, scrollPosition: .top)
+            self.tableView(self.talentTableView, didSelectRowAt: path)
+        }
     }
     
     // MARK: Talent Details
