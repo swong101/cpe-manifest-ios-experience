@@ -52,7 +52,7 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     
     private var currentProduct: ProductItem? {
         didSet {
-            if currentProduct?.id != oldValue?.id {
+            if currentProduct?.externalID != oldValue?.externalID {
                 descriptionText = currentProduct?.brand
                 extraDescription = currentProduct?.name
                 imageURL = (productImageType == .scene ? currentProduct?.sceneImageURL : currentProduct?.productImageURL)
@@ -73,9 +73,9 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     }
     
     override func currentTimeDidChange() {
-        if let productAPIUtil = NGDMConfiguration.productAPIUtil {
-            DispatchQueue.global(qos: .userInteractive).async {
-                if self.timedEvent != nil && self.timedEvent!.isType(.product) {
+        if let timedEvent = timedEvent, timedEvent.isType(.product) {
+            if timedEvent.productNamespace != nil, let productAPIUtil = NGDMConfiguration.productAPIUtil {
+                DispatchQueue.global(qos: .userInteractive).async {
                     let newFrameTime = productAPIUtil.closestFrameTime(self.currentTime)
                     if newFrameTime != self.currentProductFrameTime {
                         self.currentProductFrameTime = newFrameTime
@@ -92,6 +92,8 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
                         })
                     }
                 }
+            } else if let product = timedEvent.product {
+                products = [product]
             }
         }
     }

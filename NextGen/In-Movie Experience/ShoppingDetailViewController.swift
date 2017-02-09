@@ -40,6 +40,7 @@ class ShoppingDetailCell: UICollectionViewCell {
 
 class ShoppingDetailViewController: SceneDetailViewController {
     
+    @IBOutlet weak private var productMatchContainerView: UIView!
     @IBOutlet weak private var productMatchIcon: UIView!
     @IBOutlet weak private var productMatchLabel: UILabel!
     @IBOutlet weak private var productImageView: UIImageView!
@@ -51,9 +52,13 @@ class ShoppingDetailViewController: SceneDetailViewController {
     @IBOutlet weak private var poweredByLabel: UILabel!
     @IBOutlet weak private var disclaimerLabel: UILabel!
     @IBOutlet weak private var productsCollectionView: UICollectionView?
+    @IBOutlet private var productNameToExactMatchConstraint: NSLayoutConstraint!
+    @IBOutlet private var shopToProductPriceConstraint: NSLayoutConstraint!
+    @IBOutlet private var productImageViewHeightConstraint: NSLayoutConstraint!
     
     var products: [ProductItem]?
     private var closeDetailsViewObserver: NSObjectProtocol?
+    private var imageSize = CGSize.zero
     
     deinit {
         if let observer = closeDetailsViewObserver {
@@ -63,23 +68,38 @@ class ShoppingDetailViewController: SceneDetailViewController {
     
     var currentProduct: ProductItem? {
         didSet {
-            if currentProduct?.id != oldValue?.id {
-                if let product = currentProduct {
-                    productMatchIcon.backgroundColor = (product.exactMatch ? UIColor(netHex: 0x2c97de) : UIColor(netHex: 0xf1c115))
-                    productMatchLabel.text = (product.exactMatch ? String.localize("shopping.exact_match") : String.localize("shopping.close_match"))
+            if currentProduct?.externalID != oldValue?.externalID {
+                if let product = currentProduct, product.hasExactMatchData {
+                    productNameToExactMatchConstraint.isActive = true
+                    productMatchContainerView.isHidden = false
+                    productMatchIcon.backgroundColor = (product.isExactMatch ? UIColor(netHex: 0x2c97de) : UIColor(netHex: 0xf1c115))
+                    productMatchLabel.text = (product.isExactMatch ? String.localize("shopping.exact_match") : String.localize("shopping.close_match"))
                 } else {
-                    productMatchIcon.backgroundColor = UIColor.clear
-                    productMatchLabel.text = nil
+                    productNameToExactMatchConstraint.isActive = false
+                    productMatchContainerView.isHidden = true
                 }
                 
                 productBrandLabel.text = currentProduct?.brand
                 productNameLabel.text = currentProduct?.name
-                productPriceLabel.text = currentProduct?.price
+                
+                if let price = currentProduct?.displayPrice {
+                    shopToProductPriceConstraint.isActive = true
+                    productPriceLabel.isHidden = false
+                    productPriceLabel.text = price
+                } else {
+                    shopToProductPriceConstraint.isActive = false
+                    productPriceLabel.isHidden = true
+                }
+                
                 if let imageURL = currentProduct?.productImageURL {
                     productImageView.sd_setImage(with: imageURL, completed: { [weak self] (image, _, _, _) in
-                        self?.productImageView.backgroundColor = image?.getPixelColor(CGPoint.zero)
+                        if let image = image {
+                            self?.imageSize = image.size
+                            self?.adjustProductImageViewSize()
+                        }
                     })
                 } else {
+                    imageSize = CGSize.zero
                     productImageView.sd_cancelCurrentImageLoad()
                     productImageView.image = nil
                     productImageView.backgroundColor = UIColor.clear
@@ -107,13 +127,15 @@ class ShoppingDetailViewController: SceneDetailViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if products != nil && products!.count > 1, let productsCollectionView = productsCollectionView {
-            let indexPath = IndexPath(row: 0, section: 0)
-            productsCollectionView.selectItem(at: indexPath, animated: true, scrollPosition: UICollectionViewScrollPosition.top)
-            collectionView(productsCollectionView, didSelectItemAt: indexPath)
-        } else {
-            productsCollectionView?.removeFromSuperview()
-            currentProduct = products?.first
+        if currentProduct == nil, let products = products {
+            if products.count > 1, let productsCollectionView = productsCollectionView {
+                let indexPath = IndexPath(row: 0, section: 0)
+                productsCollectionView.selectItem(at: indexPath, animated: true, scrollPosition: UICollectionViewScrollPosition.top)
+                collectionView(productsCollectionView, didSelectItemAt: indexPath)
+            } else {
+                productsCollectionView?.removeFromSuperview()
+                currentProduct = products.first
+            }
         }
     }
     
@@ -121,8 +143,15 @@ class ShoppingDetailViewController: SceneDetailViewController {
         super.viewWillLayoutSubviews()
         
         productMatchIcon.layer.cornerRadius = (productMatchIcon.frame.width / 2)
+        if imageSize != CGSize.zero {
+            adjustProductImageViewSize()
+        }
     }
     
+    private func adjustProductImageViewSize() {
+        let imageViewFrame = productImageView.frame
+        productImageViewHeightConstraint.constant = (imageViewFrame.width * (imageSize.height / imageSize.width))
+    }
     
     // MARK: Actions
     @IBAction private func onShop(_ sender: AnyObject) {
@@ -142,12 +171,14 @@ class ShoppingDetailViewController: SceneDetailViewController {
 extension ShoppingDetailViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return products?.count ?? 0
+        return (products?.count ?? 0)
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ShoppingDetailCell.ReuseIdentifier, for: indexPath) as! ShoppingDetailCell
-        cell.product = products?[(indexPath as NSIndexPath).row]
+        if let products = products, products.count > indexPath.row {
+            cell.product = products[indexPath.row]
+        }
         
         return cell
     }
@@ -157,7 +188,9 @@ extension ShoppingDetailViewController: UICollectionViewDataSource {
 extension ShoppingDetailViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        currentProduct = products?[(indexPath as NSIndexPath).row]
+        if let products = products, products.count > indexPath.row {
+            currentProduct = products[indexPath.row]
+        }
     }
     
 }

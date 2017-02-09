@@ -33,31 +33,44 @@ class TheTakeProduct: NSObject, ProductItem {
         }
     }
     
-    var id: String
+    var externalID: String
     var name: String
     var brand: String?
-    var price: String?
+    
+    var price: Double?
+    var displayPrice: String? {
+        if let price = price {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.currencyCode = "USD"
+            return formatter.string(from: NSNumber(value: price))
+        }
+        
+        return nil
+    }
+    
     var productImageURL: URL?
     var sceneImageURL: URL?
-    var exactMatch = false
+    var hasExactMatchData = false
+    var isExactMatch = false
     var externalURL: URL?
     var bullseyePoint = CGPoint.zero
     var shareText: String {
-        get {
-            var shareText = name
-            if let externalURLString = externalURL?.absoluteString {
-                shareText += " - " + externalURLString
-            }
-            
-            return shareText
+        var shareText = name
+        if let externalURLString = externalURL?.absoluteString {
+            shareText += " - " + externalURLString
         }
+        
+        return shareText
     }
     
     init(data: NSDictionary) {
-        id = data[Constants.Keys.ProductId] as? String ?? NSUUID().uuidString
+        externalID = data[Constants.Keys.ProductId] as? String ?? NSUUID().uuidString
         name = data[Constants.Keys.ProductName] as? String ?? ""
         brand = data[Constants.Keys.ProductBrand] as? String
-        price = data[Constants.Keys.ProductPrice] as? String
+        if let priceString = data[Constants.Keys.ProductPrice] as? String {
+            price = Double(priceString)
+        }
         
         if let imagesData = data[Constants.Keys.ProductImages] as? [String: String] ?? data[Constants.Keys.ProductImage] as? [String: String], let imageString = imagesData[Constants.Keys.ProductImageThumbnail] {
             productImageURL = URL(string: imageString)
@@ -78,19 +91,20 @@ class TheTakeProduct: NSObject, ProductItem {
         }
         
         if let verified = data[Constants.Keys.ExactMatch] as? Bool {
-            exactMatch = verified
+            isExactMatch = verified
+            hasExactMatchData = true
         }
         
         if let purchaseLink = data[Constants.Keys.PurchaseLink] as? String , purchaseLink.characters.count > 0 {
             externalURL = URL(string: purchaseLink)
         } else {
-            externalURL = URL(string: Constants.ProductURLPrefix + id)
+            externalURL = URL(string: Constants.ProductURLPrefix + externalID)
         }
     }
     
     override func isEqual(_ object: Any?) -> Bool {
         if let otherProduct = object as? TheTakeProduct {
-            return otherProduct.id == id
+            return (otherProduct.externalID == externalID)
         }
         
         return false
