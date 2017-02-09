@@ -35,6 +35,7 @@ class HomeViewController: UIViewController {
     private var shouldLaunchExtrasObserver: NSObjectProtocol?
     
     private var backgroundAudioPlayer: AVPlayer?
+    private var backgroundAudioDidFinishPlayingObserver: NSObjectProtocol?
     
     private var backgroundVideoLastTimecode = 0.0
     private var backgroundVideoPreviewImageView: UIImageView?
@@ -566,6 +567,13 @@ class HomeViewController: UIViewController {
         
         if !interfaceCreated, let backgroundAudioUrl = nodeStyle?.backgroundAudio?.url {
             let audioPlayerItem = AVPlayerItem(asset: AVAsset(url: backgroundAudioUrl))
+            backgroundAudioDidFinishPlayingObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: audioPlayerItem, queue: nil, using: { (_) in
+                DispatchQueue.main.async {
+                    self.backgroundAudioPlayer?.seek(to: kCMTimeZero)
+                    self.backgroundAudioPlayer?.play()
+                }
+            })
+            
             backgroundAudioPlayer = AVPlayer(playerItem: audioPlayerItem)
             backgroundAudioPlayer?.play()
         }
@@ -580,6 +588,11 @@ class HomeViewController: UIViewController {
         if let observer = backgroundVideoDidFinishPlayingObserver {
             NotificationCenter.default.removeObserver(observer)
             backgroundVideoDidFinishPlayingObserver = nil
+        }
+        
+        if let observer = backgroundAudioDidFinishPlayingObserver {
+            NotificationCenter.default.removeObserver(observer)
+            backgroundAudioDidFinishPlayingObserver = nil
         }
         
         backgroundVideoPlayerViewController?.willMove(toParentViewController: nil)
