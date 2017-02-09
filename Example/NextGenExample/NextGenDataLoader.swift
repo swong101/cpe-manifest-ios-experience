@@ -197,10 +197,6 @@ extension NextGenDataLoader: NextGenHookDelegate {
         // Respond to any changes in the user's connection status (e.g. display prompt about cellular data usage)
     }
     
-    func logAnalyticsEvent(_ event: NextGenAnalyticsEvent, action: NextGenAnalyticsAction, itemId: String?, itemName: String?) {
-        // Adjust values as needed for your analytics implementation
-    }
-    
     func experienceWillOpen() {
         // Any start-up tasks
     }
@@ -268,7 +264,7 @@ extension NextGenDataLoader: NextGenHookDelegate {
                     hud?.hide(true)
                     if let data = data {
                         do {
-                            if let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? NSDictionary, let result = (jsonResult["results"] as? [NSDictionary])?.first, let urlString = result["trackViewUrl"] as? String, let url = URL(string: urlString) {
+                            if let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? NSDictionary, let urlString = (jsonResult["results"] as? [NSDictionary])?.first?["trackViewUrl"] as? String, let url = URL(string: urlString) {
                                 url.promptLaunch(type: .itunes)
                             } else {
                                 showQueryNotFound()
@@ -283,6 +279,34 @@ extension NextGenDataLoader: NextGenHookDelegate {
         } else {
             showQueryNotFound()
         }
+    }
+    
+    func logAnalyticsEvent(_ event: NextGenAnalyticsEvent, action: NextGenAnalyticsAction, itemId: String?, itemName: String?) {
+        // Adjust values as needed for your analytics implementation
+        
+        /* Take the provided parameters and construct the Google Analytics-specific properties that will be sent to log the event */
+        /* let category = event.rawValue
+        let action = action.rawValue
+        var label: String
+        if let itemId = itemId, let itemName = itemName {
+            label = itemId + " - " + itemName
+        } else {
+            label = itemId ?? itemName ?? ""
+        } */
+        
+        /* Google Analytics allows you to add custom dimensions. Use this dictionary to insert values related to this event, 
+           where they key is the custom dimension ID provided by Google Analytics */
+        /* let tracker = GAI.sharedInstance().defaultTracker
+        var customDimensions = [Int: String]() 
+        
+        for (customDimension, value) in customDimensions {
+            tracker?.set(GAIFields.customDimension(for: customDimension.rawValue), value: value)
+        } */
+        
+        /* Build the Google Analytics event dictionary and send to tracker */
+        /* if let builder = GAIDictionaryBuilder.createEvent(withCategory: category, action: action, label: label, value: nil), let parameters = NSDictionary(dictionary: builder.build()) as? [AnyHashable: Any] {
+            tracker?.send(parameters)
+        } */
     }
     
 }
