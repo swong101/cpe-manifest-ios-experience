@@ -1386,7 +1386,7 @@ class VideoPlayerViewController: UIViewController {
     }
     
     private func syncSceneData() {
-        if let playbackAsset = playbackAsset {
+        if state != .unknown, let playbackAsset = playbackAsset {
             if var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo {
                 if currentTime > 0 {
                     DispatchQueue.global(qos: .background).async {

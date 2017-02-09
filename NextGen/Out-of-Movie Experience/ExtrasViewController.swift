@@ -236,33 +236,39 @@ extension ExtrasViewController: UICollectionViewDelegate {
             childExperienceIndex -= 1
         }
         
-        if let experience = experience.childExperiences?[childExperienceIndex] {
-            if experience.isType(.shopping) {
-                self.performSegue(withIdentifier: SegueIdentifier.ShowShopping, sender: experience)
-                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectShopping)
-            } else if experience.isType(.location) {
-                self.performSegue(withIdentifier: SegueIdentifier.ShowMap, sender: experience)
-                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectSceneLocations)
-            } else if experience.isType(.app) {
-                if let app = experience.app, let url = app.url {
-                    let webViewController = WebViewController(title: app.title, url: url)
-                    webViewController.shouldDisplayFullScreen = true
-                    let navigationController = LandscapeNavigationController(rootViewController: webViewController)
-                    self.present(navigationController, animated: true, completion: nil)
-                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectApp, itemId: app.id)
-                }
-            } else {
-                if let firstChildExperience = experience.childExperiences?.first {
-                    if firstChildExperience.isType(.audioVisual) {
-                        self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
-                        NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.id)
-                    } else if firstChildExperience.isType(.gallery) {
-                        self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
-                        NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.id)
-                    } else {
-                        self.performSegue(withIdentifier: SegueIdentifier.ShowList, sender: experience)
-                        NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectExperienceList, itemId: experience.id)
-                    }
+        if let childExperiences = experience.childExperiences, childExperiences.count > childExperienceIndex {
+            launchExperience(childExperiences[childExperienceIndex])
+        }
+    }
+    
+    private func launchExperience(_ experience: NGDMExperience) {
+        if experience.isType(.shopping) {
+            self.performSegue(withIdentifier: SegueIdentifier.ShowShopping, sender: experience)
+            NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectShopping)
+        } else if experience.isType(.location) {
+            self.performSegue(withIdentifier: SegueIdentifier.ShowMap, sender: experience)
+            NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectSceneLocations)
+        } else if experience.isType(.app) {
+            if let app = experience.app, let url = app.url {
+                let webViewController = WebViewController(title: app.title, url: url)
+                webViewController.shouldDisplayFullScreen = true
+                let navigationController = LandscapeNavigationController(rootViewController: webViewController)
+                self.present(navigationController, animated: true, completion: nil)
+                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectApp, itemId: app.id)
+            }
+        } else {
+            if let firstChildExperience = experience.childExperiences?.first {
+                if firstChildExperience.isType(.audioVisual) {
+                    self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
+                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.id)
+                } else if firstChildExperience.isType(.gallery) {
+                    self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
+                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.id)
+                } else if (experience.childExperiences?.count ?? 0) > 1 {
+                    self.performSegue(withIdentifier: SegueIdentifier.ShowList, sender: experience)
+                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectExperienceList, itemId: experience.id)
+                } else {
+                    launchExperience(firstChildExperience)
                 }
             }
         }
