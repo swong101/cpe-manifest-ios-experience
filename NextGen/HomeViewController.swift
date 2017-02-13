@@ -59,7 +59,7 @@ class HomeViewController: UIViewController {
     
     private var observedBackgroundImageSize: CGSize?
     private var backgroundImageSize: CGSize {
-        return backgroundImage?.size ?? observedBackgroundImageSize ?? CGSize.zero
+        return (backgroundImage?.size ?? observedBackgroundImageSize ?? CGSize.zero)
     }
     
     private var backgroundVideo: NGDMVideo? {
@@ -67,7 +67,7 @@ class HomeViewController: UIViewController {
     }
     
     private var backgroundVideoSize: CGSize {
-        return backgroundVideo?.size ?? CGSize.zero
+        return (backgroundVideo?.size ?? CGSize.zero)
     }
     
     private var playButtonImage: NGDMImage? {
@@ -83,31 +83,31 @@ class HomeViewController: UIViewController {
     }
     
     private var buttonOverlaySize: CGSize {
-        return nodeStyle?.buttonOverlaySize ?? CGSize(width: 300, height: 100)
+        return (nodeStyle?.buttonOverlaySize ?? CGSize(width: 300, height: 100))
     }
     
     private var buttonOverlayBottomLeft: CGPoint {
-        return nodeStyle?.buttonOverlayBottomLeft ?? CGPoint(x: 490, y: 25)
+        return (nodeStyle?.buttonOverlayBottomLeft ?? CGPoint(x: 490, y: 25))
     }
     
     private var playButtonSize: CGSize {
-        return playButtonImage?.size ?? CGSize(width: 300, height: 55)
+        return (playButtonImage?.size ?? CGSize(width: 300, height: 55))
     }
     
     private var extrasButtonSize: CGSize {
-        return extrasButtonImage?.size ?? CGSize(width: 300, height: 60)
+        return (extrasButtonImage?.size ?? CGSize(width: 300, height: 60))
     }
     
     private var buyButtonSize: CGSize {
-        return buyButtonImage?.size ?? playButtonSize
+        return (buyButtonImage?.size ?? playButtonSize)
     }
     
     private var titleOverlaySize: CGSize {
-        return CGSize(width: 400, height: 133)
+        return (nodeStyle?.titleOverlaySize ?? CGSize(width: 400, height: 133))
     }
     
     private var titleOverlayBottomLeft: CGPoint {
-        return CGPoint(x: 440, y: backgroundImageSize.height - (titleOverlaySize.height + 15))
+        return (nodeStyle?.titleOverlayBottomLeft ?? CGPoint(x: 440, y: backgroundImageSize.height - (titleOverlaySize.height + 15)))
     }
     
     deinit {
@@ -215,7 +215,7 @@ class HomeViewController: UIViewController {
             self.view.addSubview(buttonOverlayView)
             
             // Title treatment
-            if nodeStyle == nil, let imageURL = NGDMManifest.sharedInstance.inMovieExperience?.imageURL {
+            if nodeStyle == nil || nodeStyle!.titleOverlaySize != nil, let imageURL = NGDMManifest.sharedInstance.inMovieExperience?.imageURL {
                 titleOverlayView = UIView()
                 titleOverlayView!.isHidden = true
                 titleOverlayView!.isUserInteractionEnabled = false
