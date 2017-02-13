@@ -13,6 +13,7 @@ import NextGenDataManager
 import UAProgressView
 import MBProgressHUD
 import GoogleCast
+import SDWebImage
 
 public enum VideoPlayerMode {
     case unknown
@@ -98,27 +99,15 @@ class VideoPlayerViewController: UIViewController {
     fileprivate var playbackAsset: NextGenPlaybackAsset? {
         didSet {
             if let playbackAsset = playbackAsset {
-                if mode == .supplemental {
-                    SettingsManager.setVideoAsWatched(playbackAsset.assetURL)
-                }
-                
-                var nowPlayingInfo = [String: Any]()
-                if let title = playbackAsset.assetTitle {
-                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
-                }
-                
-                if #available(iOS 10.0, *) {
-                    nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 768, height: 768), requestHandler: { (_) -> UIImage in
-                        return playbackAsset.assetImage
-                    })
-                }
-                
-                MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-                
-                if let imageURL = playbackAsset.assetImageURL {
-                    playbackOverlayImageView.sd_setImage(with: imageURL)
+                if mode == .mainFeature || mode == .supplemental {
+                    UIApplication.shared.beginReceivingRemoteControlEvents()
+                    
+                    if mode == .supplemental {
+                        SettingsManager.setVideoAsWatched(playbackAsset.assetURL)
+                    }
                 }
             } else {
+                UIApplication.shared.endReceivingRemoteControlEvents()
                 MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
             }
         }
@@ -250,6 +239,18 @@ class VideoPlayerViewController: UIViewController {
     @IBOutlet weak private var playbackOverlayImageView: UIImageView!
     @IBOutlet weak private var playbackOverlayLabel: UILabel!
     private var playbackOverlayTimedEvent: NGDMTimedEvent?
+    private var nowPlayingInfoImage: UIImage?
+    private var nowPlayingInfoTimedEvent: NGDMTimedEvent? {
+        didSet {
+            if let imageURL = nowPlayingInfoTimedEvent?.imageURL {
+                SDWebImageDownloader.shared().downloadImage(with: imageURL, options: .lowPriority, progress: nil, completed: { [weak self] (image, _, _, _) in
+                    self?.nowPlayingInfoImage = image
+                })
+            } else {
+                nowPlayingInfoImage = nil
+            }
+        }
+    }
 
     // Controls
     @IBOutlet weak private var topToolbar: UIView?
@@ -296,9 +297,9 @@ class VideoPlayerViewController: UIViewController {
             pictureInPictureButton?.isEnabled = (playerControlsEnabled && !isPictureInPictureActive)
             fullScreenButton?.isEnabled = playerControlsEnabled
             
-            MPRemoteCommandCenter.shared().playCommand.isEnabled = playerControlsEnabled
-            MPRemoteCommandCenter.shared().pauseCommand.isEnabled = playerControlsEnabled
-            MPRemoteCommandCenter.shared().togglePlayPauseCommand.isEnabled = playerControlsEnabled
+            MPRemoteCommandCenter.shared().playCommand.isEnabled = (playerControlsEnabled && !isCastingActive)
+            MPRemoteCommandCenter.shared().pauseCommand.isEnabled = (playerControlsEnabled && !isCastingActive)
+            MPRemoteCommandCenter.shared().togglePlayPauseCommand.isEnabled = (playerControlsEnabled && !isCastingActive)
             MPRemoteCommandCenter.shared().skipBackwardCommand.isEnabled = playerControlsEnabled
             MPRemoteCommandCenter.shared().skipForwardCommand.isEnabled = playerControlsEnabled
         }
@@ -492,15 +493,8 @@ class VideoPlayerViewController: UIViewController {
             airPlayButton?.tintColor = (isCastingActive ? UIColor.gray : UIColor.white)
             airPlayButton?.isUserInteractionEnabled = !isCastingActive
             
-            if isCastingActive != oldValue {
-                /*DispatchQueue.main.async {
-                    self.castButton?.tintColor = (self.isCastingActive ? UIColor.themePrimary : UIColor.white)
-                }*/
-                
-                if isCastingActive {
-                    destroyAVPlayer()
-                    logEvent(action: .chromecastOn)
-                }
+            if isCastingActive != oldValue, isCastingActive {
+                logEvent(action: .chromecastOn)
             }
         }
     }
@@ -515,7 +509,6 @@ class VideoPlayerViewController: UIViewController {
                         self.playbackOverlayView.alpha = 0
                         self.playbackOverlayView.isHidden = false
                         self.playbackOverlayView.layer.removeAllAnimations()
-                        self.syncPlaybackOverlayImage()
                         
                         UIView.animate(withDuration: 0.2, animations: {
                             self.playbackOverlayView.alpha = 1
@@ -566,14 +559,15 @@ class VideoPlayerViewController: UIViewController {
     
     var playerItemDuration: Double = 0 {
         didSet {
-            let duration = (playerItemDuration.isFinite ? playerItemDuration : 0)
-            durationLabel?.text = timeString(fromSeconds: duration)
+            if !playerItemDuration.isFinite {
+                playerItemDuration = 0
+                return
+            }
             
-            // Set data for OS media player and control center widgets
-            MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPMediaItemPropertyPlaybackDuration] = NSNumber(value: duration)
+            durationLabel?.text = timeString(fromSeconds: playerItemDuration)
             
-            if duration != oldValue && duration > 1 {
-                NotificationCenter.default.post(name: .videoPlayerItemDurationDidLoad, object: self, userInfo: [NotificationConstants.duration: duration])
+            if playerItemDuration != oldValue && playerItemDuration > 1 {
+                NotificationCenter.default.post(name: .videoPlayerItemDurationDidLoad, object: self, userInfo: [NotificationConstants.duration: playerItemDuration])
             }
         }
     }
@@ -677,9 +671,6 @@ class VideoPlayerViewController: UIViewController {
     private func destroyPlayer() {
         destroyAVPlayer()
         
-        // Stop controls
-        UIApplication.shared.endReceivingRemoteControlEvents()
-        
         // Remove timers
         removePlayerTimeObserver()
         removeAutoHideTimer()
@@ -697,11 +688,12 @@ class VideoPlayerViewController: UIViewController {
         
         // Nullify stored objects
         airPlayButton = nil
+        playbackAsset = nil
     }
     
     func removeCurrentItem() {
-        state = .unknown
         player?.replaceCurrentItem(with: nil)
+        state = .unknown
     }
     
     // MARK: View Lifecycle
@@ -1297,6 +1289,7 @@ class VideoPlayerViewController: UIViewController {
                     }
                     
                     if strongSelf.mode != .supplementalInMovie && CastManager.sharedInstance.hasConnectedCastSession && playbackAsset.assetIsCastable {
+                        strongSelf.destroyAVPlayer()
                         strongSelf.isCastingActive = true
                         CastManager.sharedInstance.currentVideoPlayerMode = strongSelf.mode
                         CastManager.sharedInstance.add(remoteMediaClientListener: strongSelf)
@@ -1348,7 +1341,6 @@ class VideoPlayerViewController: UIViewController {
         
         if let mainExperience = NGDMManifest.sharedInstance.mainExperience, let videoURL = mainExperience.videoURL {
             NotificationCenter.default.post(name: .videoPlayerDidPlayMainExperience, object: nil)
-            UIApplication.shared.beginReceivingRemoteControlEvents()
             playAsset(withURL: videoURL)
         }
     }
@@ -1377,10 +1369,9 @@ class VideoPlayerViewController: UIViewController {
             if lastNotifiedTime != currentTime {
                 lastNotifiedTime = currentTime
                 NotificationCenter.default.post(name: .videoPlayerDidChangeTime, object: nil, userInfo: [NotificationConstants.time: Double(currentTime)])
-                syncPlaybackOverlayImage()
             }
             
-            if currentTime >= 1 && mode == .basicPlayer {
+            if currentTime > 0 && mode == .basicPlayer {
                 activityIndicator?.removeFromSuperview()
             }
             
@@ -1391,19 +1382,77 @@ class VideoPlayerViewController: UIViewController {
         }
         
         playbackAsset?.assetPlaybackPosition = currentTime
-        
-        // Sync playback time with control center
-        MPNowPlayingInfoCenter.default().nowPlayingInfo?[MPNowPlayingInfoPropertyElapsedPlaybackTime] = NSNumber(value: currentTime)
+        syncSceneData()
     }
     
-    private func syncPlaybackOverlayImage() {
-        if !playbackOverlayView.isHidden && mode == .mainFeature {
+    private func syncSceneData() {
+        if let playbackAsset = playbackAsset {
+            if var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo {
+                if currentTime > 0 {
+                    DispatchQueue.global(qos: .background).async {
+                        if self.mode == .mainFeature {
+                            if let triviaTimedEvent = NGDMTimedEvent.findByTimecode(self.currentTime, type: .textItem).first {
+                                if triviaTimedEvent != self.nowPlayingInfoTimedEvent, let title = triviaTimedEvent.experience?.title, let description = triviaTimedEvent.descriptionText {
+                                    self.nowPlayingInfoTimedEvent = triviaTimedEvent
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                                    nowPlayingInfo[MPMediaItemPropertyArtist] = description
+                                }
+                            } else if let clipShareTimedEvent = NGDMTimedEvent.findByTimecode(self.currentTime, type: .clipShare).first {
+                                if clipShareTimedEvent != self.nowPlayingInfoTimedEvent, let title = clipShareTimedEvent.experience?.title, let description = clipShareTimedEvent.descriptionText {
+                                    self.nowPlayingInfoTimedEvent = clipShareTimedEvent
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                                    nowPlayingInfo[MPMediaItemPropertyArtist] = description
+                                }
+                            } else {
+                                self.nowPlayingInfoTimedEvent = nil
+                                
+                                if let title = playbackAsset.assetTitle {
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                                }
+                                
+                                nowPlayingInfo[MPMediaItemPropertyArtist] = ""
+                            }
+                        }
+                        
+                        DispatchQueue.main.async {
+                            if self.isCastingActive {
+                                nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = nil
+                                nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = nil
+                            } else {
+                                nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = NSNumber(value: self.playerItemDuration)
+                                nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = NSNumber(value: self.currentTime)
+                            }
+                            
+                            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+                        }
+                    }
+                }
+            } else {
+                var nowPlayingInfo = [String: Any]()
+                
+                if let title = playbackAsset.assetTitle {
+                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                }
+                
+                nowPlayingInfo[MPMediaItemPropertyArtist] = ""
+                
+                if #available(iOS 10.0, *) {
+                    nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 768, height: 768), requestHandler: { [weak self] (_) -> UIImage in
+                        return (self?.nowPlayingInfoImage ?? playbackAsset.assetImage)
+                    })
+                }
+                
+                MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+            }
+            
             DispatchQueue.global(qos: .background).async {
-                if let clipShareTimedEvent = NGDMTimedEvent.findClosestToTimecode(self.currentTime, type: .clipShare), clipShareTimedEvent != self.playbackOverlayTimedEvent {
-                    self.playbackOverlayTimedEvent = clipShareTimedEvent
-                    DispatchQueue.main.async {
-                        if let imageUrl = clipShareTimedEvent.imageURL {
-                            self.playbackOverlayImageView.sd_setImage(with: imageUrl)
+                if let closestClipShareTimedEvent = NGDMTimedEvent.findClosestToTimecode(self.currentTime, type: .clipShare) {
+                    if !self.playbackOverlayView.isHidden && closestClipShareTimedEvent != self.playbackOverlayTimedEvent {
+                        DispatchQueue.main.async {
+                            if let imageUrl = closestClipShareTimedEvent.imageURL {
+                                self.playbackOverlayImageView.sd_setImage(with: imageUrl)
+                                self.playbackOverlayTimedEvent = closestClipShareTimedEvent
+                            }
                         }
                     }
                 }
@@ -1892,7 +1941,6 @@ extension VideoPlayerViewController: GCKSessionManagerListener {
     func sessionManager(_ sessionManager: GCKSessionManager, didStart session: GCKSession) {
         if let playbackAsset = playbackAsset {
             NextGenHook.delegate?.didFinishPlayingAsset(playbackAsset, mode: mode)
-            destroyAVPlayer()
             playAsset(withURL: playbackAsset.assetURL, title: playbackAsset.assetTitle, imageURL: playbackAsset.assetImageURL, fromStartTime: playbackAsset.assetPlaybackPosition)
         }
     }
