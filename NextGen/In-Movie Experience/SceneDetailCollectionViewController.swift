@@ -90,7 +90,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             
             var newTimedEvents = [NGDMTimedEvent]()
             for timedEvent in NGDMTimedEvent.findByTimecode(time) {
-                if timedEvent.experience == nil || !timedEvent.experience!.isType(.talentData) {
+                if !timedEvent.isType(.talent) {
                     let indexPath = IndexPath(item: newTimedEvents.count, section: 0)
                     
                     if newTimedEvents.count < self._currentTimedEvents.count {

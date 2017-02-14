@@ -1225,7 +1225,7 @@
                                     <constraint firstItem="c6W-KZ-1CO" firstAttribute="leading" secondItem="yBz-nT-qfC" secondAttribute="trailing" id="jdR-oD-S8U"/>
                                     <constraint firstAttribute="height" constant="75" id="jiI-0v-lbW"/>
                                     <constraint firstAttribute="bottom" secondItem="8Ks-sd-oxy" secondAttribute="bottom" id="lxK-zh-gE3"/>
-                                    <constraint firstAttribute="trailing" secondItem="c6W-KZ-1CO" secondAttribute="trailing" priority="100" constant="15" id="lzZ-av-4Eu"/>
+                                    <constraint firstAttribute="trailing" secondItem="c6W-KZ-1CO" secondAttribute="trailing" priority="100" constant="20" id="lzZ-av-4Eu"/>
                                     <constraint firstAttribute="bottom" secondItem="c6W-KZ-1CO" secondAttribute="bottom" id="m8O-EA-h4D"/>
                                     <constraint firstItem="hQ6-y2-KsL" firstAttribute="leading" secondItem="8Ks-sd-oxy" secondAttribute="trailing" id="o21-Os-33w"/>
                                     <constraint firstAttribute="bottom" secondItem="Fre-sx-P7e" secondAttribute="bottom" id="oN5-g9-iZk"/>
@@ -1312,7 +1312,7 @@
                                             <action selector="onToggleCommentary" destination="FsK-dw-pgC" eventType="touchUpInside" id="w6M-uU-xOP"/>
                                         </connections>
                                     </button>
-                                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f4Q-vv-K5i" customClass="MPVolumeView">
+                                    <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="f4Q-vv-K5i" customClass="AirPlayButton" customModule="Movies_All_Access" customModuleProvider="target">
                                         <rect key="frame" x="904" y="23" width="40" height="32"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="40" id="OXl-dZ-Ral"/>
@@ -2225,7 +2225,7 @@
         <scene sceneID="5S4-rU-8NV">
             <objects>
                 <navigationController navigationBarHidden="YES" id="icW-Mi-fmQ" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" misplaced="YES" id="eYH-MY-0gu">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="eYH-MY-0gu">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
