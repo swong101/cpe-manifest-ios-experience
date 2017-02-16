@@ -65,7 +65,7 @@ class MultiMapView: UIView, MKMapViewDelegate, GMSMapViewDelegate {
     var mapType: MultiMapType = .road {
         didSet {
             if let mapView = googleMapView {
-                mapView.mapType = (mapType == .satellite ? kGMSTypeSatellite : kGMSTypeNormal)
+                mapView.mapType = (mapType == .satellite ? GMSMapViewType.satellite : GMSMapViewType.normal)
                 self.addSubview(googleMapView!)
             } else if let mapView = appleMapView {
                 mapView.mapType = (mapType == .satellite ? MKMapType.satellite : MKMapType.standard)
