@@ -6,7 +6,7 @@ import UIKit
 
 class MenuedViewController: ExtrasExperienceViewController {
     
-    @IBOutlet weak internal var menuTableView: UITableView!
+    @IBOutlet weak internal var menuTableView: UITableView?
     internal var menuSections = [MenuSection]()
     fileprivate var selectedSectionValue: String?
     fileprivate var selectedItemValue: String?
@@ -14,9 +14,9 @@ class MenuedViewController: ExtrasExperienceViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        menuTableView.separatorStyle = UITableViewCellSeparatorStyle.none
-        menuTableView.register(UINib(nibName: "MenuSectionCell", bundle: nil), forCellReuseIdentifier: MenuSectionCell.ReuseIdentifier)
-        menuTableView.register(UINib(nibName: "MenuItemCell", bundle: nil), forCellReuseIdentifier: MenuItemCell.ReuseIdentifier)
+        menuTableView?.separatorStyle = UITableViewCellSeparatorStyle.none
+        menuTableView?.register(UINib(nibName: "MenuSectionCell", bundle: nil), forCellReuseIdentifier: MenuSectionCell.ReuseIdentifier)
+        menuTableView?.register(UINib(nibName: "MenuItemCell", bundle: nil), forCellReuseIdentifier: MenuItemCell.ReuseIdentifier)
     }
     
 }

@@ -56,7 +56,7 @@ class ExtrasExperienceListViewController: ExtrasExperienceViewController, UIColl
     // MARK: UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let experience = experience.childExperience(atIndex: indexPath.row) {
-            if experience.isType(.shopping) {
+            if experience.isType(.product) {
                 self.performSegue(withIdentifier: SegueIdentifier.ShowShopping, sender: experience)
                 NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectShopping)
             } else if experience.isType(.location) {

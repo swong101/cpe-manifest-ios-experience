@@ -237,7 +237,7 @@ extension ExtrasViewController: UICollectionViewDelegate {
     }
     
     private func launchExperience(_ experience: NGDMExperience) {
-        if experience.isType(.shopping) {
+        if experience.isType(.product) {
             self.performSegue(withIdentifier: SegueIdentifier.ShowShopping, sender: experience)
             NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectShopping)
         } else if experience.isType(.location) {

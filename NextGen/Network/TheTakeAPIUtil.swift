@@ -119,10 +119,10 @@ public class TheTakeAPIUtil: NextGenDataManager.APIUtil, ProductAPIUtil {
         return nil
     }
     
-    public func getCategoryProducts(_ categoryID: String, completion: @escaping (_ products: [ProductItem]?) -> Void) -> URLSessionDataTask? {
+    public func getCategoryProducts(_ categoryID: String?, completion: @escaping (_ products: [ProductItem]?) -> Void) -> URLSessionDataTask? {
         if let apiID = featureAPIID {
             var parameters: [String: String] = ["media": apiID, "limit": "100"]
-            if let categoryIDNumeric = Int(categoryID), categoryIDNumeric > 0 {
+            if let categoryID = categoryID {
                 parameters["category"] = categoryID
             }
             

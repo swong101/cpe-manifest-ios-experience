@@ -13,6 +13,7 @@ enum ShoppingProductImageType {
 
 class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     
+    static let NibName = "ShoppingSceneDetailCollectionViewCell"
     static let ReuseIdentifier = "ShoppingSceneDetailCollectionViewCellReuseIdentifier"
     
     @IBOutlet weak private var imageView: UIImageView!
@@ -20,25 +21,6 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     @IBOutlet weak private var extraDescriptionLabel: UILabel!
     
     var productImageType = ShoppingProductImageType.product
-    
-    private var imageURL: URL? {
-        set {
-            if let url = newValue {
-                imageView.contentMode = UIViewContentMode.scaleAspectFit
-                imageView.sd_setImage(with: url, completed: { [weak self] (image, _, _, _) in
-                    self?.imageView.backgroundColor = image?.getPixelColor(CGPoint.zero)
-                })
-            } else {
-                imageView.sd_cancelCurrentImageLoad()
-                imageView.image = nil
-                imageView.backgroundColor = UIColor.clear
-            }
-        }
-        
-        get {
-            return nil
-        }
-    }
     
     private var extraDescription: String? {
         set {
@@ -55,7 +37,11 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
             if currentProduct?.externalID != oldValue?.externalID {
                 descriptionText = currentProduct?.brand
                 extraDescription = currentProduct?.name
-                imageURL = (productImageType == .scene ? currentProduct?.sceneImageURL : currentProduct?.productImageURL)
+                if productImageType == .scene {
+                    setImageURL(currentProduct?.sceneImageURL ?? currentProduct?.productImageURL)
+                } else {
+                    setImageURL(currentProduct?.productImageURL)
+                }
             }
             
             if currentProduct == nil {
@@ -113,22 +99,29 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        if productImageType == .scene {
-            bullseyeImageView.isHidden = false
-            if let product = currentProduct {
-                var bullseyeFrame = bullseyeImageView.frame
-                let bullseyePoint = CGPoint(x: imageView.frame.width * product.bullseyePoint.x, y: imageView.frame.height * product.bullseyePoint.y)
-                bullseyeFrame.origin = CGPoint(x: bullseyePoint.x + imageView.frame.minX - (bullseyeFrame.width / 2), y: bullseyePoint.y + imageView.frame.minY - (bullseyeFrame.height / 2))
-                bullseyeImageView.frame = bullseyeFrame
-                
-                bullseyeImageView.layer.shadowColor = UIColor.black.cgColor;
-                bullseyeImageView.layer.shadowOffset = CGSize(width: 1, height: 1);
-                bullseyeImageView.layer.shadowOpacity = 0.75;
-                bullseyeImageView.layer.shadowRadius = 2;
-                bullseyeImageView.clipsToBounds = false;
-            }
+        if productImageType == .scene, let product = currentProduct, product.bullseyePoint != CGPoint.zero {
+            var bullseyeFrame = bullseyeImageView.frame
+            let bullseyePoint = CGPoint(x: imageView.frame.width * product.bullseyePoint.x, y: imageView.frame.height * product.bullseyePoint.y)
+            bullseyeFrame.origin = CGPoint(x: bullseyePoint.x + imageView.frame.minX - (bullseyeFrame.width / 2), y: bullseyePoint.y + imageView.frame.minY - (bullseyeFrame.height / 2))
+            bullseyeImageView.frame = bullseyeFrame
+            
+            bullseyeImageView.layer.shadowColor = UIColor.black.cgColor;
+            bullseyeImageView.layer.shadowOffset = CGSize(width: 1, height: 1);
+            bullseyeImageView.layer.shadowOpacity = 0.75;
+            bullseyeImageView.layer.shadowRadius = 2;
+            bullseyeImageView.clipsToBounds = false;
         } else {
             bullseyeImageView.isHidden = true
+        }
+    }
+    
+    private func setImageURL(_ imageURL: URL?) {
+        if let url = imageURL {
+            imageView.contentMode = .scaleAspectFit
+            imageView.sd_setImage(with: url)
+        } else {
+            imageView.sd_cancelCurrentImageLoad()
+            imageView.image = nil
         }
     }
     
