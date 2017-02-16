@@ -4,6 +4,7 @@
 
 import Foundation
 import UIKit
+import NextGenDataManager
 
 enum ShoppingProductImageType {
     case product
@@ -12,6 +13,7 @@ enum ShoppingProductImageType {
 
 class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     
+    static let NibName = "ShoppingSceneDetailCollectionViewCell"
     static let ReuseIdentifier = "ShoppingSceneDetailCollectionViewCellReuseIdentifier"
     
     @IBOutlet weak private var imageView: UIImageView!
@@ -19,25 +21,6 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     @IBOutlet weak private var extraDescriptionLabel: UILabel!
     
     var productImageType = ShoppingProductImageType.product
-    
-    private var imageURL: URL? {
-        set {
-            if let url = newValue {
-                imageView.contentMode = UIViewContentMode.scaleAspectFit
-                imageView.sd_setImage(with: url, completed: { [weak self] (image, _, _, _) in
-                    self?.imageView.backgroundColor = image?.getPixelColor(CGPoint.zero)
-                })
-            } else {
-                imageView.sd_cancelCurrentImageLoad()
-                imageView.image = nil
-                imageView.backgroundColor = UIColor.clear
-            }
-        }
-        
-        get {
-            return nil
-        }
-    }
     
     private var extraDescription: String? {
         set {
@@ -49,48 +32,54 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
         }
     }
     
-    private var currentProduct: TheTakeProduct?
-    private var currentProductFrameTime = -1.0
-    private var currentProductSessionDataTask: URLSessionDataTask?
-    var theTakeProducts: [TheTakeProduct]? {
+    private var currentProduct: ProductItem? {
         didSet {
-            if let products = theTakeProducts, let product = products.first {
-                if currentProduct != product {
-                    currentProduct = product
-                    descriptionText = product.brand
-                    extraDescription = product.name
-                    imageURL = (productImageType == .scene ? product.sceneImageURL : product.productImageURL as URL?)
+            if currentProduct?.externalID != oldValue?.externalID {
+                descriptionText = currentProduct?.brand
+                extraDescription = currentProduct?.name
+                if productImageType == .scene {
+                    setImageURL(currentProduct?.sceneImageURL ?? currentProduct?.productImageURL)
+                } else {
+                    setImageURL(currentProduct?.productImageURL)
                 }
-            } else {
-                currentProduct = nil
-                imageURL = nil
-                descriptionText = nil
-                extraDescription = nil
-                currentProductFrameTime = -1.0
+            }
+            
+            if currentProduct == nil {
+                currentProductFrameTime = -1
             }
         }
     }
     
+    private var currentProductFrameTime = -1.0
+    private var currentProductSessionDataTask: URLSessionDataTask?
+    var products: [ProductItem]? {
+        didSet {
+            currentProduct = products?.first
+        }
+    }
+    
     override func currentTimeDidChange() {
-        DispatchQueue.global(qos: .userInteractive).async {
-            if self.timedEvent != nil && self.timedEvent!.isType(.product) {
-                let newFrameTime = TheTakeAPIUtil.sharedInstance.closestFrameTime(self.currentTime)
-                if newFrameTime != self.currentProductFrameTime {
-                    self.currentProductFrameTime = newFrameTime
-                    
-                    if let currentTask = self.currentProductSessionDataTask {
-                        currentTask.cancel()
-                    }
-                    
-                    self.currentProductSessionDataTask = TheTakeAPIUtil.sharedInstance.getFrameProducts(self.currentProductFrameTime, successBlock: { [weak self] (products) -> Void in
-                        if let strongSelf = self {
-                            strongSelf.currentProductSessionDataTask = nil
-                            DispatchQueue.main.async {
-                                strongSelf.theTakeProducts = products
-                            }
+        if let timedEvent = timedEvent, timedEvent.isType(.product) {
+            if timedEvent.productNamespace != nil, let productAPIUtil = NGDMConfiguration.productAPIUtil {
+                DispatchQueue.global(qos: .userInteractive).async {
+                    let newFrameTime = productAPIUtil.closestFrameTime(self.currentTime)
+                    if newFrameTime != self.currentProductFrameTime {
+                        self.currentProductFrameTime = newFrameTime
+                        
+                        if let currentTask = self.currentProductSessionDataTask {
+                            currentTask.cancel()
                         }
-                    })
+                        
+                        self.currentProductSessionDataTask = productAPIUtil.getFrameProducts(self.currentProductFrameTime, completion: { [weak self] (products) -> Void in
+                            self?.currentProductSessionDataTask = nil
+                            DispatchQueue.main.async {
+                                self?.products = products
+                            }
+                        })
+                    }
                 }
+            } else if let product = timedEvent.product {
+                products = [product]
             }
         }
     }
@@ -98,7 +87,7 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         
-        theTakeProducts = nil
+        products = nil
         bullseyeImageView.isHidden = true
         
         if let task = currentProductSessionDataTask {
@@ -110,22 +99,29 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        if productImageType == .scene {
-            bullseyeImageView.isHidden = false
-            if let product = currentProduct {
-                var bullseyeFrame = bullseyeImageView.frame
-                let bullseyePoint = CGPoint(x: imageView.frame.width * product.bullseyePoint.x, y: imageView.frame.height * product.bullseyePoint.y)
-                bullseyeFrame.origin = CGPoint(x: bullseyePoint.x + imageView.frame.minX - (bullseyeFrame.width / 2), y: bullseyePoint.y + imageView.frame.minY - (bullseyeFrame.height / 2))
-                bullseyeImageView.frame = bullseyeFrame
-                
-                bullseyeImageView.layer.shadowColor = UIColor.black.cgColor;
-                bullseyeImageView.layer.shadowOffset = CGSize(width: 1, height: 1);
-                bullseyeImageView.layer.shadowOpacity = 0.75;
-                bullseyeImageView.layer.shadowRadius = 2;
-                bullseyeImageView.clipsToBounds = false;
-            }
+        if productImageType == .scene, let product = currentProduct, product.bullseyePoint != CGPoint.zero {
+            var bullseyeFrame = bullseyeImageView.frame
+            let bullseyePoint = CGPoint(x: imageView.frame.width * product.bullseyePoint.x, y: imageView.frame.height * product.bullseyePoint.y)
+            bullseyeFrame.origin = CGPoint(x: bullseyePoint.x + imageView.frame.minX - (bullseyeFrame.width / 2), y: bullseyePoint.y + imageView.frame.minY - (bullseyeFrame.height / 2))
+            bullseyeImageView.frame = bullseyeFrame
+            
+            bullseyeImageView.layer.shadowColor = UIColor.black.cgColor;
+            bullseyeImageView.layer.shadowOffset = CGSize(width: 1, height: 1);
+            bullseyeImageView.layer.shadowOpacity = 0.75;
+            bullseyeImageView.layer.shadowRadius = 2;
+            bullseyeImageView.clipsToBounds = false;
         } else {
             bullseyeImageView.isHidden = true
+        }
+    }
+    
+    private func setImageURL(_ imageURL: URL?) {
+        if let url = imageURL {
+            imageView.contentMode = .scaleAspectFit
+            imageView.sd_setImage(with: url)
+        } else {
+            imageView.sd_cancelCurrentImageLoad()
+            imageView.image = nil
         }
     }
     

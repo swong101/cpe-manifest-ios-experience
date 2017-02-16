@@ -44,19 +44,19 @@ class ExtrasExperienceListViewController: ExtrasExperienceViewController, UIColl
     
     // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return experience.childExperiences?.count ?? 0
+        return experience.numChildren
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TitledImageCell.ReuseIdentifier, for: indexPath) as! TitledImageCell
-        cell.experience = experience.childExperiences?[indexPath.row]
+        cell.experience = experience.childExperience(atIndex: indexPath.row)
         return cell
     }
     
     // MARK: UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if let experience = experience.childExperiences?[indexPath.row] {
-            if experience.isType(.shopping) {
+        if let experience = experience.childExperience(atIndex: indexPath.row) {
+            if experience.isType(.product) {
                 self.performSegue(withIdentifier: SegueIdentifier.ShowShopping, sender: experience)
                 NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectShopping)
             } else if experience.isType(.location) {
@@ -67,13 +67,13 @@ class ExtrasExperienceListViewController: ExtrasExperienceViewController, UIColl
                 webViewController.shouldDisplayFullScreen = true
                 let navigationController = LandscapeNavigationController(rootViewController: webViewController)
                 self.present(navigationController, animated: true, completion: nil)
-                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectApp, itemId: app.id)
+                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectApp, itemId: app.analyticsIdentifier)
             } else if experience.isType(.audioVisual) {
                 self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
-                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.id)
+                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.analyticsIdentifier)
             } else if experience.isType(.gallery) {
                 self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
-                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.id)
+                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.analyticsIdentifier)
             }
         }
     }

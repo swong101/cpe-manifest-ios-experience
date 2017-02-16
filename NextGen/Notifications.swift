@@ -42,7 +42,7 @@ extension Notification.Name {
 }
 
 struct NotificationConstants {
-    static let categoryId = "categoryId"
+    static let categoryID = "categoryID"
     static let duration = "duration"
     static let index = "index"
     static let isFullScreen = "isFullScreen"
