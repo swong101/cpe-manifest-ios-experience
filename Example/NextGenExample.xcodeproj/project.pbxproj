@@ -13,6 +13,8 @@
 		70239EFF1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70239EFE1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib */; };
 		70239F041E496876006B9B9A /* AirPlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70239F031E496876006B9B9A /* AirPlayButton.swift */; };
 		703876431DAC1C1000544D5B /* NextGenLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703876421DAC1C1000544D5B /* NextGenLauncher.swift */; };
+		703F966F1E578CC300D6D32F /* TheTakeCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703F966D1E578CC300D6D32F /* TheTakeCategory.swift */; };
+		703F96701E578CC300D6D32F /* TheTakeProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703F966E1E578CC300D6D32F /* TheTakeProduct.swift */; };
 		708488DC1D0F7EC900670B45 /* NextGenDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */; };
 		708D535F1D525944009CED95 /* NextGenHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708D535E1D525944009CED95 /* NextGenHook.swift */; };
 		70977FEF1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70977FEE1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift */; };
@@ -56,8 +58,6 @@
 		70C093301D0F60DF00BFC1E4 /* MenuSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092C91D0F60DF00BFC1E4 /* MenuSection.swift */; };
 		70C093311D0F60DF00BFC1E4 /* BaselineAPIUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092CB1D0F60DF00BFC1E4 /* BaselineAPIUtil.swift */; };
 		70C093321D0F60DF00BFC1E4 /* TheTakeAPIUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092CC1D0F60DF00BFC1E4 /* TheTakeAPIUtil.swift */; };
-		70C093331D0F60DF00BFC1E4 /* TheTakeCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092CD1D0F60DF00BFC1E4 /* TheTakeCategory.swift */; };
-		70C093341D0F60DF00BFC1E4 /* TheTakeProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092CE1D0F60DF00BFC1E4 /* TheTakeProduct.swift */; };
 		70C093351D0F60DF00BFC1E4 /* ExtrasExperienceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092D01D0F60DF00BFC1E4 /* ExtrasExperienceViewController.swift */; };
 		70C093381D0F60DF00BFC1E4 /* ExtrasSceneLocationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092D31D0F60DF00BFC1E4 /* ExtrasSceneLocationsViewController.swift */; };
 		70C093391D0F60DF00BFC1E4 /* ExtrasShoppingItemsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C092D41D0F60DF00BFC1E4 /* ExtrasShoppingItemsViewController.swift */; };
@@ -130,6 +130,8 @@
 		70239EFE1E4906A3006B9B9A /* EnhancedTitlesCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EnhancedTitlesCollectionViewCell.xib; sourceTree = "<group>"; };
 		70239F031E496876006B9B9A /* AirPlayButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AirPlayButton.swift; sourceTree = "<group>"; };
 		703876421DAC1C1000544D5B /* NextGenLauncher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenLauncher.swift; sourceTree = "<group>"; };
+		703F966D1E578CC300D6D32F /* TheTakeCategory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TheTakeCategory.swift; sourceTree = "<group>"; };
+		703F966E1E578CC300D6D32F /* TheTakeProduct.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TheTakeProduct.swift; sourceTree = "<group>"; };
 		7071C54B1C6BCC11006F4275 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenDataLoader.swift; sourceTree = "<group>"; };
 		7084E1E41D0F18EE00B1B5B7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = SOURCE_ROOT; };
@@ -177,8 +179,6 @@
 		70C092C91D0F60DF00BFC1E4 /* MenuSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MenuSection.swift; sourceTree = "<group>"; };
 		70C092CB1D0F60DF00BFC1E4 /* BaselineAPIUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaselineAPIUtil.swift; sourceTree = "<group>"; };
 		70C092CC1D0F60DF00BFC1E4 /* TheTakeAPIUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TheTakeAPIUtil.swift; sourceTree = "<group>"; };
-		70C092CD1D0F60DF00BFC1E4 /* TheTakeCategory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TheTakeCategory.swift; sourceTree = "<group>"; };
-		70C092CE1D0F60DF00BFC1E4 /* TheTakeProduct.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TheTakeProduct.swift; sourceTree = "<group>"; };
 		70C092D01D0F60DF00BFC1E4 /* ExtrasExperienceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtrasExperienceViewController.swift; sourceTree = "<group>"; };
 		70C092D31D0F60DF00BFC1E4 /* ExtrasSceneLocationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtrasSceneLocationsViewController.swift; sourceTree = "<group>"; };
 		70C092D41D0F60DF00BFC1E4 /* ExtrasShoppingItemsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtrasShoppingItemsViewController.swift; sourceTree = "<group>"; };
@@ -360,6 +360,8 @@
 			children = (
 				70C092C81D0F60DF00BFC1E4 /* MenuItem.swift */,
 				70C092C91D0F60DF00BFC1E4 /* MenuSection.swift */,
+				703F966D1E578CC300D6D32F /* TheTakeCategory.swift */,
+				703F966E1E578CC300D6D32F /* TheTakeProduct.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -369,8 +371,6 @@
 			children = (
 				70C092CB1D0F60DF00BFC1E4 /* BaselineAPIUtil.swift */,
 				70C092CC1D0F60DF00BFC1E4 /* TheTakeAPIUtil.swift */,
-				70C092CD1D0F60DF00BFC1E4 /* TheTakeCategory.swift */,
-				70C092CE1D0F60DF00BFC1E4 /* TheTakeProduct.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -685,7 +685,6 @@
 				70C0933B1D0F60DF00BFC1E4 /* ExtrasVideoGalleryViewController.swift in Sources */,
 				70BB990D1E415DC1008D9027 /* NextGenPlaybackAsset.swift in Sources */,
 				70C093231D0F60DF00BFC1E4 /* MapSceneDetailCollectionViewCell.swift in Sources */,
-				70C093341D0F60DF00BFC1E4 /* TheTakeProduct.swift in Sources */,
 				70977FEF1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift in Sources */,
 				70BB99111E4164A1008D9027 /* DropdownTableViewCell.swift in Sources */,
 				70C093521D0F60DF00BFC1E4 /* RadioButton.swift in Sources */,
@@ -730,6 +729,7 @@
 				70C093481D0F60DF00BFC1E4 /* TalentDetailViewController.swift in Sources */,
 				70BB990B1E415D87008D9027 /* ExternalPlaybackManager.swift in Sources */,
 				70BB990F1E415DE7008D9027 /* NextGenExamplePlaybackAsset.swift in Sources */,
+				703F966F1E578CC300D6D32F /* TheTakeCategory.swift in Sources */,
 				70A5FBB51D6289F400EE7847 /* ClipShareSceneDetailViewController.swift in Sources */,
 				70C093291D0F60DF00BFC1E4 /* VideoPlayerScrubber.swift in Sources */,
 				70C093541D0F60DF00BFC1E4 /* SimpleImageCollectionViewCell.swift in Sources */,
@@ -746,12 +746,12 @@
 				70A5FBB71D628A3A00EE7847 /* NextGenCacheManager.swift in Sources */,
 				70A5FBB01D6289B800EE7847 /* AVPlayerItem+Cache.swift in Sources */,
 				70C0932A1D0F60DF00BFC1E4 /* VideoPlayerViewController.swift in Sources */,
-				70C093331D0F60DF00BFC1E4 /* TheTakeCategory.swift in Sources */,
 				70C0932E1D0F60DF00BFC1E4 /* SettingsManager.swift in Sources */,
 				70C0935A1D0F60DF00BFC1E4 /* UIFont+Theme.swift in Sources */,
 				70C093581D0F60DF00BFC1E4 /* VideoCell.swift in Sources */,
 				70C093511D0F60DF00BFC1E4 /* MultiMapView.swift in Sources */,
 				70C0931E1D0F60DF00BFC1E4 /* ImageSceneDetailCollectionViewCell.swift in Sources */,
+				703F96701E578CC300D6D32F /* TheTakeProduct.swift in Sources */,
 				70C0931A1D0F60DF00BFC1E4 /* HomeViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

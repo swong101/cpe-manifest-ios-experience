@@ -41,6 +41,7 @@ import MBProgressHUD
     }
     
     static let sharedInstance = NextGenDataLoader()
+    private var productAPIUtilKey: String?
     private var currentCid: String?
     
     override init() {
@@ -53,11 +54,9 @@ import MBProgressHUD
         // Load configuration file
         if let configDataPath = Bundle.main.path(forResource: "Data/config", ofType: "json") {
             do {
-                let configData = try NSData(contentsOf: URL(fileURLWithPath: configDataPath), options: NSData.ReadingOptions.mappedIfSafe)
-                if let configJSON = try JSONSerialization.jsonObject(with: configData as Data, options: JSONSerialization.ReadingOptions.mutableContainers) as? NSDictionary {
-                    if let key = configJSON[Constants.ConfigKey.TheTakeAPI] as? String {
-                        TheTakeAPIUtil.sharedInstance.apiKey = key
-                    }
+                let configData = try Data(contentsOf: URL(fileURLWithPath: configDataPath), options: NSData.ReadingOptions.mappedIfSafe)
+                if let configJSON = try JSONSerialization.jsonObject(with: configData, options: JSONSerialization.ReadingOptions.mutableContainers) as? NSDictionary {
+                    productAPIUtilKey = configJSON[Constants.ConfigKey.TheTakeAPI] as? String
                     
                     if let key = configJSON[Constants.ConfigKey.BaselineAPI] as? String {
                         NGDMConfiguration.talentAPIUtil = BaselineAPIUtil(apiKey: key)
@@ -69,10 +68,10 @@ import MBProgressHUD
                     }
                 }
             } catch let error as NSError {
-                print("Error parsing config data \(error.localizedDescription)")
+                print("Error parsing NextGen config data: \(error.localizedDescription)")
             }
         } else {
-            print("Configuration file not found")
+            print("NextGen configuration file not found")
         }
     }
     
@@ -84,17 +83,18 @@ import MBProgressHUD
             do {
                 try NGDMManifest.sharedInstance.loadManifestXMLFile(localFilePath)
                 
-                if TheTakeAPIUtil.sharedInstance.apiKey != nil, let mediaId = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(Namespaces.TheTake) {
-                    TheTakeAPIUtil.sharedInstance.mediaId = mediaId
-                    TheTakeAPIUtil.sharedInstance.prefetchProductFrames(start: 0)
-                    TheTakeAPIUtil.sharedInstance.prefetchProductCategories()
+                if let key = self.productAPIUtilKey, let id = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(TheTakeAPIUtil.APINamespace) {
+                    NGDMConfiguration.productAPIUtil = TheTakeAPIUtil(apiKey: key)
+                    NGDMConfiguration.productAPIUtil?.featureAPIID = id
+                    //_ = NGDMConfiguration.productAPIUtil.prefetchProductFrames(start: 0)
                 }
                 
                 if var talentAPIUtil = NGDMConfiguration.talentAPIUtil {
-                    talentAPIUtil.apiId = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(Namespaces.Baseline)
+                    talentAPIUtil.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(BaselineAPIUtil.APINamespace)
                 }
                 
-                NGDMManifest.sharedInstance.mainExperience?.loadTalent()
+                NGDMManifest.sharedInstance.loadProductData()
+                NGDMManifest.sharedInstance.loadTalentData()
             } catch NGDMError.mainExperienceMissing {
                 print("Error loading Manifest file: no main Experience found")
                 abort()
@@ -136,7 +136,7 @@ import MBProgressHUD
                     
                     if let localFilePath = appDataFilePath {
                         do {
-                            NGDMManifest.sharedInstance.appData = try NGDMManifest.sharedInstance.loadAppDataXMLFile(localFilePath)
+                            try NGDMManifest.sharedInstance.loadAppDataXMLFile(localFilePath)
                         } catch {
                             print("Error loading AppData file")
                         }

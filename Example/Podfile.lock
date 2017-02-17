@@ -8,7 +8,7 @@ PODS:
   - GoogleMaps/Maps (2.2.0):
     - GoogleMaps/Base
   - MBProgressHUD (0.9.2)
-  - NextGenDataManager (2.1.6)
+  - NextGenDataManager (2.2.0)
   - PromiseKit (4.1.7):
     - PromiseKit/Foundation (= 4.1.7)
     - PromiseKit/QuartzCore (= 4.1.7)
@@ -44,7 +44,7 @@ SPEC CHECKSUMS:
   google-cast-sdk: da1989cbc1b9ff7b50ddb9dae5b1969d95a65a0f
   GoogleMaps: 104c418d61ab8a05dff06ed0784c25ea9d37da45
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
-  NextGenDataManager: d2fbcc701530a1adabbd4f396a1081fceb67ad69
+  NextGenDataManager: c0b63d8301861148c4961df282b21f5a8492527e
   PromiseKit: 779f2e41faf62d854e7593026ddbcb0bb5c5002d
   ReachabilitySwift: f5b9bb30a0777fac8f09ce8b067e32faeb29bb64
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
