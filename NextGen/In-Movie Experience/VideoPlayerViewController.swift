@@ -1048,6 +1048,7 @@ class VideoPlayerViewController: UIViewController {
                 /* Set the AVPlayer for which the player layer displays visual output. */
                 playbackView.player = player
                 setViewDisplayName()
+                selectInitialCaptions()
             } else {
                 playerControlsEnabled = false
             }
@@ -1146,7 +1147,7 @@ class VideoPlayerViewController: UIViewController {
         if let group = asset.mediaSelectionGroup(forMediaCharacteristic: AVMediaCharacteristicLegible), group.options.first(where: { $0.locale != nil }) != nil {
             captionsSelectionGroup = group
             captionsButton?.isEnabled = true
-            selectInitialCaptions()
+            captionsOptionsTableView?.reloadData()
         } else {
             captionsButton?.isEnabled = false
         }
