@@ -72,6 +72,10 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
         galleryScrollView.gotoPage(initialPage, animated: false)
     }
     
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return (DeviceType.IS_IPAD ? .landscape : .portrait)
+    }
+    
     // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return talent.images?.count ?? 0
