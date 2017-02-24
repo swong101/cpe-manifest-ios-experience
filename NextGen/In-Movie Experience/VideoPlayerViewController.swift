@@ -569,6 +569,8 @@ class VideoPlayerViewController: UIViewController {
             if playerItemDuration != oldValue && playerItemDuration > 1 {
                 NotificationCenter.default.post(name: .videoPlayerItemDurationDidLoad, object: self, userInfo: [NotificationConstants.duration: playerItemDuration])
             }
+            
+            playbackAsset?.assetPlaybackDuration = playerItemDuration
         }
     }
     

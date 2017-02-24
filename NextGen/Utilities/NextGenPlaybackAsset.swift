@@ -16,6 +16,7 @@ import GoogleCast
     var assetImageURL: URL? { get }
     var assetImage: UIImage { get }
     var assetPlaybackPosition: Double { get set }
+    var assetPlaybackDuration: Double { get set }
     var assetIsCastable: Bool { get }
     var assetTextTracks: [NextGenPlaybackTextTrack]? { get }
     @objc optional var assetCastCustomData: [String: Any]? { get }
