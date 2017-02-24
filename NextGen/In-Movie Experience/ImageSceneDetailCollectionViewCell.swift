@@ -33,7 +33,7 @@ class ImageSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     override func timedEventDidChange() {
         super.timedEventDidChange()
         
-        imageURL = timedEvent?.imageURL
+        imageURL = timedEvent?.thumbnailImageURL
         playButton.isHidden = timedEvent == nil || (!timedEvent!.isType(.audioVisual) && !timedEvent!.isType(.clipShare))
     }
     

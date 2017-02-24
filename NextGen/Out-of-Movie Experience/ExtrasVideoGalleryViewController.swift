@@ -155,7 +155,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
     
     private func playSelectedExperience() {
         if let selectedIndexPath = galleryTableView.indexPathForSelectedRow, let selectedExperience = (experience.childExperience(atIndex: selectedIndexPath.row) ?? experience) {
-            if let imageURL = selectedExperience.imageURL {
+            if let imageURL = selectedExperience.thumbnailImageURL {
                 previewImageView.sd_setImage(with: imageURL)
             }
             
@@ -167,7 +167,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
                 videoPlayerViewController.removeCurrentItem()
                 videoPlayerViewController.mode = VideoPlayerMode.supplemental
                 videoPlayerViewController.queueTotalCount = max(experience.numChildren, 1)
-                videoPlayerViewController.queueCurrentIndex = (selectedIndexPath as NSIndexPath).row
+                videoPlayerViewController.queueCurrentIndex = selectedIndexPath.row
                 
                 if !videoPlayerExists {
                     videoPlayerViewController.view.frame = videoContainerView.bounds
@@ -176,7 +176,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
                     videoPlayerViewController.didMove(toParentViewController: self)
                 }
                 
-                videoPlayerViewController.playAsset(withURL: videoURL, title: selectedExperience.title, imageURL: selectedExperience.imageURL)
+                videoPlayerViewController.playAsset(withURL: videoURL, title: selectedExperience.title, imageURL: selectedExperience.thumbnailImageURL)
                 if !DeviceType.IS_IPAD && videoPlayerViewController.fullScreenButton != nil {
                     videoPlayerViewController.fullScreenButton?.removeFromSuperview()
                 }
@@ -305,7 +305,7 @@ extension ExtrasVideoGalleryViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if (indexPath as NSIndexPath).row > 0 {
+        if indexPath.row > 0 {
             didPlayFirstItem = true
         }
         

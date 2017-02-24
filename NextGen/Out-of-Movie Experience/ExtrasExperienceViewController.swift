@@ -74,7 +74,7 @@ class ExtrasExperienceViewController: UIViewController {
         self.view.addSubview(_backButton)
         self.view.sendSubview(toBack: _backButton)
         
-        if let titleTreatmentImageURL = NGDMManifest.sharedInstance.inMovieExperience?.imageURL {
+        if let titleTreatmentImageURL = NGDMManifest.sharedInstance.inMovieExperience?.thumbnailImageURL {
             let titleTreatmentImageView = UIImageView()
             titleTreatmentImageView.translatesAutoresizingMaskIntoConstraints = false
             titleTreatmentImageView.contentMode = .scaleAspectFit

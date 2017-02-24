@@ -241,11 +241,11 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
                     UIView.animate(withDuration: 0.25, animations: {
                         self.locationDetailView.alpha = 1
                     }, completion: { (_) in
-                        self.videoPlayerViewController?.playAsset(withURL: videoURL, title: experience.title, imageURL: experience.imageURL)
+                        self.videoPlayerViewController?.playAsset(withURL: videoURL, title: experience.title, imageURL: experience.thumbnailImageURL)
                     })
                 } else {
                     locationDetailView.alpha = 1
-                    self.videoPlayerViewController?.playAsset(withURL: videoURL, title: experience.title, imageURL: experience.imageURL)
+                    self.videoPlayerViewController?.playAsset(withURL: videoURL, title: experience.title, imageURL: experience.thumbnailImageURL)
                 }
             }
         }
@@ -360,13 +360,13 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         if let selectedExperience = selectedExperience, selectedExperience.locationMediaCount > 0 {
             if let experience = selectedExperience.locationMediaAtIndex(indexPath.row) {
                 cell.playButtonVisible = experience.isType(.audioVisual)
-                cell.imageURL = experience.imageURL
+                cell.imageURL = experience.thumbnailImageURL
                 cell.title = experience.title
             }
         } else {
             let experience = locationExperiences[indexPath.row]
             cell.playButtonVisible = false
-            cell.imageURL = experience.imageURL
+            cell.imageURL = experience.thumbnailImageURL
             cell.title = experience.title
         }
         

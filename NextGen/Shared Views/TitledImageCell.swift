@@ -17,7 +17,7 @@ class TitledImageCell: UICollectionViewCell {
     var experience: NGDMExperience? {
         didSet {
             title = experience?.title
-            imageURL = experience?.imageURL
+            imageURL = experience?.thumbnailImageURL
         }
     }
     

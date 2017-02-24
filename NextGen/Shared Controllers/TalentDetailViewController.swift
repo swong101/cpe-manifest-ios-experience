@@ -237,7 +237,7 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
                 NextGenHook.logAnalyticsEvent(currentAnalyticsEvent, action: .selectFilm, itemId: talent.id, itemName: film.title)
             }
         } else if collectionView == galleryCollectionView {
-            self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: (indexPath as NSIndexPath).row + 1)
+            self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: indexPath.row + 1)
         }
     }
     

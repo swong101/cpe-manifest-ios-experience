@@ -41,7 +41,7 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
                 
                 var cellIsShowing = false
                 for cell in strongSelf.galleryCollectionView.visibleCells {
-                    if let indexPath = strongSelf.galleryCollectionView.indexPath(for: cell) , (indexPath as NSIndexPath).row == page {
+                    if let indexPath = strongSelf.galleryCollectionView.indexPath(for: cell), indexPath.row == page {
                         cellIsShowing = true
                         break
                     }
@@ -84,14 +84,14 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SimpleImageCollectionViewCell.BaseReuseIdentifier, for: indexPath) as! SimpleImageCollectionViewCell
         cell.showsSelectedBorder = true
-        cell.isSelected = ((indexPath as NSIndexPath).row == galleryScrollView.currentPage)
+        cell.isSelected = (indexPath.row == galleryScrollView.currentPage)
         cell.imageURL = talent.images?[indexPath.row].thumbnailImageURL
         return cell
     }
     
     // MARK: UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        galleryScrollView.gotoPage((indexPath as NSIndexPath).row, animated: true)
+        galleryScrollView.gotoPage(indexPath.row, animated: true)
         NextGenHook.logAnalyticsEvent(.extrasTalentGalleryAction, action: .selectImage, itemId: talent.id)
     }
     

@@ -136,17 +136,19 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if (indexPath as NSIndexPath).row == 0 {
+        if indexPath.row == 0 && location.mapImageURL == nil {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SimpleMapCollectionViewCell.ReuseIdentifier, for: indexPath) as! SimpleMapCollectionViewCell
             cell.setLocation(CLLocationCoordinate2DMake(location.latitude, location.longitude), zoomLevel: location.zoomLevel - 4)
             return cell
         }
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SimpleImageCollectionViewCell.BaseReuseIdentifier, for: indexPath) as! SimpleImageCollectionViewCell
-        
-        if let experience = location.mediaAtIndex(indexPath.row - 1) {
+        if indexPath.row == 0 {
+            cell.playButtonVisible = false
+            cell.imageURL = location.mapImageURL
+        } else if let experience = location.mediaAtIndex(indexPath.row - 1) {
             cell.playButtonVisible = experience.isType(.audioVisual)
-            cell.imageURL = experience.imageURL
+            cell.imageURL = experience.thumbnailImageURL
         } else {
             cell.playButtonVisible = false
             cell.imageURL = nil
@@ -157,7 +159,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
     
     // MARK: UICollectionViewDelegate
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if (indexPath as NSIndexPath).row == 0 {
+        if indexPath.row == 0 {
             closeDetailView()
             animateToCenter()
             NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectMap, itemId: location.analyticsIdentifier)

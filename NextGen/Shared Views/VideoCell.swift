@@ -43,7 +43,7 @@ class VideoCell: UITableViewCell {
                 runtimeLabel.isHidden = true
             }
             
-            if let imageURL = experience?.imageURL {
+            if let imageURL = experience?.thumbnailImageURL {
                 thumbnailImageView.sd_setImage(with: imageURL)
             } else {
                 thumbnailImageView.sd_cancelCurrentImageLoad()

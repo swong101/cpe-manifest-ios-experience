@@ -207,7 +207,7 @@ class HomeViewController: UIViewController {
             self.view.addSubview(buttonOverlayView)
             
             // Title treatment
-            if nodeStyle == nil || nodeStyle!.titleOverlaySize != nil, let imageURL = NGDMManifest.sharedInstance.inMovieExperience?.imageURL {
+            if nodeStyle == nil || nodeStyle!.titleOverlaySize != nil, let imageURL = NGDMManifest.sharedInstance.inMovieExperience?.thumbnailImageURL {
                 titleOverlayView = UIView()
                 titleOverlayView!.isHidden = true
                 titleOverlayView!.isUserInteractionEnabled = false
@@ -545,7 +545,7 @@ class HomeViewController: UIViewController {
         if let backgroundImageURL = nodeStyle?.backgroundImageURL {
             backgroundImageView.sd_setImage(with: backgroundImageURL)
         } else if nodeStyle?.backgroundVideoURL == nil {
-            if let backgroundImageURL = NGDMManifest.sharedInstance.outOfMovieExperience?.imageURL {
+            if let backgroundImageURL = NGDMManifest.sharedInstance.outOfMovieExperience?.thumbnailImageURL {
                 backgroundImageView.sd_setImage(with: backgroundImageURL, completed: { [weak self] (image, _, _, _) in
                     if let image = image {
                         self?.observedBackgroundImageSize = CGSize(width: image.size.width * image.scale, height: image.size.height * image.scale)

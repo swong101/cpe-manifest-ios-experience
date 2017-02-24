@@ -151,7 +151,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             reuseIdentifier = ShoppingSceneDetailCollectionViewCell.ReuseIdentifier
         } else if timedEvent.isType(.clipShare) {
             reuseIdentifier = ImageSceneDetailCollectionViewCell.ClipShareReuseIdentifier
-        } else if timedEvent.imageURL != nil {
+        } else if timedEvent.thumbnailImageURL != nil {
             reuseIdentifier = ImageSceneDetailCollectionViewCell.ReuseIdentifier
         } else {
             reuseIdentifier = TextSceneDetailCollectionViewCell.ReuseIdentifier
