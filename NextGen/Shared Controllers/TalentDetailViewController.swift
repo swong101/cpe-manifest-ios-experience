@@ -15,15 +15,15 @@ enum TalentDetailMode: String {
     case Extras = "TalentDetailModeExtras"
 }
 
-class TalentDetailViewController: SceneDetailViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+class TalentDetailViewController: SceneDetailViewController {
     
-    private struct SegueIdentifier {
+    fileprivate struct SegueIdentifier {
         static let TalentImageGallery = "TalentImageGallerySegueIdentifier"
     }
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let GalleryCollectionViewItemSpacing: CGFloat = 10
-        static let GalleryCollectionViewItemAspectRatio: CGFloat = 8 / 10
+        static let GalleryCollectionViewItemAspectRatio: CGFloat = 3 / 4
         static let FilmographyCollectionViewItemSpacing: CGFloat = 10
         static let FilmographyCollectionViewItemAspectRatio: CGFloat = 27 / 40
     }
@@ -39,11 +39,11 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
     
     @IBOutlet weak private var galleryContainerView: UIView?
     @IBOutlet weak private var galleryHeaderLabel: UILabel?
-    @IBOutlet weak private var galleryCollectionView: UICollectionView?
+    @IBOutlet weak fileprivate var galleryCollectionView: UICollectionView?
     
     @IBOutlet weak private var filmographyContainerView: UIView?
     @IBOutlet weak private var filmographyHeaderLabel: UILabel?
-    @IBOutlet weak private var filmographyCollectionView: UICollectionView?
+    @IBOutlet weak fileprivate var filmographyCollectionView: UICollectionView?
     
     @IBOutlet weak private var twitterButton: SocialButton?
     @IBOutlet weak private var facebookButton: SocialButton?
@@ -209,7 +209,19 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: nil)
     }
     
-    // MARK: UICollectionViewDataSource
+    // MARK: Storyboard Methods
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == SegueIdentifier.TalentImageGallery, let talentImageGalleryViewController = segue.destination as? TalentImageGalleryViewController {
+            talentImageGalleryViewController.talent = talent
+            talentImageGalleryViewController.initialPage = (sender as? Int) ?? 0
+            NextGenHook.logAnalyticsEvent(currentAnalyticsEvent, action: .selectGallery, itemId: talent.id)
+        }
+    }
+
+}
+
+extension TalentDetailViewController: UICollectionViewDataSource {
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == filmographyCollectionView {
             return talent?.films?.count ?? 0
@@ -229,7 +241,10 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         return cell
     }
     
-    // MARK: UICollectionViewDelegate
+}
+
+extension TalentDetailViewController: UICollectionViewDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == filmographyCollectionView {
             if let film = talent?.films?[indexPath.row], let delegate = NextGenHook.delegate {
@@ -241,7 +256,10 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         }
     }
     
-    // MARK: UICollectionViewDelegateFlowLayout
+}
+
+extension TalentDetailViewController: UICollectionViewDelegateFlowLayout {
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.height
         let width = (height * (collectionView == filmographyCollectionView ? Constants.FilmographyCollectionViewItemAspectRatio : Constants.GalleryCollectionViewItemAspectRatio))
@@ -256,13 +274,4 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         return Constants.GalleryCollectionViewItemSpacing
     }
     
-    // MARK: Storyboard Methods
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == SegueIdentifier.TalentImageGallery, let talentImageGalleryViewController = segue.destination as? TalentImageGalleryViewController {
-            talentImageGalleryViewController.talent = talent
-            talentImageGalleryViewController.initialPage = (sender as? Int) ?? 0
-            NextGenHook.logAnalyticsEvent(currentAnalyticsEvent, action: .selectGallery, itemId: talent.id)
-        }
-    }
-
 }

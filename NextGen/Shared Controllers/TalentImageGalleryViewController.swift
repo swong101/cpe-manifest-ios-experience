@@ -5,14 +5,14 @@
 import UIKit
 import NextGenDataManager
 
-class TalentImageGalleryViewController: SceneDetailViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+class TalentImageGalleryViewController: SceneDetailViewController {
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let CollectionViewItemSpacing: CGFloat = 10
-        static let CollectionViewItemAspectRatio: CGFloat = 8 / 10
+        static let CollectionViewItemAspectRatio: CGFloat = 3 / 4
     }
     
-    @IBOutlet weak private var galleryScrollView: ImageGalleryScrollView!
+    @IBOutlet weak fileprivate var galleryScrollView: ImageGalleryScrollView!
     @IBOutlet weak private var galleryCollectionView: UICollectionView!
     
     var talent: NGDMTalent!
@@ -76,7 +76,10 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
         return (DeviceType.IS_IPAD ? .landscape : .portrait)
     }
     
-    // MARK: UICollectionViewDataSource
+}
+
+extension TalentImageGalleryViewController: UICollectionViewDataSource {
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return talent.images?.count ?? 0
     }
@@ -89,13 +92,19 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
         return cell
     }
     
-    // MARK: UICollectionViewDelegate
+}
+
+extension TalentImageGalleryViewController: UICollectionViewDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         galleryScrollView.gotoPage(indexPath.row, animated: true)
         NextGenHook.logAnalyticsEvent(.extrasTalentGalleryAction, action: .selectImage, itemId: talent.id)
     }
     
-    // MARK: UICollectionViewDelegateFlowLayout
+}
+
+extension TalentImageGalleryViewController: UICollectionViewDelegateFlowLayout {
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.height
         return CGSize(width: height * Constants.CollectionViewItemAspectRatio, height: height)
@@ -104,5 +113,5 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return Constants.CollectionViewItemSpacing
     }
-
+    
 }

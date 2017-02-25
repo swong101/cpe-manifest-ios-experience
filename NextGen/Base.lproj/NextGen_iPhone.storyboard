@@ -251,19 +251,19 @@
                                 <rect key="frame" x="10" y="50" width="365" height="617"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZLk-Ah-jGc" userLabel="Content View">
-                                        <rect key="frame" x="0.0" y="0.0" width="355" height="840.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="355" height="852"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nQS-Yi-wlx" userLabel="Talent Image Container">
-                                                <rect key="frame" x="0.0" y="0.0" width="355" height="178.5"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="355" height="190"/>
                                                 <subviews>
                                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Lwb-KU-cen">
-                                                        <rect key="frame" x="0.0" y="0.0" width="142.5" height="178.5"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="142.5" height="190"/>
                                                         <constraints>
-                                                            <constraint firstAttribute="width" secondItem="Lwb-KU-cen" secondAttribute="height" multiplier="8:10" id="TAQ-Z4-F9r"/>
+                                                            <constraint firstAttribute="width" secondItem="Lwb-KU-cen" secondAttribute="height" multiplier="3:4" id="TAQ-Z4-F9r"/>
                                                         </constraints>
                                                     </imageView>
                                                     <button hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hjk-No-7sv">
-                                                        <rect key="frame" x="102.5" y="138.5" width="40" height="40"/>
+                                                        <rect key="frame" x="102.5" y="150" width="40" height="40"/>
                                                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.75" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" secondItem="hjk-No-7sv" secondAttribute="height" multiplier="1:1" id="OkG-qE-R4S"/>
@@ -344,7 +344,7 @@
                                                 </constraints>
                                             </view>
                                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lgk-ie-Wpy">
-                                                <rect key="frame" x="0.0" y="193.5" width="355" height="184.5"/>
+                                                <rect key="frame" x="0.0" y="205" width="355" height="184.5"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BIOGRAPHY" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="B4Z-td-umT">
                                                         <rect key="frame" x="0.0" y="0.0" width="355" height="25"/>
@@ -374,7 +374,7 @@
                                                 </constraints>
                                             </view>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RCv-yA-FCU" userLabel="Gallery Container">
-                                                <rect key="frame" x="0.0" y="388" width="355" height="185.5"/>
+                                                <rect key="frame" x="0.0" y="399.5" width="355" height="185.5"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ACTOR GALLERY" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="D7o-G3-t6w">
                                                         <rect key="frame" x="0.0" y="0.0" width="355" height="25"/>
@@ -412,7 +412,7 @@
                                                 </constraints>
                                             </view>
                                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rja-JM-bvB" userLabel="Filmography Container View">
-                                                <rect key="frame" x="0.0" y="583.5" width="355" height="247"/>
+                                                <rect key="frame" x="0.0" y="595" width="355" height="247"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="FILMOGRAPHY" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="12p-Wd-gSB">
                                                         <rect key="frame" x="0.0" y="0.0" width="355" height="25"/>
@@ -1508,7 +1508,7 @@
         <scene sceneID="2S6-zB-kic">
             <objects>
                 <collectionViewController storyboardIdentifier="sceneDetail" id="VTD-yi-sj7" customClass="SceneDetailCollectionViewController" customModule="Movies_All_Access" customModuleProvider="target" sceneMemberID="viewController">
-                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="DCa-cj-7R6">
+                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" id="DCa-cj-7R6">
                         <rect key="frame" x="0.0" y="0.0" width="257.5" height="451"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="sqt-Hf-9Ea">
@@ -1555,7 +1555,7 @@
                                 <rect key="frame" x="10" y="50" width="355" height="239"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="CHOOSE A CLIP TO SHARE" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="sJI-K1-lN5">
-                                        <rect key="frame" x="10" y="0.0" width="159" height="45"/>
+                                        <rect key="frame" x="10" y="0.0" width="192.5" height="45"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="45" id="Tq8-Ly-Ac7"/>
                                         </constraints>
@@ -2000,13 +2000,13 @@
                                         <rect key="frame" x="0.0" y="567" width="355" height="40"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Powered by" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QEc-4f-1jD">
-                                                <rect key="frame" x="0.0" y="0.0" width="55" height="40"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="64" height="40"/>
                                                 <fontDescription key="fontDescription" name="RobotoCondensed-Regular" family="Roboto Condensed" pointSize="12"/>
                                                 <color key="textColor" red="0.67843137249999996" green="0.67843137249999996" blue="0.67843137249999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="TheTakeLogo" translatesAutoresizingMaskIntoConstraints="NO" id="VMg-t9-VNl" userLabel="TheTake Logo">
-                                                <rect key="frame" x="60" y="14" width="50" height="13"/>
+                                                <rect key="frame" x="69" y="14" width="50" height="13"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="50" id="9DJ-9I-rVg"/>
                                                     <constraint firstAttribute="width" secondItem="VMg-t9-VNl" secondAttribute="height" multiplier="50:13" id="QOW-BF-ldQ"/>
@@ -2286,8 +2286,8 @@
         <simulatedScreenMetrics key="destination" type="retina4_7.fullscreen"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="KxA-Ux-FPB"/>
-        <segue reference="JUi-jT-cpL"/>
-        <segue reference="dIO-Uf-flr"/>
+        <segue reference="yaN-Dd-qx0"/>
+        <segue reference="KBV-cK-jkC"/>
+        <segue reference="eGG-kJ-fSM"/>
     </inferredMetricsTieBreakers>
 </document>

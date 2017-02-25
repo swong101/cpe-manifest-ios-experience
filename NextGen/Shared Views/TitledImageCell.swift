@@ -12,8 +12,6 @@ class TitledImageCell: UICollectionViewCell {
     @IBOutlet weak private var titleLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
     
-    private var setImageSessionDataTask: URLSessionDataTask?
-    
     var experience: NGDMExperience? {
         didSet {
             title = experience?.title
@@ -33,11 +31,6 @@ class TitledImageCell: UICollectionViewCell {
     
     var imageURL: URL? {
         set {
-            if let task = setImageSessionDataTask {
-                task.cancel()
-                setImageSessionDataTask = nil
-            }
-            
             if let url = newValue {
                 imageView.sd_setImage(with: url)
             } else {
