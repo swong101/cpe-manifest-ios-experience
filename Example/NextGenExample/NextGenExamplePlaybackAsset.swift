@@ -15,6 +15,7 @@ class NextGenExamplePlaybackAsset: NextGenPlaybackAsset {
     var assetTitle: String?
     var assetImage = UIImage()
     var assetPlaybackPosition: Double = 0
+    var assetPlaybackDuration: Double = 0
     var assetIsCastable = false
     var assetTextTracks: [NextGenPlaybackTextTrack]?
     var assetImageURL: URL? {
