@@ -42,7 +42,7 @@ import MBProgressHUD
     
     static let sharedInstance = NextGenDataLoader()
     private var productAPIUtilKey: String?
-    private var currentCid: String?
+    private var talentAPIUtilKey: String?
     
     override init() {
         super.init()
@@ -57,14 +57,12 @@ import MBProgressHUD
                 let configData = try Data(contentsOf: URL(fileURLWithPath: configDataPath), options: NSData.ReadingOptions.mappedIfSafe)
                 if let configJSON = try JSONSerialization.jsonObject(with: configData, options: JSONSerialization.ReadingOptions.mutableContainers) as? NSDictionary {
                     productAPIUtilKey = configJSON[Constants.ConfigKey.TheTakeAPI] as? String
-                    
-                    if let key = configJSON[Constants.ConfigKey.BaselineAPI] as? String {
-                        NGDMConfiguration.talentAPIUtil = BaselineAPIUtil(apiKey: key)
-                    }
+                    talentAPIUtilKey = configJSON[Constants.ConfigKey.BaselineAPI] as? String
                     
                     if let key = configJSON[Constants.ConfigKey.GoogleMapsAPI] as? String {
                         GMSServices.provideAPIKey(key)
                         NGDMConfiguration.mapService = .googleMaps
+                        NGDMConfiguration.googleMapsAPIKey = key
                     }
                 }
             } catch let error as NSError {
@@ -75,38 +73,38 @@ import MBProgressHUD
         }
     }
     
-    func loadTitle(id: String, completion: @escaping (_ success: Bool) -> Void) throws {
+    func loadTitle(id: String, completion: @escaping (_ success: Bool, _ error: Error?) -> Void) throws {
         guard let titleData = NextGenDataLoader.ManifestData[id] else { throw DataLoaderError.titleNotFound }
         
         guard let manifestXMLPath = titleData["manifest"] else { throw NGDMError.manifestMissing }
         loadXMLFile(manifestXMLPath).then(on: DispatchQueue.global(qos: .userInteractive), execute: { localFilePath -> Void in
             do {
+                if let key = self.productAPIUtilKey {
+                    NGDMConfiguration.productAPIUtil = TheTakeAPIUtil(apiKey: key)
+                }
+                
+                if let key = self.talentAPIUtilKey {
+                    NGDMConfiguration.talentAPIUtil = BaselineAPIUtil(apiKey: key)
+                }
+                
                 try NGDMManifest.sharedInstance.loadManifestXMLFile(localFilePath)
                 
-                if let key = self.productAPIUtilKey, let id = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(TheTakeAPIUtil.APINamespace) {
-                    NGDMConfiguration.productAPIUtil = TheTakeAPIUtil(apiKey: key)
-                    NGDMConfiguration.productAPIUtil?.featureAPIID = id
-                    //_ = NGDMConfiguration.productAPIUtil.prefetchProductFrames(start: 0)
-                }
-                
-                if var talentAPIUtil = NGDMConfiguration.talentAPIUtil {
-                    talentAPIUtil.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(BaselineAPIUtil.APINamespace)
-                }
-                
+                NGDMConfiguration.productAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(TheTakeAPIUtil.APINamespace)
+                NGDMConfiguration.talentAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(BaselineAPIUtil.APINamespace)
                 NGDMManifest.sharedInstance.loadProductData()
                 NGDMManifest.sharedInstance.loadTalentData()
             } catch NGDMError.mainExperienceMissing {
                 print("Error loading Manifest file: no main Experience found")
-                abort()
+                completion(false, NGDMError.mainExperienceMissing)
             } catch NGDMError.inMovieExperienceMissing {
                 print("Error loading Manifest file: no in-movie Experience found")
-                abort()
+                completion(false, NGDMError.inMovieExperienceMissing)
             } catch NGDMError.outOfMovieExperienceMissing {
                 print("Error loading Manifest file: no out-of-movie Experience found")
-                abort()
+                completion(false, NGDMError.outOfMovieExperienceMissing)
             } catch {
                 print("Error loading Manifest file: unknown error")
-                abort()
+                completion(false, error)
             }
             
             var promises = [Promise<String>]()
@@ -150,13 +148,13 @@ import MBProgressHUD
                         }
                     }
                     
-                    completion(true)
+                    completion(true, nil)
                 })
             } else {
-                completion(true)
+                completion(true, nil)
             }
         }).catch { error in
-            completion(false)
+            completion(false, error)
         }
     }
     

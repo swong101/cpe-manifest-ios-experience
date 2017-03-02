@@ -5,6 +5,11 @@
 import Foundation
 import NextGenDataManager
 
+public enum BaselineAPIStudio: String {
+    case wb = "WB"
+    case nbcu = "NBCU"
+}
+
 public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
     
     public static var APIDomain = "https://vic57ayytg.execute-api.us-west-2.amazonaws.com/prod"
@@ -35,6 +40,11 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
         static let URL = "URL"
     }
     
+    struct Headers {
+        static let APIKey = "x-api-key"
+        static let Studio = "X-Studio"
+    }
+    
     private struct Constants {
         static let MaxCredits = 15
         static let MaxFilmography = 10
@@ -42,10 +52,12 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
     
     public var featureAPIID: String?
     
-    public convenience init(apiKey: String) {
+    public convenience init(apiKey: String, featureAPIID: String? = nil, studio: BaselineAPIStudio = .wb) {
         self.init(apiDomain: BaselineAPIUtil.APIDomain)
         
-        self.customHeaders["x-api-key"] = apiKey
+        self.featureAPIID = featureAPIID
+        self.customHeaders[Headers.APIKey] = apiKey
+        self.customHeaders[Headers.Studio] = studio.rawValue
     }
     
     public func prefetchCredits(_ completion: @escaping (_ talents: [String: NGDMTalent]?) -> Void) {
