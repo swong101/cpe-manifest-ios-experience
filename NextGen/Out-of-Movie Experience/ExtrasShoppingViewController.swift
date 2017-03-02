@@ -108,6 +108,8 @@ class ExtrasShoppingViewController: MenuedViewController {
                     })
                 }
             }
+            
+            NextGenHook.logAnalyticsEvent(.extrasShopAction, action: .selectCategory, itemId: categoryID)
         }  else if let childExperiences = experience.childExperiences {
             var products = [ProductItem]()
             for childExperience in childExperiences {
@@ -123,6 +125,7 @@ class ExtrasShoppingViewController: MenuedViewController {
             }
             
             extrasShoppingItemsViewController?.products = products
+            NextGenHook.logAnalyticsEvent(.extrasShopAction, action: .selectCategory, itemId: categoryID, itemName: products.first?.category??.name)
         }
     }
     

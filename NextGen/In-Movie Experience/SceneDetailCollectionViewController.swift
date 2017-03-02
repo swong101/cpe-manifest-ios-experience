@@ -229,6 +229,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             if segue.identifier == SegueIdentifier.ShowShopping {
                 if let products = (cell as? ShoppingSceneDetailCollectionViewCell)?.products {
                     let shopDetailViewController = segue.destination as! ShoppingDetailViewController
+                    shopDetailViewController.mode = .ime
                     shopDetailViewController.experience = experience
                     shopDetailViewController.products = products
                 }

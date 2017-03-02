@@ -5,6 +5,19 @@
 import UIKit
 import NextGenDataManager
 
+enum ShoppingDetailMode {
+    case ime
+    case extras
+    
+    var analyticsEvent: NextGenAnalyticsEvent {
+        if self == .ime {
+            return .imeShopAction
+        }
+        
+        return .extrasShopAction
+    }
+}
+
 class ShoppingDetailCell: UICollectionViewCell {
     
     static let ReuseIdentifier = "ShoppingDetailCellReuseIdentifier"
@@ -56,6 +69,7 @@ class ShoppingDetailViewController: SceneDetailViewController {
     @IBOutlet private var shopToProductPriceConstraint: NSLayoutConstraint!
     @IBOutlet private var productImageViewHeightConstraint: NSLayoutConstraint!
     
+    var mode = ShoppingDetailMode.extras
     var products: [ProductItem]?
     private var closeDetailsViewObserver: NSObjectProtocol?
     private var imageSize = CGSize.zero
@@ -155,11 +169,13 @@ class ShoppingDetailViewController: SceneDetailViewController {
     
     // MARK: Actions
     @IBAction private func onShop(_ sender: AnyObject) {
-        if let externalURL = currentProduct?.externalURL {
+        if let product = currentProduct, let externalURL = product.externalURL {
             NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
             externalURL.promptLaunch(cancelHandler: {
                 NotificationCenter.default.post(name: .videoPlayerCanResume, object: nil)
             })
+            
+            NextGenHook.logAnalyticsEvent(mode.analyticsEvent, action: .selectShopProduct, itemName: product.name)
         }
     }
     
@@ -173,6 +189,7 @@ class ShoppingDetailViewController: SceneDetailViewController {
             }
             
             self.present(activityViewController, animated: true, completion: nil)
+            NextGenHook.logAnalyticsEvent(mode.analyticsEvent, action: .selectShareProductLink, itemName: product.name)
         }
     }
     
