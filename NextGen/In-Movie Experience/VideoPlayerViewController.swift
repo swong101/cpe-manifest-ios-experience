@@ -242,7 +242,7 @@ class VideoPlayerViewController: UIViewController {
     private var nowPlayingInfoImage: UIImage?
     private var nowPlayingInfoTimedEvent: NGDMTimedEvent? {
         didSet {
-            if let imageURL = nowPlayingInfoTimedEvent?.imageURL {
+            if let imageURL = nowPlayingInfoTimedEvent?.thumbnailImageURL {
                 SDWebImageDownloader.shared().downloadImage(with: imageURL, options: .lowPriority, progress: nil, completed: { [weak self] (image, _, _, _) in
                     self?.nowPlayingInfoImage = image
                 })
@@ -646,18 +646,21 @@ class VideoPlayerViewController: UIViewController {
             videoPlayerCanResumeObserver = nil
         }
         
-        if let playerItem = player?.currentItem {
-            NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: playerItem)
+        if let player = player {
+            if let playerItem = player.currentItem {
+                NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: playerItem)
+            }
+            
+            player.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemStatus)
+            player.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemDuration)
+            player.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemPlaybackBufferEmpty)
+            player.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemPlaybackLikelyToKeepUp)
+            player.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemPresentationSize)
+            player.removeObserver(self, forKeyPath: Constants.Keys.CurrentItem)
+            player.removeObserver(self, forKeyPath: Constants.Keys.Rate)
+            player.removeObserver(self, forKeyPath: Constants.Keys.ExternalPlaybackActive)
         }
         
-        player?.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemStatus)
-        player?.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemDuration)
-        player?.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemPlaybackBufferEmpty)
-        player?.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemPlaybackLikelyToKeepUp)
-        player?.removeObserver(self, forKeyPath: Constants.Keys.CurrentItemPresentationSize)
-        player?.removeObserver(self, forKeyPath: Constants.Keys.CurrentItem)
-        player?.removeObserver(self, forKeyPath: Constants.Keys.Rate)
-        player?.removeObserver(self, forKeyPath: Constants.Keys.ExternalPlaybackActive)
         removeCurrentItem()
         
         // Nullify stored objects
@@ -731,7 +734,7 @@ class VideoPlayerViewController: UIViewController {
         }
         
         videoPlayerDidPlayVideoObserver = NotificationCenter.default.addObserver(forName: .videoPlayerDidPlayVideo, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
-            if let strongSelf = self, strongSelf.didPlayInterstitial {
+            if let strongSelf = self, strongSelf.didPlayInterstitial, !strongSelf.isExternalPlaybackActive {
                 if let videoURL = notification.userInfo?[NotificationConstants.videoUrl] as? URL, videoURL != strongSelf.url {
                     strongSelf.pauseVideo()
                 }
@@ -739,7 +742,9 @@ class VideoPlayerViewController: UIViewController {
         })
         
         videoPlayerShouldPauseObserver = NotificationCenter.default.addObserver(forName: .videoPlayerShouldPause, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
-            self?.pauseVideo()
+            if let strongSelf = self, !strongSelf.isExternalPlaybackActive {
+                strongSelf.pauseVideo()
+            }
         })
         
         MPRemoteCommandCenter.shared().playCommand.addTarget { [weak self] (_) -> MPRemoteCommandHandlerStatus in
@@ -1045,7 +1050,7 @@ class VideoPlayerViewController: UIViewController {
         }
         /* AVPlayer "externalPlaybackActive" propertly value observer. */
         else if context == &VideoPlayerExternalPlaybackObservationContext {
-            if let isAirPlayActive = change?[NSKeyValueChangeKey.newKey] as? Bool {
+            if player != nil && player!.allowsExternalPlayback, let isAirPlayActive = change?[NSKeyValueChangeKey.newKey] as? Bool {
                 self.isAirPlayActive = isAirPlayActive
             }
         }
@@ -1173,10 +1178,14 @@ class VideoPlayerViewController: UIViewController {
         
         updateToolbarButtons()
         
+        // Set up AirPlay support
+        let airPlayEnabled = (mode != .basicPlayer && mode != .supplementalInMovie && didPlayInterstitial)
+        
         /* Create new player, if we don't already have one. */
         if player == nil {
             /* Get a new AVPlayer initialized to play the specified player item. */
             player = AVPlayer(playerItem: playerItem)
+            player!.allowsExternalPlayback = airPlayEnabled
             
             /* Observe the AVPlayer "currentItem" property to find out when any
              AVPlayer replaceCurrentItemWithPlayerItem: replacement will/did occur.*/
@@ -1193,12 +1202,9 @@ class VideoPlayerViewController: UIViewController {
             player!.addObserver(self, forKeyPath: Constants.Keys.CurrentItemPlaybackBufferEmpty, options: .new, context: &VideoPlayerBufferEmptyObservationContext)
             player!.addObserver(self, forKeyPath: Constants.Keys.CurrentItemPlaybackLikelyToKeepUp, options: .new, context: &VideoPlayerPlaybackLikelyToKeepUpObservationContext)
             player!.addObserver(self, forKeyPath: Constants.Keys.CurrentItemPresentationSize, options: .new, context: &VideoPlayerPresentationSizeContext)
+        } else {
+            player!.allowsExternalPlayback = airPlayEnabled
         }
-        
-        // Set up AirPlay support
-        let airPlayEnabled = (mode != .basicPlayer && didPlayInterstitial)
-        player!.allowsExternalPlayback = airPlayEnabled
-        player!.usesExternalPlaybackWhileExternalScreenIsActive = airPlayEnabled
         
         /* Make our new AVPlayerItem the AVPlayer's current item. */
         if player!.currentItem != playerItem {
@@ -1464,8 +1470,8 @@ class VideoPlayerViewController: UIViewController {
                 if let closestClipShareTimedEvent = NGDMTimedEvent.findClosestToTimecode(self.currentTime, type: .clipShare) {
                     if !self.playbackOverlayView.isHidden && closestClipShareTimedEvent != self.playbackOverlayTimedEvent {
                         DispatchQueue.main.async {
-                            if let imageUrl = closestClipShareTimedEvent.imageURL {
-                                self.playbackOverlayImageView.sd_setImage(with: imageUrl)
+                            if let imageURL = closestClipShareTimedEvent.thumbnailImageURL {
+                                self.playbackOverlayImageView.sd_setImage(with: imageURL)
                                 self.playbackOverlayTimedEvent = closestClipShareTimedEvent
                             }
                         }
