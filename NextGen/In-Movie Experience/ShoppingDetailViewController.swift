@@ -155,13 +155,23 @@ class ShoppingDetailViewController: SceneDetailViewController {
     
     // MARK: Actions
     @IBAction private func onShop(_ sender: AnyObject) {
-        currentProduct?.externalURL?.promptLaunch()
+        if let externalURL = currentProduct?.externalURL {
+            NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
+            externalURL.promptLaunch(cancelHandler: {
+                NotificationCenter.default.post(name: .videoPlayerCanResume, object: nil)
+            })
+        }
     }
     
     @IBAction private func onSendLink(_ sender: AnyObject) {
         if let button = sender as? UIButton, let product = currentProduct {
+            NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
             let activityViewController = UIActivityViewController(activityItems: [product.shareText], applicationActivities: nil)
             activityViewController.popoverPresentationController?.sourceView = button
+            activityViewController.completionWithItemsHandler = { (_, _, _, _) in
+                NotificationCenter.default.post(name: .videoPlayerCanResume, object: nil)
+            }
+            
             self.present(activityViewController, animated: true, completion: nil)
         }
     }

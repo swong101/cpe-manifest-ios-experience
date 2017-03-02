@@ -10,7 +10,6 @@ extension Notification.Name {
     
     // In-Movie Experience
     static let inMovieExperienceShouldCloseDetails = Notification.Name("nextgen.notifications.inMovieExperienceShouldCloseDetails")
-    static let inMovieExperienceWillCloseDetails = Notification.Name("nextgen.notifications.inMovieExperienceWillCloseDetails")
     
     // Video Player
     static let videoPlayerWillPlayNextItem = Notification.Name("nextgen.notifications.videoPlayerWillPlayNextItem")
@@ -21,6 +20,7 @@ extension Notification.Name {
     static let videoPlayerDidEndVideo = Notification.Name("nextgen.notifications.videoPlayerDidEndVideo")
     static let videoPlayerDidEndLastVideo = Notification.Name("nextgen.notifications.videoPlayerDidEndLastVideo")
     static let videoPlayerShouldPause = Notification.Name("nextgen.notifications.videoPlayerShouldPause")
+    static let videoPlayerCanResume = Notification.Name("nextgen.notifications.videoPlayerCanResume")
     static let videoPlayerPlaybackStateDidChange = Notification.Name("nextgen.notifications.videoPlayerPlaybackStateDidChange")
     static let videoPlayerItemDurationDidLoad = Notification.Name("nextgen.notifications.videoPlayerItemDurationDidLoad")
     static let videoPlayerItemReadyToPlayer = Notification.Name("nextgen.notifications.videoPlayerItemReadyToPlayer")

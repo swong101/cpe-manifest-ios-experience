@@ -609,8 +609,8 @@ class VideoPlayerViewController: UIViewController {
     // Notifications & Observers
     private var countdownDurationDidLoadObserver: NSObjectProtocol?
     private var videoPlayerDidPlayVideoObserver: NSObjectProtocol?
-    private var sceneDetailWillCloseObserver: NSObjectProtocol?
     private var videoPlayerShouldPauseObserver: NSObjectProtocol?
+    private var videoPlayerCanResumeObserver: NSObjectProtocol?
     private var playerTimeObserver: Any?
     
     deinit {
@@ -636,14 +636,14 @@ class VideoPlayerViewController: UIViewController {
             videoPlayerDidPlayVideoObserver = nil
         }
         
-        if let observer = sceneDetailWillCloseObserver {
-            center.removeObserver(observer)
-            sceneDetailWillCloseObserver = nil
-        }
-        
         if let observer = videoPlayerShouldPauseObserver {
             center.removeObserver(observer)
             videoPlayerShouldPauseObserver = nil
+        }
+        
+        if let observer = videoPlayerCanResumeObserver {
+            center.removeObserver(observer)
+            videoPlayerCanResumeObserver = nil
         }
         
         if let playerItem = player?.currentItem {
@@ -723,7 +723,7 @@ class VideoPlayerViewController: UIViewController {
                 }
             })
             
-            sceneDetailWillCloseObserver = NotificationCenter.default.addObserver(forName: .inMovieExperienceWillCloseDetails, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
+            videoPlayerCanResumeObserver = NotificationCenter.default.addObserver(forName: .videoPlayerCanResume, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
                 if let strongSelf = self, !strongSelf.isManuallyPaused {
                     strongSelf.playVideo()
                 }
@@ -876,6 +876,14 @@ class VideoPlayerViewController: UIViewController {
                 didPlayInterstitial = true
                 playerControlsVisible = false
             }
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if !isManuallyPaused {
+            playVideo()
         }
     }
     
@@ -1226,24 +1234,28 @@ class VideoPlayerViewController: UIViewController {
     private func playVideo() {
         isManuallyPaused = false
         
-        // Play
+        var didPlay = false
         if isCastingActive && didPlayInterstitial {
             CastManager.sharedInstance.playMedia()
-        } else {
-            player?.play()
+            didPlay = true
+        } else if let player = player {
+            player.play()
+            didPlay = true
         }
         
-        // Immediately show pause button. NOTE: syncPlayPauseButtons will actually update this
-        // to reflect the playback "rate", e.g. 0.0 will automatically show the pause button.
-        showPauseButton()
-        
-        // Send notification
-        var userInfo: [AnyHashable: Any]? = nil
-        if let url = url {
-            userInfo = [NotificationConstants.videoUrl: url]
+        if didPlay {
+            // Immediately show pause button. NOTE: syncPlayPauseButtons will actually update this
+            // to reflect the playback "rate", e.g. 0.0 will automatically show the pause button.
+            showPauseButton()
+            
+            // Send notification
+            var userInfo: [AnyHashable: Any]? = nil
+            if let url = url {
+                userInfo = [NotificationConstants.videoUrl: url]
+            }
+            
+            NotificationCenter.default.post(name: .videoPlayerDidPlayVideo, object: nil, userInfo: userInfo)
         }
-        
-        NotificationCenter.default.post(name: .videoPlayerDidPlayVideo, object: nil, userInfo: userInfo)
     }
     
     private func pauseVideo() {
