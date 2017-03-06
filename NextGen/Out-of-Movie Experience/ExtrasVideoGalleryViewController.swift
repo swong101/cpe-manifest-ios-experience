@@ -219,7 +219,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
             galleryScrollView.gallery = gallery
             if !gallery.isTurntable {
                 shareButton.isHidden = false
-                shareButton.setTitle(String.localize("gallery.share_button").uppercased(), for: UIControlState())
+                shareButton.setTitle(String.localize("gallery.share_button").uppercased(), for: .normal)
                 if gallery.totalCount < 20 {
                     galleryPageControl.isHidden = false
                     galleryPageControl.numberOfPages = gallery.totalCount

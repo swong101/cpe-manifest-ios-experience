@@ -818,7 +818,7 @@ class VideoPlayerViewController: UIViewController {
             skipContainerView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onTapSkip)))
             
             // Localizations
-            homeButton?.setTitle(String.localize("label.home"), for: UIControlState())
+            homeButton?.setTitle(String.localize("label.home"), for: .normal)
             commentaryButton?.setTitle(String.localize("label.commentary"), for: .normal)
             commentaryButton?.setTitle(String.localize("label.commentary_on"), for: .selected)
             commentaryButton?.setTitle(String.localize("label.commentary_on"), for: [.selected, .highlighted])

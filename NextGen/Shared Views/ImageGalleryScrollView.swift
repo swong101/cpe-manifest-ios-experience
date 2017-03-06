@@ -132,7 +132,7 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
         closeButton.tintColor = UIColor.white
         closeButton.alpha = 0.75
         closeButton.isHidden = true
-        closeButton.setImage(UIImage(named: "Close"), for: UIControlState())
+        closeButton.setImage(UIImage(named: "Close"), for: .normal)
         closeButton.addTarget(self, action: #selector(self.toggleFullScreen), for: .touchUpInside)
     }
     
@@ -215,7 +215,7 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
             if allowsFullScreen {
                 let fullScreenButton = UIButton(frame: CGRect(x: 0, y: 0, width: Constants.ToolbarHeight, height: Constants.ToolbarHeight))
                 fullScreenButton.tintColor = UIColor.white
-                fullScreenButton.setImage(UIImage(named: "Maximize"), for: UIControlState())
+                fullScreenButton.setImage(UIImage(named: "Maximize"), for: .normal)
                 fullScreenButton.setImage(UIImage(named: "Maximize Highlighted"), for: .highlighted)
                 fullScreenButton.addTarget(self, action: #selector(self.toggleFullScreen), for: .touchUpInside)
                 toolbarItems.append(UIBarButtonItem(customView: fullScreenButton))

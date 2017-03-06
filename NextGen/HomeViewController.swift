@@ -128,7 +128,7 @@ class HomeViewController: UIViewController {
             
             backgroundImageView.isUserInteractionEnabled = false
             
-            exitButton.setTitle(String.localize("label.exit"), for: UIControlState())
+            exitButton.setTitle(String.localize("label.exit"), for: .normal)
             exitButton.titleLabel?.layer.shadowColor = UIColor.black.cgColor
             exitButton.titleLabel?.layer.shadowOpacity = 0.75
             exitButton.titleLabel?.layer.shadowRadius = 2
@@ -159,7 +159,7 @@ class HomeViewController: UIViewController {
                 playButton.contentVerticalAlignment = .fill
                 playButton.imageView?.contentMode = .scaleAspectFit
             } else {
-                playButton.setTitle(String.localize("label.play_movie"), for: UIControlState())
+                playButton.setTitle(String.localize("label.play_movie"), for: .normal)
                 playButton.titleLabel?.font = UIFont.themeCondensedBoldFont(15)
                 playButton.backgroundColor = UIColor.red
             }
@@ -182,7 +182,7 @@ class HomeViewController: UIViewController {
                 extrasButton.contentVerticalAlignment = .fill
                 extrasButton.imageView?.contentMode = .scaleAspectFit
             } else {
-                extrasButton.setTitle(String.localize("label.extras"), for: UIControlState())
+                extrasButton.setTitle(String.localize("label.extras"), for: .normal)
                 extrasButton.titleLabel?.font = UIFont.themeCondensedBoldFont(15)
                 extrasButton.backgroundColor = UIColor.gray
             }

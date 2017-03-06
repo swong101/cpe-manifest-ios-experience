@@ -45,12 +45,12 @@ class SceneDetailViewController: UIViewController {
         
         closeButton = UIButton(type: UIButtonType.custom)
         closeButton.titleLabel?.font = UIFont.themeCondensedFont(DeviceType.IS_IPAD ? 17 : 15)
-        closeButton.setTitle(String.localize("label.close"), for: UIControlState())
-        closeButton.setImage(UIImage(named: "Close"), for: UIControlState())
+        closeButton.setTitle(String.localize("label.close"), for: .normal)
+        closeButton.setImage(UIImage(named: "Close"), for: .normal)
         closeButton.contentEdgeInsets = UIEdgeInsetsMake(0, -35, 0, 0)
         closeButton.titleEdgeInsets = UIEdgeInsetsMake(0, 0, 0, 25)
         closeButton.imageEdgeInsets = UIEdgeInsetsMake(0, Constants.CloseButtonWidth, 0, 0)
-        closeButton.addTarget(self, action: #selector(onClose), for: UIControlEvents.touchUpInside)
+        closeButton.addTarget(self, action: #selector(onClose), for: .touchUpInside)
         self.view.addSubview(closeButton)
     }
     

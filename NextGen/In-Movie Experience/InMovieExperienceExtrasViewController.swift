@@ -59,7 +59,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
         showLessGradient.colors = [UIColor.clear.cgColor, UIColor.black.cgColor]
         showLessGradientView.layer.insertSublayer(showLessGradient, at: 0)
         
-        showLessButton.setTitle(String.localize("talent.show_less"), for: UIControlState())
+        showLessButton.setTitle(String.localize("talent.show_less"), for: .normal)
         
         didChangeTimeObserver = NotificationCenter.default.addObserver(forName: .videoPlayerDidChangeTime, object: nil, queue: nil) { [weak self] (notification) -> Void in
             if let strongSelf = self, let time = notification.userInfo?[NotificationConstants.time] as? Double, time != strongSelf.currentTime {
