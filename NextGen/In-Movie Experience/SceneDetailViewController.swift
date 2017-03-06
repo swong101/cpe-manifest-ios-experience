@@ -33,9 +33,14 @@ class SceneDetailViewController: UIViewController {
         
         self.view.backgroundColor = UIColor.black
         
+        shouldCloseDetailsObserver = NotificationCenter.default.addObserver(forName: .inMovieExperienceShouldCloseDetails, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
+            self?.onClose()
+        })
+        
         titleLabel = UILabel()
         titleLabel.font = UIFont.themeCondensedFont(DeviceType.IS_IPAD ? 25 : 18)
         titleLabel.textColor = UIColor.white
+        titleLabel.text = (title ?? experience?.title)?.uppercased()
         self.view.addSubview(titleLabel)
         
         closeButton = UIButton(type: UIButtonType.custom)
@@ -47,16 +52,6 @@ class SceneDetailViewController: UIViewController {
         closeButton.imageEdgeInsets = UIEdgeInsetsMake(0, Constants.CloseButtonWidth, 0, 0)
         closeButton.addTarget(self, action: #selector(onClose), for: UIControlEvents.touchUpInside)
         self.view.addSubview(closeButton)
-        
-        if let title = self.title {
-            titleLabel.text = title.uppercased()
-        } else if let title = experience?.metadata?.title {
-            titleLabel.text = title.uppercased()
-        }
-        
-        shouldCloseDetailsObserver = NotificationCenter.default.addObserver(forName: .inMovieExperienceShouldCloseDetails, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
-            self?.onClose()
-        })
     }
     
     override func viewWillLayoutSubviews() {
@@ -70,7 +65,7 @@ class SceneDetailViewController: UIViewController {
     // MARK: Actions
     internal func onClose() {
         self.dismiss(animated: true, completion: nil)
-        NotificationCenter.default.post(name: .inMovieExperienceWillCloseDetails, object: nil)
+        NotificationCenter.default.post(name: .videoPlayerCanResume, object: nil)
     }
 
 }

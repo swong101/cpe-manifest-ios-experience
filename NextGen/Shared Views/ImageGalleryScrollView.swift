@@ -106,7 +106,7 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     }
     
     var currentImageId: String? {
-        return gallery?.getPictureForPage(currentPage)?.image?.id
+        return gallery?.getPictureForPage(currentPage)?.imageID
     }
     
     

@@ -8,6 +8,9 @@
 "label.cancel" = "Cancel";
 "label.continue" = "Continue";
 
+// Loading
+"loading.error.unknown.message" = "Sorry, an unexpected error occurred while loading this title. Please try again later.";
+
 // Home
 "label.play_movie" = "Play Movie";
 "label.extras" = "Extras";

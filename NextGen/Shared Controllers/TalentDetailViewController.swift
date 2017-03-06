@@ -15,15 +15,15 @@ enum TalentDetailMode: String {
     case Extras = "TalentDetailModeExtras"
 }
 
-class TalentDetailViewController: SceneDetailViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+class TalentDetailViewController: SceneDetailViewController {
     
-    private struct SegueIdentifier {
+    fileprivate struct SegueIdentifier {
         static let TalentImageGallery = "TalentImageGallerySegueIdentifier"
     }
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let GalleryCollectionViewItemSpacing: CGFloat = 10
-        static let GalleryCollectionViewItemAspectRatio: CGFloat = 8 / 10
+        static let GalleryCollectionViewItemAspectRatio: CGFloat = 3 / 4
         static let FilmographyCollectionViewItemSpacing: CGFloat = 10
         static let FilmographyCollectionViewItemAspectRatio: CGFloat = 27 / 40
     }
@@ -39,11 +39,11 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
     
     @IBOutlet weak private var galleryContainerView: UIView?
     @IBOutlet weak private var galleryHeaderLabel: UILabel?
-    @IBOutlet weak private var galleryCollectionView: UICollectionView?
+    @IBOutlet weak fileprivate var galleryCollectionView: UICollectionView?
     
     @IBOutlet weak private var filmographyContainerView: UIView?
     @IBOutlet weak private var filmographyHeaderLabel: UILabel?
-    @IBOutlet weak private var filmographyCollectionView: UICollectionView?
+    @IBOutlet weak fileprivate var filmographyCollectionView: UICollectionView?
     
     @IBOutlet weak private var twitterButton: SocialButton?
     @IBOutlet weak private var facebookButton: SocialButton?
@@ -114,8 +114,26 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
                 DispatchQueue.main.async(execute: {
                     if let biography = biography, !biography.isEmpty {
                         self.talentBiographyContainerView?.isHidden = false
-                        self.talentBiographyLabel?.text = biography
                         self.talentBiographyLabel?.scrollRectToVisible(CGRect.zero, animated: false)
+                        
+                        // Wrap the full biography in an HTML element with the font in CSS to preserve all the italic and bold tags of the original HTML
+                        let biographyHTML = "<span style=\"color: #fff; font-family: \(UIFont.themeCondensedFont(14).fontName); font-size: 14\">\(biography)</span>"
+                        if let biographyData = biographyHTML.data(using: .utf8) {
+                            do {
+                                
+                                let options: [String: Any] = [
+                                    NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
+                                    NSCharacterEncodingDocumentAttribute: NSNumber(value: String.Encoding.utf8.rawValue)
+                                ]
+                                
+                                let attributedString = try NSAttributedString(data: biographyData, options: options, documentAttributes: nil)
+                                self.talentBiographyLabel?.attributedText = attributedString
+                            } catch {
+                                self.talentBiographyLabel?.text = biography
+                            }
+                        } else {
+                            self.talentBiographyLabel?.text = biography
+                        }
                     } else {
                         self.talentBiographyContainerView?.removeFromSuperview()
                     }
@@ -191,7 +209,19 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: nil)
     }
     
-    // MARK: UICollectionViewDataSource
+    // MARK: Storyboard Methods
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == SegueIdentifier.TalentImageGallery, let talentImageGalleryViewController = segue.destination as? TalentImageGalleryViewController {
+            talentImageGalleryViewController.talent = talent
+            talentImageGalleryViewController.initialPage = (sender as? Int) ?? 0
+            NextGenHook.logAnalyticsEvent(currentAnalyticsEvent, action: .selectGallery, itemId: talent.id)
+        }
+    }
+
+}
+
+extension TalentDetailViewController: UICollectionViewDataSource {
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == filmographyCollectionView {
             return talent?.films?.count ?? 0
@@ -211,7 +241,10 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         return cell
     }
     
-    // MARK: UICollectionViewDelegate
+}
+
+extension TalentDetailViewController: UICollectionViewDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == filmographyCollectionView {
             if let film = talent?.films?[indexPath.row], let delegate = NextGenHook.delegate {
@@ -219,11 +252,14 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
                 NextGenHook.logAnalyticsEvent(currentAnalyticsEvent, action: .selectFilm, itemId: talent.id, itemName: film.title)
             }
         } else if collectionView == galleryCollectionView {
-            self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: (indexPath as NSIndexPath).row + 1)
+            self.performSegue(withIdentifier: SegueIdentifier.TalentImageGallery, sender: indexPath.row + 1)
         }
     }
     
-    // MARK: UICollectionViewDelegateFlowLayout
+}
+
+extension TalentDetailViewController: UICollectionViewDelegateFlowLayout {
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.height
         let width = (height * (collectionView == filmographyCollectionView ? Constants.FilmographyCollectionViewItemAspectRatio : Constants.GalleryCollectionViewItemAspectRatio))
@@ -238,13 +274,4 @@ class TalentDetailViewController: SceneDetailViewController, UICollectionViewDat
         return Constants.GalleryCollectionViewItemSpacing
     }
     
-    // MARK: Storyboard Methods
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == SegueIdentifier.TalentImageGallery, let talentImageGalleryViewController = segue.destination as? TalentImageGalleryViewController {
-            talentImageGalleryViewController.talent = talent
-            talentImageGalleryViewController.initialPage = (sender as? Int) ?? 0
-            NextGenHook.logAnalyticsEvent(currentAnalyticsEvent, action: .selectGallery, itemId: talent.id)
-        }
-    }
-
 }

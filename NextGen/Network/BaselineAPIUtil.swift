@@ -5,9 +5,15 @@
 import Foundation
 import NextGenDataManager
 
+public enum BaselineAPIStudio: String {
+    case wb = "WB"
+    case nbcu = "NBCU"
+}
+
 public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
     
     public static var APIDomain = "https://vic57ayytg.execute-api.us-west-2.amazonaws.com/prod"
+    public static var APINamespace = "baselineapi.com"
     
     private struct Endpoints {
         static let GetCredits = "/film/credits"
@@ -34,30 +40,36 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
         static let URL = "URL"
     }
     
+    struct Headers {
+        static let APIKey = "x-api-key"
+        static let Studio = "X-Studio"
+    }
+    
     private struct Constants {
         static let MaxCredits = 15
         static let MaxFilmography = 10
     }
     
-    public var apiNamespace = Namespaces.Baseline
-    public var apiId: String?
+    public var featureAPIID: String?
     
-    public convenience init(apiKey: String) {
+    public convenience init(apiKey: String, featureAPIID: String? = nil, studio: BaselineAPIStudio = .wb) {
         self.init(apiDomain: BaselineAPIUtil.APIDomain)
         
-        self.customHeaders["x-api-key"] = apiKey
+        self.featureAPIID = featureAPIID
+        self.customHeaders[Headers.APIKey] = apiKey
+        self.customHeaders[Headers.Studio] = studio.rawValue
     }
     
     public func prefetchCredits(_ completion: @escaping (_ talents: [String: NGDMTalent]?) -> Void) {
-        if let apiId = apiId {
-            _ = getJSONWithPath(Endpoints.GetCredits, parameters: ["id": apiId], successBlock: { (result) -> Void in
+        if let apiID = featureAPIID {
+            _ = getJSONWithPath(Endpoints.GetCredits, parameters: ["id": apiID], successBlock: { (result) -> Void in
                 if let results = result["result"] as? NSArray {
                     var talents = [String: NGDMTalent]()
                     
                     var i = 0
                     for talentInfo in results.subarray(with: NSRange(location: 0, length: min(Constants.MaxCredits, results.count))) {
-                        if let talentInfo = talentInfo as? NSDictionary, let talentId = talentInfo[Keys.ParticipantID] as? NSNumber {
-                            let baselineId = (talentInfo[Keys.ParticipantID] as! NSNumber).stringValue
+                        if let talentInfo = talentInfo as? NSDictionary, let talentID = talentInfo[Keys.ParticipantID] as? NSNumber {
+                            let baselineID = (talentInfo[Keys.ParticipantID] as! NSNumber).stringValue
                             let name = talentInfo[Keys.FullName] as? String
                             let role = talentInfo[Keys.Credit] as? String
                             var type: TalentType?
@@ -65,7 +77,7 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
                                 type = TalentType(rawValue: creditGroup)
                             }
                             
-                            talents[talentId.stringValue] = NGDMTalent(apiId: baselineId, name: name, role: role, billingBlockOrder: i, type: type ?? .Unknown)
+                            talents[talentID.stringValue] = NGDMTalent(apiID: baselineID, name: name, role: role, billingBlockOrder: i, type: type ?? .unknown)
                         }
                         
                         i += 1
@@ -74,7 +86,7 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
                     completion(talents)
                 }
             }) { (error) in
-                print("Error fetching credits for id \(apiId): \(error)")
+                print("Error fetching credits for ID \(apiID): \(error)")
                 completion(nil)
             }
         } else {
@@ -82,8 +94,8 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
         }
     }
     
-    public func getTalentImages(_ talentId: String, completion: @escaping (_ talentImages: [TalentImage]?) -> Void) {
-        _ = getJSONWithPath(Endpoints.GetTalentImages, parameters: ["id": talentId], successBlock: { (result) -> Void in
+    public func getTalentImages(_ talentID: String, completion: @escaping (_ talentImages: [TalentImage]?) -> Void) {
+        _ = getJSONWithPath(Endpoints.GetTalentImages, parameters: ["id": talentID], successBlock: { (result) -> Void in
             if let results = result["result"] as? NSArray , results.count > 0 {
                 var talentImages = [TalentImage]()
                 for talentImageInfo in results {
@@ -107,13 +119,13 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
                 completion(nil)
             }
         }) { (error) in
-            print("Error fetching talent images for id \(talentId): \(error)")
+            print("Error fetching talent images for ID \(talentID): \(error)")
             completion(nil)
         }
     }
     
-    public func getTalentDetails(_ talentId: String, completion: @escaping (_ biography: String?, _ socialAccounts: [TalentSocialAccount]?, _ films: [TalentFilm]) -> Void) {
-        _ = getJSONWithPath(Endpoints.GetTalentDetails, parameters: ["id": talentId], successBlock: { (result) in
+    public func getTalentDetails(_ talentID: String, completion: @escaping (_ biography: String?, _ socialAccounts: [TalentSocialAccount]?, _ films: [TalentFilm]) -> Void) {
+        _ = getJSONWithPath(Endpoints.GetTalentDetails, parameters: ["id": talentID], successBlock: { (result) in
             var socialAccounts = [TalentSocialAccount]()
             if let socialAccountInfoList = result[Keys.SocialAccounts] as? NSArray {
                 for socialAccountInfo in socialAccountInfoList {
@@ -144,7 +156,7 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
             
             completion(result[Keys.ShortBio] as? String, socialAccounts, films)
         }) { (error) in
-            print("Error fetching talent details for id \(talentId): \(error)")
+            print("Error fetching talent details for ID \(talentID): \(error)")
             completion(nil, nil, [])
         }
     }

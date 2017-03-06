@@ -6,7 +6,7 @@ import UIKit
 
 class MenuedViewController: ExtrasExperienceViewController {
     
-    @IBOutlet weak internal var menuTableView: UITableView!
+    @IBOutlet weak internal var menuTableView: UITableView?
     internal var menuSections = [MenuSection]()
     fileprivate var selectedSectionValue: String?
     fileprivate var selectedItemValue: String?
@@ -14,9 +14,9 @@ class MenuedViewController: ExtrasExperienceViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        menuTableView.separatorStyle = UITableViewCellSeparatorStyle.none
-        menuTableView.register(UINib(nibName: "MenuSectionCell", bundle: nil), forCellReuseIdentifier: MenuSectionCell.ReuseIdentifier)
-        menuTableView.register(UINib(nibName: "MenuItemCell", bundle: nil), forCellReuseIdentifier: MenuItemCell.ReuseIdentifier)
+        menuTableView?.separatorStyle = UITableViewCellSeparatorStyle.none
+        menuTableView?.register(UINib(nibName: "MenuSectionCell", bundle: nil), forCellReuseIdentifier: MenuSectionCell.ReuseIdentifier)
+        menuTableView?.register(UINib(nibName: "MenuItemCell", bundle: nil), forCellReuseIdentifier: MenuItemCell.ReuseIdentifier)
     }
     
 }
@@ -32,9 +32,9 @@ extension MenuedViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let menuSection = menuSections[(indexPath as NSIndexPath).section]
+        let menuSection = menuSections[indexPath.section]
         
-        if (indexPath as NSIndexPath).row == 0 {
+        if indexPath.row == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: MenuSectionCell.ReuseIdentifier) as! MenuSectionCell
             cell.menuSection = menuSection
             cell.active = selectedSectionValue == cell.menuSection?.value
@@ -43,7 +43,7 @@ extension MenuedViewController: UITableViewDataSource {
         }
         
         let cell = tableView.dequeueReusableCell(withIdentifier: MenuItemCell.ReuseIdentifier) as! MenuItemCell
-        cell.menuItem = menuSection.items[(indexPath as NSIndexPath).row - 1]
+        cell.menuItem = menuSection.items[indexPath.row - 1]
         cell.active = selectedItemValue == cell.menuItem?.value
         
         return cell
@@ -58,7 +58,7 @@ extension MenuedViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        if (indexPath as NSIndexPath).row == 0 {
+        if indexPath.row == 0 {
             return (DeviceType.IS_IPAD ? 60 : 40)
         }
         
@@ -78,8 +78,8 @@ extension MenuedViewController: UITableViewDelegate {
             }
         }
         
-        let menuSection = menuSections[(indexPath as NSIndexPath).section]
-        if (indexPath as NSIndexPath).row == 0 {
+        let menuSection = menuSections[indexPath.section]
+        if indexPath.row == 0 {
             menuSection.toggle()
             
             if let cell = tableView.cellForRow(at: indexPath) as? MenuSectionCell {
@@ -93,10 +93,10 @@ extension MenuedViewController: UITableViewDelegate {
             
             CATransaction.begin()
             CATransaction.setCompletionBlock(updateActiveCells)
-            tableView.reloadSections(IndexSet(integer: (indexPath as NSIndexPath).section), with: UITableViewRowAnimation.none)
+            tableView.reloadSections(IndexSet(integer: indexPath.section), with: UITableViewRowAnimation.none)
             CATransaction.commit()
         } else {
-            selectedItemValue = menuSection.items[(indexPath as NSIndexPath).row - 1].value
+            selectedItemValue = menuSection.items[indexPath.row - 1].value
             selectedSectionValue = nil
             updateActiveCells()
         }

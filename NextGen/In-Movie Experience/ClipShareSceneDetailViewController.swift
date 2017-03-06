@@ -46,7 +46,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
     private func reloadClipViews() {
         destroyVideoPlayer()
         
-        if let imageURL = timedEvent?.imageURL {
+        if let imageURL = timedEvent?.thumbnailImageURL {
             previewImageView.sd_setImage(with: imageURL)
         } else {
             previewImageView.sd_cancelCurrentImageLoad()
@@ -91,7 +91,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
             videoPlayerViewController.playAsset(withURL: videoURL)
             self.videoPlayerViewController = videoPlayerViewController
             
-            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectVideo, itemId: timedEvent?.id)
+            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectVideo, itemId: timedEvent?.analyticsIdentifier)
         }
     }
     
@@ -99,7 +99,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         if let timedEvent = previousTimedEvent {
             self.timedEvent = timedEvent
             reloadClipViews()
-            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectPrevious, itemId: timedEvent.id)
+            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectPrevious, itemId: timedEvent.analyticsIdentifier)
         }
     }
     
@@ -107,18 +107,18 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         if let timedEvent = nextTimedEvent {
             self.timedEvent = timedEvent
             reloadClipViews()
-            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectNext, itemId: timedEvent.id)
+            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectNext, itemId: timedEvent.analyticsIdentifier)
         }
     }
     
     @IBAction private func onShare(_ sender: UIButton) {
-        if let url = timedEvent?.videoURL, let videoId = timedEvent?.video?.id, let title = NGDMManifest.sharedInstance.mainExperience?.title {
+        if let url = timedEvent?.videoURL, let videoId = timedEvent?.videoID, let title = NGDMManifest.sharedInstance.mainExperience?.title {
             let showShareDialog = { [weak self] (url: URL) in
                 let activityViewController = UIActivityViewController(activityItems: [String.localize("clipshare.share_message", variables: ["movie_name": title, "url": url.absoluteString])], applicationActivities: nil)
                 activityViewController.popoverPresentationController?.sourceView = sender
                 self?.present(activityViewController, animated: true, completion: nil)
                 
-                NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .shareVideo, itemId: videoId)
+                NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .shareVideo, itemId: self?.timedEvent?.videoAnalyticsIdentifier)
                 NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
             }
             

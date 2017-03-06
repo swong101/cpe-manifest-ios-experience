@@ -41,7 +41,8 @@ import MBProgressHUD
     }
     
     static let sharedInstance = NextGenDataLoader()
-    private var currentCid: String?
+    private var productAPIUtilKey: String?
+    private var talentAPIUtilKey: String?
     
     override init() {
         super.init()
@@ -53,60 +54,57 @@ import MBProgressHUD
         // Load configuration file
         if let configDataPath = Bundle.main.path(forResource: "Data/config", ofType: "json") {
             do {
-                let configData = try NSData(contentsOf: URL(fileURLWithPath: configDataPath), options: NSData.ReadingOptions.mappedIfSafe)
-                if let configJSON = try JSONSerialization.jsonObject(with: configData as Data, options: JSONSerialization.ReadingOptions.mutableContainers) as? NSDictionary {
-                    if let key = configJSON[Constants.ConfigKey.TheTakeAPI] as? String {
-                        TheTakeAPIUtil.sharedInstance.apiKey = key
-                    }
-                    
-                    if let key = configJSON[Constants.ConfigKey.BaselineAPI] as? String {
-                        NGDMConfiguration.talentAPIUtil = BaselineAPIUtil(apiKey: key)
-                    }
+                let configData = try Data(contentsOf: URL(fileURLWithPath: configDataPath), options: NSData.ReadingOptions.mappedIfSafe)
+                if let configJSON = try JSONSerialization.jsonObject(with: configData, options: JSONSerialization.ReadingOptions.mutableContainers) as? NSDictionary {
+                    productAPIUtilKey = configJSON[Constants.ConfigKey.TheTakeAPI] as? String
+                    talentAPIUtilKey = configJSON[Constants.ConfigKey.BaselineAPI] as? String
                     
                     if let key = configJSON[Constants.ConfigKey.GoogleMapsAPI] as? String {
                         GMSServices.provideAPIKey(key)
                         NGDMConfiguration.mapService = .googleMaps
+                        NGDMConfiguration.googleMapsAPIKey = key
                     }
                 }
             } catch let error as NSError {
-                print("Error parsing config data \(error.localizedDescription)")
+                print("Error parsing NextGen config data: \(error.localizedDescription)")
             }
         } else {
-            print("Configuration file not found")
+            print("NextGen configuration file not found")
         }
     }
     
-    func loadTitle(id: String, completion: @escaping (_ success: Bool) -> Void) throws {
+    func loadTitle(id: String, completion: @escaping (_ success: Bool, _ error: Error?) -> Void) throws {
         guard let titleData = NextGenDataLoader.ManifestData[id] else { throw DataLoaderError.titleNotFound }
         
         guard let manifestXMLPath = titleData["manifest"] else { throw NGDMError.manifestMissing }
         loadXMLFile(manifestXMLPath).then(on: DispatchQueue.global(qos: .userInteractive), execute: { localFilePath -> Void in
             do {
+                if let key = self.productAPIUtilKey {
+                    NGDMConfiguration.productAPIUtil = TheTakeAPIUtil(apiKey: key)
+                }
+                
+                if let key = self.talentAPIUtilKey {
+                    NGDMConfiguration.talentAPIUtil = BaselineAPIUtil(apiKey: key)
+                }
+                
                 try NGDMManifest.sharedInstance.loadManifestXMLFile(localFilePath)
                 
-                if TheTakeAPIUtil.sharedInstance.apiKey != nil, let mediaId = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(Namespaces.TheTake) {
-                    TheTakeAPIUtil.sharedInstance.mediaId = mediaId
-                    TheTakeAPIUtil.sharedInstance.prefetchProductFrames(start: 0)
-                    TheTakeAPIUtil.sharedInstance.prefetchProductCategories()
-                }
-                
-                if var talentAPIUtil = NGDMConfiguration.talentAPIUtil {
-                    talentAPIUtil.apiId = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(Namespaces.Baseline)
-                }
-                
-                NGDMManifest.sharedInstance.mainExperience?.loadTalent()
+                NGDMConfiguration.productAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(TheTakeAPIUtil.APINamespace)
+                NGDMConfiguration.talentAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(BaselineAPIUtil.APINamespace)
+                NGDMManifest.sharedInstance.loadProductData()
+                NGDMManifest.sharedInstance.loadTalentData()
             } catch NGDMError.mainExperienceMissing {
                 print("Error loading Manifest file: no main Experience found")
-                abort()
+                completion(false, NGDMError.mainExperienceMissing)
             } catch NGDMError.inMovieExperienceMissing {
                 print("Error loading Manifest file: no in-movie Experience found")
-                abort()
+                completion(false, NGDMError.inMovieExperienceMissing)
             } catch NGDMError.outOfMovieExperienceMissing {
                 print("Error loading Manifest file: no out-of-movie Experience found")
-                abort()
+                completion(false, NGDMError.outOfMovieExperienceMissing)
             } catch {
                 print("Error loading Manifest file: unknown error")
-                abort()
+                completion(false, error)
             }
             
             var promises = [Promise<String>]()
@@ -136,7 +134,7 @@ import MBProgressHUD
                     
                     if let localFilePath = appDataFilePath {
                         do {
-                            NGDMManifest.sharedInstance.appData = try NGDMManifest.sharedInstance.loadAppDataXMLFile(localFilePath)
+                            try NGDMManifest.sharedInstance.loadAppDataXMLFile(localFilePath)
                         } catch {
                             print("Error loading AppData file")
                         }
@@ -150,13 +148,13 @@ import MBProgressHUD
                         }
                     }
                     
-                    completion(true)
+                    completion(true, nil)
                 })
             } else {
-                completion(true)
+                completion(true, nil)
             }
         }).catch { error in
-            completion(false)
+            completion(false, error)
         }
     }
     
@@ -195,10 +193,6 @@ extension NextGenDataLoader: NextGenHookDelegate {
     
     func connectionStatusChanged(status: NextGenConnectionStatus) {
         // Respond to any changes in the user's connection status (e.g. display prompt about cellular data usage)
-    }
-    
-    func logAnalyticsEvent(_ event: NextGenAnalyticsEvent, action: NextGenAnalyticsAction, itemId: String?, itemName: String?) {
-        // Adjust values as needed for your analytics implementation
     }
     
     func experienceWillOpen() {
@@ -268,7 +262,7 @@ extension NextGenDataLoader: NextGenHookDelegate {
                     hud?.hide(true)
                     if let data = data {
                         do {
-                            if let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? NSDictionary, let result = (jsonResult["results"] as? [NSDictionary])?.first, let urlString = result["trackViewUrl"] as? String, let url = URL(string: urlString) {
+                            if let jsonResult = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? NSDictionary, let urlString = (jsonResult["results"] as? [NSDictionary])?.first?["trackViewUrl"] as? String, let url = URL(string: urlString) {
                                 url.promptLaunch(type: .itunes)
                             } else {
                                 showQueryNotFound()
@@ -283,6 +277,34 @@ extension NextGenDataLoader: NextGenHookDelegate {
         } else {
             showQueryNotFound()
         }
+    }
+    
+    func logAnalyticsEvent(_ event: NextGenAnalyticsEvent, action: NextGenAnalyticsAction, itemId: String?, itemName: String?) {
+        // Adjust values as needed for your analytics implementation
+        
+        /* Take the provided parameters and construct the Google Analytics-specific properties that will be sent to log the event */
+        /* let category = event.rawValue
+        let action = action.rawValue
+        var label: String
+        if let itemId = itemId, let itemName = itemName {
+            label = itemId + " - " + itemName
+        } else {
+            label = itemId ?? itemName ?? ""
+        } */
+        
+        /* Google Analytics allows you to add custom dimensions. Use this dictionary to insert values related to this event, 
+           where they key is the custom dimension ID provided by Google Analytics */
+        /* let tracker = GAI.sharedInstance().defaultTracker
+        var customDimensions = [Int: String]() 
+        
+        for (customDimension, value) in customDimensions {
+            tracker?.set(GAIFields.customDimension(for: customDimension.rawValue), value: value)
+        } */
+        
+        /* Build the Google Analytics event dictionary and send to tracker */
+        /* if let builder = GAIDictionaryBuilder.createEvent(withCategory: category, action: action, label: label, value: nil), let parameters = NSDictionary(dictionary: builder.build()) as? [AnyHashable: Any] {
+            tracker?.send(parameters)
+        } */
     }
     
 }

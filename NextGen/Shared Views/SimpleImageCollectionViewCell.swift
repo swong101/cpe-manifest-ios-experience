@@ -11,17 +11,10 @@ class SimpleImageCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var playButton: UIButton?
     
-    private var setImageSessionDataTask: URLSessionDataTask?
-    
     var showsSelectedBorder = false
     
     var imageURL: URL? {
         set {
-            if let task = setImageSessionDataTask {
-                task.cancel()
-                setImageSessionDataTask = nil
-            }
-            
             if let url = newValue {
                 imageView.sd_setImage(with: url)
             } else {

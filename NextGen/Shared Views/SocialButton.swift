@@ -35,7 +35,7 @@ class SocialButton: UIButton {
     }
     
     func openURL() {
-        socialAccount.url.promptLaunch()
+        socialAccount.url?.promptLaunch()
     }
     
 }

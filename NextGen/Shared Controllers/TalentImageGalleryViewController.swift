@@ -5,14 +5,14 @@
 import UIKit
 import NextGenDataManager
 
-class TalentImageGalleryViewController: SceneDetailViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+class TalentImageGalleryViewController: SceneDetailViewController {
     
-    private struct Constants {
+    fileprivate struct Constants {
         static let CollectionViewItemSpacing: CGFloat = 10
-        static let CollectionViewItemAspectRatio: CGFloat = 8 / 10
+        static let CollectionViewItemAspectRatio: CGFloat = 3 / 4
     }
     
-    @IBOutlet weak private var galleryScrollView: ImageGalleryScrollView!
+    @IBOutlet weak fileprivate var galleryScrollView: ImageGalleryScrollView!
     @IBOutlet weak private var galleryCollectionView: UICollectionView!
     
     var talent: NGDMTalent!
@@ -41,7 +41,7 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
                 
                 var cellIsShowing = false
                 for cell in strongSelf.galleryCollectionView.visibleCells {
-                    if let indexPath = strongSelf.galleryCollectionView.indexPath(for: cell) , (indexPath as NSIndexPath).row == page {
+                    if let indexPath = strongSelf.galleryCollectionView.indexPath(for: cell), indexPath.row == page {
                         cellIsShowing = true
                         break
                     }
@@ -72,7 +72,14 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
         galleryScrollView.gotoPage(initialPage, animated: false)
     }
     
-    // MARK: UICollectionViewDataSource
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return (DeviceType.IS_IPAD ? .landscape : .portrait)
+    }
+    
+}
+
+extension TalentImageGalleryViewController: UICollectionViewDataSource {
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return talent.images?.count ?? 0
     }
@@ -80,18 +87,24 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SimpleImageCollectionViewCell.BaseReuseIdentifier, for: indexPath) as! SimpleImageCollectionViewCell
         cell.showsSelectedBorder = true
-        cell.isSelected = ((indexPath as NSIndexPath).row == galleryScrollView.currentPage)
+        cell.isSelected = (indexPath.row == galleryScrollView.currentPage)
         cell.imageURL = talent.images?[indexPath.row].thumbnailImageURL
         return cell
     }
     
-    // MARK: UICollectionViewDelegate
+}
+
+extension TalentImageGalleryViewController: UICollectionViewDelegate {
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        galleryScrollView.gotoPage((indexPath as NSIndexPath).row, animated: true)
+        galleryScrollView.gotoPage(indexPath.row, animated: true)
         NextGenHook.logAnalyticsEvent(.extrasTalentGalleryAction, action: .selectImage, itemId: talent.id)
     }
     
-    // MARK: UICollectionViewDelegateFlowLayout
+}
+
+extension TalentImageGalleryViewController: UICollectionViewDelegateFlowLayout {
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.height
         return CGSize(width: height * Constants.CollectionViewItemAspectRatio, height: height)
@@ -100,5 +113,5 @@ class TalentImageGalleryViewController: SceneDetailViewController, UICollectionV
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return Constants.CollectionViewItemSpacing
     }
-
+    
 }

@@ -43,9 +43,9 @@ class InMovieExperienceExtrasViewController: UIViewController {
         if let nodeStyle = NGDMManifest.sharedInstance.inMovieExperience?.getNodeStyle(UIApplication.shared.statusBarOrientation) {
             self.view.backgroundColor = nodeStyle.backgroundColor
             
-            if let backgroundImageURL = nodeStyle.backgroundImage?.url {
+            if let backgroundImageURL = nodeStyle.backgroundImageURL {
                 backgroundImageView.sd_setImage(with: backgroundImageURL)
-                backgroundImageView.contentMode = nodeStyle.backgroundScaleMethod == .BestFit ? .scaleAspectFill : .scaleAspectFit
+                backgroundImageView.contentMode = nodeStyle.backgroundScaleMethod == .bestFit ? .scaleAspectFill : .scaleAspectFit
             }
         }
         

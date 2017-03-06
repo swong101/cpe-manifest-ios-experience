@@ -90,7 +90,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             
             var newTimedEvents = [NGDMTimedEvent]()
             for timedEvent in NGDMTimedEvent.findByTimecode(time) {
-                if timedEvent.experience == nil || !timedEvent.experience!.isType(.talentData) {
+                if !timedEvent.isType(.talent) {
                     let indexPath = IndexPath(item: newTimedEvents.count, section: 0)
                     
                     if newTimedEvents.count < self._currentTimedEvents.count {
@@ -151,7 +151,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             reuseIdentifier = ShoppingSceneDetailCollectionViewCell.ReuseIdentifier
         } else if timedEvent.isType(.clipShare) {
             reuseIdentifier = ImageSceneDetailCollectionViewCell.ClipShareReuseIdentifier
-        } else if timedEvent.imageURL != nil {
+        } else if timedEvent.thumbnailImageURL != nil {
             reuseIdentifier = ImageSceneDetailCollectionViewCell.ReuseIdentifier
         } else {
             reuseIdentifier = TextSceneDetailCollectionViewCell.ReuseIdentifier
@@ -187,31 +187,32 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
         if let cell = collectionView.cellForItem(at: indexPath) as? SceneDetailCollectionViewCell, let timedEvent = cell.timedEvent {
             if timedEvent.isType(.appGroup) {
                 if let experienceApp = timedEvent.experienceApp, let url = timedEvent.appGroup?.url {
+                    NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
                     let webViewController = WebViewController(title: experienceApp.title, url: url)
                     let navigationController = LandscapeNavigationController(rootViewController: webViewController)
                     self.present(navigationController, animated: true, completion: nil)
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectApp, itemId: experienceApp.id)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectApp, itemId: experienceApp.analyticsIdentifier)
                 }
             } else {
                 var segueIdentifier: String?
                 if timedEvent.isType(.audioVisual) {
                     segueIdentifier = SegueIdentifier.ShowGallery
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectVideo, itemId: timedEvent.id)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectVideo, itemId: timedEvent.analyticsIdentifier)
                 } else if timedEvent.isType(.gallery) {
                     segueIdentifier = SegueIdentifier.ShowGallery
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectImageGallery, itemId: timedEvent.id)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectImageGallery, itemId: timedEvent.analyticsIdentifier)
                 } else if timedEvent.isType(.clipShare) {
                     segueIdentifier = SegueIdentifier.ShowClipShare
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectClipShare, itemId: timedEvent.id)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectClipShare, itemId: timedEvent.analyticsIdentifier)
                 } else if timedEvent.isType(.location) {
                     segueIdentifier = SegueIdentifier.ShowMap
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectLocation, itemId: timedEvent.id)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectLocation, itemId: timedEvent.analyticsIdentifier)
                 } else if timedEvent.isType(.product) {
                     segueIdentifier = SegueIdentifier.ShowShopping
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectShopping, itemId: timedEvent.id)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectShopping, itemId: timedEvent.analyticsIdentifier)
                 } else if timedEvent.isType(.textItem) {
                     segueIdentifier = SegueIdentifier.ShowLargeText
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectTrivia, itemId: timedEvent.id)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectTrivia, itemId: timedEvent.analyticsIdentifier)
                 }
                 
                 if let identifier = segueIdentifier {
@@ -226,8 +227,9 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let cell = sender as? SceneDetailCollectionViewCell, let timedEvent = cell.timedEvent, let experience = timedEvent.experience {
             if segue.identifier == SegueIdentifier.ShowShopping {
-                if let cell = cell as? ShoppingSceneDetailCollectionViewCell, let products = cell.theTakeProducts {
+                if let products = (cell as? ShoppingSceneDetailCollectionViewCell)?.products {
                     let shopDetailViewController = segue.destination as! ShoppingDetailViewController
+                    shopDetailViewController.mode = .ime
                     shopDetailViewController.experience = experience
                     shopDetailViewController.products = products
                 }

@@ -4,33 +4,21 @@
 
 import Foundation
 import NextGenDataManager
-private func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l < r
-  case (nil, _?):
-    return true
-  default:
-    return false
-  }
-}
 
-private func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
-  switch (lhs, rhs) {
-  case let (l?, r?):
-    return l > r
-  default:
-    return rhs < lhs
-  }
-}
-
-
-public class TheTakeAPIUtil: NextGenDataManager.APIUtil {
+public class TheTakeAPIUtil: NextGenDataManager.APIUtil, ProductAPIUtil {
     
-    public static let sharedInstance = TheTakeAPIUtil(apiDomain: "https://thetake.p.mashape.com")
+    public static var APIDomain = "https://thetake.p.mashape.com"
+    public static var APINamespace = "thetake.com"
     
-    public var mediaId: String!
-    var apiKey: String!
+    private struct Headers {
+        static let APIKey = "X-Mashape-Key"
+        static let Accept = "Accept"
+        static let AcceptValue = "application/json"
+    }
+    
+    public var featureAPIID: String?
+    
+    public var productCategories: [ProductCategory]?
     
     private var frameTimes = [Double: NSDictionary]()
     private var _frameTimeKeys = [Double]()
@@ -42,51 +30,15 @@ public class TheTakeAPIUtil: NextGenDataManager.APIUtil {
         return _frameTimeKeys
     }
     
-    var productCategories = [TheTakeCategory]()
-    
-    override public func requestWithURLPath(_ urlPath: String) -> NSMutableURLRequest {
-        let request = super.requestWithURLPath(urlPath)
-        request.addValue(apiKey, forHTTPHeaderField: "X-Mashape-Key")
-        request.addValue("application/json", forHTTPHeaderField: "Accept")
+    public convenience init(apiKey: String, featureAPIID: String? = nil) {
+        self.init(apiDomain: TheTakeAPIUtil.APIDomain)
         
-        return request
+        self.featureAPIID = featureAPIID
+        self.customHeaders[Headers.APIKey] = apiKey
+        self.customHeaders[Headers.Accept] = Headers.AcceptValue
     }
     
-    func prefetchProductFrames(start: Int) {
-        var limit = 100000
-        if start == 0 {
-            limit = 100
-            frameTimes.removeAll()
-        }
-        
-        _ = getJSONWithPath("/frames/listFrames", parameters: ["media": mediaId, "start": String(start), "limit": String(limit)], successBlock: { (result) -> Void in
-            if let frames = result["result"] as? [NSDictionary] {
-                for frameInfo in frames {
-                    if let frameTime = frameInfo["frameTime"] as? Double {
-                        self.frameTimes[frameTime] = frameInfo
-                    }
-                }
-            }
-            
-            if start == 0 {
-                self.prefetchProductFrames(start: limit + 1)
-            }
-        }, errorBlock: nil)
-    }
-    
-    func prefetchProductCategories() {
-        productCategories.removeAll()
-        
-        _ = getJSONWithPath("/categories/listProductCategories", parameters: ["media": mediaId], successBlock: { [weak self] (result) in
-            if let strongSelf = self, let categories = result["result"] as? [NSDictionary] {
-                for categoryInfo in categories {
-                    strongSelf.productCategories.append(TheTakeCategory(info: categoryInfo))
-                }
-            }
-        }, errorBlock: nil)
-    }
-    
-    func closestFrameTime(_ timeInSeconds: Double) -> Double {
+    public func closestFrameTime(_ timeInSeconds: Double) -> Double {
         let timeInMilliseconds = timeInSeconds * 1000
         var closestFrameTime = -1.0
         
@@ -101,9 +53,58 @@ public class TheTakeAPIUtil: NextGenDataManager.APIUtil {
         return closestFrameTime
     }
     
-    func getFrameProducts(_ frameTime: Double, successBlock: @escaping (_ products: [TheTakeProduct]) -> Void) -> URLSessionDataTask? {
-        if frameTime >= 0 && frameTimes[frameTime] != nil {
-            return getJSONWithPath("/frameProducts/listFrameProducts", parameters: ["media": mediaId, "time": String(frameTime)], successBlock: { (result) -> Void in
+    public func getProductFrameTimes(completion: @escaping (_ frameTimes: [Double]?) -> Void) -> URLSessionDataTask? {
+        if let apiID = featureAPIID {
+            return getJSONWithPath("/frames/listFrames", parameters: ["media": apiID, "start": "0", "limit": "10000"], successBlock: { (result) -> Void in
+                if let frames = result["result"] as? [NSDictionary] {
+                    var frameTimes = [Double]()
+                    for frameInfo in frames {
+                        if let frameTime = frameInfo["frameTime"] as? Double {
+                            frameTimes.append(frameTime)
+                        }
+                    }
+                    
+                    completion(frameTimes)
+                } else {
+                    completion(nil)
+                }
+            }, errorBlock: { (error) in
+                print("Error fetching product frame times: \(error)")
+                completion(nil)
+            })
+        }
+        
+        return nil
+    }
+    
+    public func getProductCategories(completion: ((_ productCategories: [ProductCategory]?) -> Void)?) -> URLSessionDataTask? {
+        if productCategories != nil {
+            completion?(productCategories)
+            return nil
+        }
+        
+        if let apiID = featureAPIID {
+            productCategories = [TheTakeCategory]()
+            return getJSONWithPath("/categories/listProductCategories", parameters: ["media": apiID], successBlock: { [weak self] (result) in
+                if let categories = result["result"] as? [NSDictionary] {
+                    for categoryInfo in categories {
+                        self?.productCategories?.append(TheTakeCategory(info: categoryInfo))
+                    }
+                }
+                
+                completion?(self?.productCategories)
+            }, errorBlock: { [weak self] (error) in
+                print("Error fetching product categories: \(error)")
+                completion?(self?.productCategories)
+            })
+        }
+        
+        return nil
+    }
+    
+    public func getFrameProducts(_ frameTime: Double, completion: @escaping (_ products: [ProductItem]?) -> Void) -> URLSessionDataTask? {
+        if let apiID = featureAPIID, frameTime >= 0 && frameTimes[frameTime] != nil {
+            return getJSONWithPath("/frameProducts/listFrameProducts", parameters: ["media": apiID, "time": String(frameTime)], successBlock: { (result) -> Void in
                 if let productList = result["result"] as? NSArray {
                     var products = [TheTakeProduct]()
                     for productInfo in productList {
@@ -112,43 +113,54 @@ public class TheTakeAPIUtil: NextGenDataManager.APIUtil {
                         }
                     }
                     
-                    successBlock(products)
+                    completion(products)
                 }
             }) { (error) -> Void in
-                
+                print("Error fetching products for frame \(frameTime): \(error)")
+                completion(nil)
             }
+        } else {
+            completion(nil)
         }
         
         return nil
     }
     
-    func getCategoryProducts(_ categoryId: String, successBlock: @escaping (_ products: [TheTakeProduct]) -> Void) -> URLSessionDataTask? {
-        var parameters: [String: String] = ["media": mediaId, "limit": "100"]
-        if Int(categoryId) > 0 {
-            parameters["category"] = categoryId
+    public func getCategoryProducts(_ categoryID: String?, completion: @escaping (_ products: [ProductItem]?) -> Void) -> URLSessionDataTask? {
+        if let apiID = featureAPIID {
+            var parameters: [String: String] = ["media": apiID, "limit": "100"]
+            if let categoryID = categoryID {
+                parameters["category"] = categoryID
+            }
+            
+            return getJSONWithPath("/products/listProducts", parameters: parameters, successBlock: { (result) -> Void in
+                if let productList = result["result"] as? NSArray {
+                    var products = [TheTakeProduct]()
+                    for productInfo in productList {
+                        if let productData = productInfo as? NSDictionary {
+                            products.append(TheTakeProduct(data: productData))
+                        }
+                    }
+                    
+                    completion(products)
+                }
+            }) { (error) -> Void in
+                print("Error fetching products for category ID \(categoryID): \(error)")
+                completion(nil)
+            }
+        } else {
+            completion(nil)
         }
         
-        return getJSONWithPath("/products/listProducts", parameters: parameters, successBlock: { (result) -> Void in
-            if let productList = result["result"] as? NSArray {
-                var products = [TheTakeProduct]()
-                for productInfo in productList {
-                    if let productData = productInfo as? NSDictionary {
-                        products.append(TheTakeProduct(data: productData))
-                    }
-                }
-                
-                successBlock(products)
-            }
-        }) { (error) -> Void in
-            
-        }
+        return nil
     }
     
-    func getProductDetails(_ productId: String, successBlock: @escaping (_ product: TheTakeProduct) -> Void) -> URLSessionDataTask {
-        return getJSONWithPath("/products/productDetails", parameters: ["product": productId], successBlock: { (result) -> Void in
-            successBlock(TheTakeProduct(data: result))
+    public func getProductDetails(_ productID: String, completion: @escaping (_ product: ProductItem?) -> Void) -> URLSessionDataTask {
+        return getJSONWithPath("/products/productDetails", parameters: ["product": productID], successBlock: { (result) -> Void in
+            completion(TheTakeProduct(data: result))
         }) { (error) -> Void in
-                
+            print("Error fetching product details for product ID \(productID): \(error)")
+            completion(nil)
         }
     }
     
