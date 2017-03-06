@@ -46,7 +46,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
     private func reloadClipViews() {
         destroyVideoPlayer()
         
-        if let imageURL = timedEvent?.imageURL {
+        if let imageURL = timedEvent?.thumbnailImageURL {
             previewImageView.sd_setImage(with: imageURL)
         } else {
             previewImageView.sd_cancelCurrentImageLoad()

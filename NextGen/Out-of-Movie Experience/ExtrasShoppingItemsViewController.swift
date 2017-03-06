@@ -72,6 +72,7 @@ extension ExtrasShoppingItemsViewController: UICollectionViewDelegate {
             shoppingDetailViewController.modalPresentationStyle = (DeviceType.IS_IPAD ? .overCurrentContext : .overFullScreen)
             shoppingDetailViewController.modalTransitionStyle = .crossDissolve
             self.present(shoppingDetailViewController, animated: true, completion: nil)
+            NextGenHook.logAnalyticsEvent(.extrasShopAction, action: .selectProduct, itemName: cell.products?.first?.name)
         }
     }
     

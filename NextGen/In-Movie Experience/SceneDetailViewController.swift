@@ -65,7 +65,7 @@ class SceneDetailViewController: UIViewController {
     // MARK: Actions
     internal func onClose() {
         self.dismiss(animated: true, completion: nil)
-        NotificationCenter.default.post(name: .inMovieExperienceWillCloseDetails, object: nil)
+        NotificationCenter.default.post(name: .videoPlayerCanResume, object: nil)
     }
 
 }

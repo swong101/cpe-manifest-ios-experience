@@ -10,6 +10,12 @@ public class TheTakeAPIUtil: NextGenDataManager.APIUtil, ProductAPIUtil {
     public static var APIDomain = "https://thetake.p.mashape.com"
     public static var APINamespace = "thetake.com"
     
+    private struct Headers {
+        static let APIKey = "X-Mashape-Key"
+        static let Accept = "Accept"
+        static let AcceptValue = "application/json"
+    }
+    
     public var featureAPIID: String?
     
     public var productCategories: [ProductCategory]?
@@ -24,11 +30,12 @@ public class TheTakeAPIUtil: NextGenDataManager.APIUtil, ProductAPIUtil {
         return _frameTimeKeys
     }
     
-    public convenience init(apiKey: String) {
+    public convenience init(apiKey: String, featureAPIID: String? = nil) {
         self.init(apiDomain: TheTakeAPIUtil.APIDomain)
         
-        self.customHeaders["X-Mashape-Key"] = apiKey
-        self.customHeaders["Accept"] = "application/json"
+        self.featureAPIID = featureAPIID
+        self.customHeaders[Headers.APIKey] = apiKey
+        self.customHeaders[Headers.Accept] = Headers.AcceptValue
     }
     
     public func closestFrameTime(_ timeInSeconds: Double) -> Double {

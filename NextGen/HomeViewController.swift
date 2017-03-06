@@ -590,6 +590,7 @@ class HomeViewController: UIViewController {
             })
             
             backgroundAudioPlayer = AVPlayer(playerItem: audioPlayerItem)
+            backgroundAudioPlayer?.allowsExternalPlayback = false
             backgroundAudioPlayer?.play()
         }
     }

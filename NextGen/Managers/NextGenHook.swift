@@ -14,12 +14,14 @@ public enum NextGenAnalyticsEvent: String {
     case extrasVideoGalleryAction = "extras_video_gallery_action"
     case extrasImageGalleryAction = "extras_image_gallery_action"
     case extrasSceneLocationsAction = "extras_scene_locations_action"
+    case extrasShopAction = "extras_shop_action"
     case imeAction = "ime_action"
     case imeExtrasAction = "ime_extras_action"
     case imeLocationAction = "ime_location_action"
     case imeClipShareAction = "ime_clipshare_action"
     case imeTalentAction = "ime_talent_action"
     case imeImageGalleryAction = "ime_image_gallery_action"
+    case imeShopAction = "ime_shop_action"
 }
 
 public enum NextGenAnalyticsAction: String {
@@ -60,7 +62,11 @@ public enum NextGenAnalyticsAction: String {
     case selectLocationThumbnail = "select_location_thumbnail"
     case selectMap = "select_map"
     
-    // TODO: SHOPPING
+    // Shopping
+    case selectCategory = "select_category"
+    case selectProduct = "select_product"
+    case selectShareProductLink = "select_share_product_link"
+    case selectShopProduct = "select_shop_product"
     
     // IME
     case skipInterstitial = "skip_interstitial"
