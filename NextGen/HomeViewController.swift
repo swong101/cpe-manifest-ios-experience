@@ -32,6 +32,8 @@ class HomeViewController: UIViewController {
     private var interfaceCreated = false
     private var onTapHomeViewGestureRecognizer: UITapGestureRecognizer?
     
+    private var applicationWillResignActiveObserver: NSObjectProtocol?
+    private var applicationWillEnterForegroundObserver: NSObjectProtocol?
     private var shouldLaunchExtrasObserver: NSObjectProtocol?
     
     private var backgroundAudioPlayer: AVPlayer?
@@ -105,6 +107,16 @@ class HomeViewController: UIViewController {
     deinit {
         unloadBackground()
         
+        if let observer = applicationWillResignActiveObserver {
+            NotificationCenter.default.removeObserver(observer)
+            applicationWillResignActiveObserver = nil
+        }
+        
+        if let observer = applicationWillEnterForegroundObserver {
+            NotificationCenter.default.removeObserver(observer)
+            applicationWillEnterForegroundObserver = nil
+        }
+        
         if let observer = shouldLaunchExtrasObserver {
             NotificationCenter.default.removeObserver(observer)
             shouldLaunchExtrasObserver = nil
@@ -114,6 +126,17 @@ class HomeViewController: UIViewController {
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        applicationWillResignActiveObserver = NotificationCenter.default.addObserver(forName: .nextGenApplicationWillResignActive, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
+            self?.unloadBackground()
+        })
+        
+        applicationWillEnterForegroundObserver = NotificationCenter.default.addObserver(forName: .nextGenApplicationWillEnterForeground, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
+            if let strongSelf = self, strongSelf.isViewLoaded, strongSelf.view.window != nil {
+                strongSelf.unloadBackground()
+                strongSelf.loadBackground()
+            }
+        })
         
         shouldLaunchExtrasObserver = NotificationCenter.default.addObserver(forName: .outOfMovieExperienceShouldLaunch, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
             self?.onExtras()
@@ -536,7 +559,7 @@ class HomeViewController: UIViewController {
             videoPlayerViewController.view.isUserInteractionEnabled = false
             videoPlayerViewController.shouldMute = interfaceCreated
             videoPlayerViewController.shouldTrackOutput = true
-            videoPlayerViewController.playAsset(withURL: backgroundVideoURL, fromStartTime: backgroundVideoLastTimecode)
+            videoPlayerViewController.playAsset(withURL: backgroundVideoURL, fromStartTime: (backgroundVideoLastTimecode > 0 || !interfaceCreated ? backgroundVideoLastTimecode : backgroundVideoFadeTime))
             backgroundVideoPlayerViewController = videoPlayerViewController
         } else {
             showHomeScreenViews(animated: false)
