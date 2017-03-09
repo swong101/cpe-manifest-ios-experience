@@ -951,10 +951,16 @@ class VideoPlayerViewController: UIViewController {
         } else {
             audioOptionsTableView?.removeFromSuperview()
             captionsOptionsTableView?.removeFromSuperview()
+            commentaryTrailingToCastConstraint = nil
+            commentaryTrailingToAirPlayConstraint = nil
+            commentaryTrailingToCropToActivePictureConstraint = nil
             
             if mode == .basicPlayer {
                 topToolbar?.removeFromSuperview()
                 playbackToolbar?.removeFromSuperview()
+                airPlayTrailingToCropToActivePictureConstraint = nil
+                castTrailingToAirPlayConstraint = nil
+                castTrailingToCropToActivePictureConstraint = nil
             } else {
                 commentaryButton?.removeFromSuperview()
                 captionsButton?.removeFromSuperview()
@@ -965,6 +971,9 @@ class VideoPlayerViewController: UIViewController {
                     fullScreenButton?.removeFromSuperview()
                     castButtonContainerView?.removeFromSuperview()
                     airPlayButton?.removeFromSuperview()
+                    airPlayTrailingToCropToActivePictureConstraint = nil
+                    castTrailingToAirPlayConstraint = nil
+                    castTrailingToCropToActivePictureConstraint = nil
                 }
             }
         }
