@@ -1426,15 +1426,15 @@ class VideoPlayerViewController: UIViewController {
                     DispatchQueue.global(qos: .background).async {
                         if self.mode == .mainFeature {
                             if let triviaTimedEvent = NGDMTimedEvent.findByTimecode(self.currentTime, type: .textItem).first {
-                                if triviaTimedEvent != self.nowPlayingInfoTimedEvent, let title = triviaTimedEvent.experience?.title, let description = triviaTimedEvent.descriptionText {
+                                if triviaTimedEvent != self.nowPlayingInfoTimedEvent, let description = triviaTimedEvent.descriptionText {
                                     self.nowPlayingInfoTimedEvent = triviaTimedEvent
-                                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = triviaTimedEvent.experience.title
                                     nowPlayingInfo[MPMediaItemPropertyArtist] = description
                                 }
                             } else if let clipShareTimedEvent = NGDMTimedEvent.findByTimecode(self.currentTime, type: .clipShare).first {
-                                if clipShareTimedEvent != self.nowPlayingInfoTimedEvent, let title = clipShareTimedEvent.experience?.title, let description = clipShareTimedEvent.descriptionText {
+                                if clipShareTimedEvent != self.nowPlayingInfoTimedEvent, let description = clipShareTimedEvent.descriptionText {
                                     self.nowPlayingInfoTimedEvent = clipShareTimedEvent
-                                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = clipShareTimedEvent.experience.title
                                     nowPlayingInfo[MPMediaItemPropertyArtist] = description
                                 }
                             } else {
