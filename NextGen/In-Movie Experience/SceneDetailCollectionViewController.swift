@@ -225,16 +225,14 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
     
     // MARK: Storyboard Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let cell = sender as? SceneDetailCollectionViewCell, let timedEvent = cell.timedEvent, let experience = timedEvent.experience {
+        if let cell = sender as? SceneDetailCollectionViewCell, let timedEvent = cell.timedEvent {
             if segue.identifier == SegueIdentifier.ShowShopping {
                 if let products = (cell as? ShoppingSceneDetailCollectionViewCell)?.products {
                     let shopDetailViewController = segue.destination as! ShoppingDetailViewController
                     shopDetailViewController.mode = .ime
-                    shopDetailViewController.experience = experience
                     shopDetailViewController.products = products
                 }
             } else if let sceneDetailViewController = segue.destination as? SceneDetailViewController {
-                sceneDetailViewController.experience = experience
                 sceneDetailViewController.timedEvent = timedEvent
             }
         }
