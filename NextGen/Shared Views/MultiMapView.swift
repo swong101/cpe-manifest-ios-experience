@@ -99,23 +99,23 @@ class MultiMapView: UIView, MKMapViewDelegate, GMSMapViewDelegate {
     
     func addControls() {
         let segmentedControl = UISegmentedControl(items: [String.localize("locations.map.type_standard"), String.localize("locations.map.type_satellite")])
-        segmentedControl.setTitleTextAttributes([NSFontAttributeName: UIFont.themeCondensedFont(16)], for: UIControlState())
+        segmentedControl.setTitleTextAttributes([NSFontAttributeName: UIFont.themeCondensedFont(16)], for: .normal)
         segmentedControl.backgroundColor = UIColor.white
         segmentedControl.selectedSegmentIndex = 0
         segmentedControl.layer.cornerRadius = 5
-        segmentedControl.addTarget(self, action: #selector(self.onMapTypeChanged), for: UIControlEvents.valueChanged)
+        segmentedControl.addTarget(self, action: #selector(self.onMapTypeChanged), for: .valueChanged)
         segmentedControl.frame = CGRect(x: Constants.ControlsPadding, y: Constants.ControlsPadding, width: Constants.SegmentedControlWidth, height: Constants.SegmentedControlHeight)
         self.addSubview(segmentedControl)
         mapTypeSegmentedControl = segmentedControl
         
         let zoomInButton = UIButton(frame: CGRect(x: Constants.ControlsPadding, y: segmentedControl.frame.maxY + Constants.ControlsPadding, width: Constants.ZoomButtonWidth, height: Constants.ZoomButtonWidth))
-        zoomInButton.setImage(UIImage(named: "MapZoomIn"), for: UIControlState())
+        zoomInButton.setImage(UIImage(named: "MapZoomIn"), for: .normal)
         zoomInButton.addTarget(self, action: #selector(self.zoomIn), for: .touchUpInside)
         self.addSubview(zoomInButton)
         self.zoomInButton = zoomInButton
         
         let zoomOutButton = UIButton(frame: CGRect(x: Constants.ControlsPadding, y: zoomInButton.frame.maxY, width: Constants.ZoomButtonWidth, height: Constants.ZoomButtonWidth))
-        zoomOutButton.setImage(UIImage(named: "MapZoomOut"), for: UIControlState())
+        zoomOutButton.setImage(UIImage(named: "MapZoomOut"), for: .normal)
         zoomOutButton.addTarget(self, action: #selector(self.zoomOut), for: .touchUpInside)
         self.addSubview(zoomOutButton)
         self.zoomOutButton = zoomOutButton

@@ -566,8 +566,8 @@ class VideoPlayerViewController: UIViewController {
             
             durationLabel?.text = timeString(fromSeconds: playerItemDuration)
             
-            if playerItemDuration != oldValue && playerItemDuration > 1 {
-                NotificationCenter.default.post(name: .videoPlayerItemDurationDidLoad, object: self, userInfo: [NotificationConstants.duration: playerItemDuration])
+            if !didPlayInterstitial && playerItemDuration != oldValue && playerItemDuration > 1 {
+                countdownDurationDidLoad()
             }
             
             playbackAsset?.assetPlaybackDuration = playerItemDuration
@@ -607,7 +607,8 @@ class VideoPlayerViewController: UIViewController {
     @IBOutlet private var skipContainerPortraitHeightConstraint: NSLayoutConstraint?
     
     // Notifications & Observers
-    private var countdownDurationDidLoadObserver: NSObjectProtocol?
+    private var applicationWillResignActiveObserver: NSObjectProtocol?
+    private var applicationWillEnterForegroundObserver: NSObjectProtocol?
     private var videoPlayerDidPlayVideoObserver: NSObjectProtocol?
     private var videoPlayerShouldPauseObserver: NSObjectProtocol?
     private var videoPlayerCanResumeObserver: NSObjectProtocol?
@@ -626,9 +627,14 @@ class VideoPlayerViewController: UIViewController {
         // Remove observers
         let center = NotificationCenter.default
         
-        if let observer = countdownDurationDidLoadObserver {
+        if let observer = applicationWillResignActiveObserver {
             center.removeObserver(observer)
-            countdownDurationDidLoadObserver = nil
+            applicationWillResignActiveObserver = nil
+        }
+        
+        if let observer = applicationWillEnterForegroundObserver {
+            center.removeObserver(observer)
+            applicationWillEnterForegroundObserver = nil
         }
         
         if let observer = videoPlayerDidPlayVideoObserver {
@@ -712,26 +718,28 @@ class VideoPlayerViewController: UIViewController {
         
         // Notifications
         if mode == .mainFeature {
-            countdownDurationDidLoadObserver = NotificationCenter.default.addObserver(forName: .videoPlayerItemDurationDidLoad, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
-                if let strongSelf = self, let duration = notification.userInfo?[NotificationConstants.duration] as? Double, strongSelf.countdownProgressView == nil {
-                    let progressView = UAProgressView(frame: strongSelf.skipCountdownContainerView.frame)
-                    progressView.borderWidth = 0
-                    progressView.lineWidth = 2
-                    progressView.fillOnTouch = false
-                    progressView.tintColor = UIColor.white
-                    progressView.animationDuration = duration
-                    strongSelf.skipContainerView.addSubview(progressView)
-                    strongSelf.countdownProgressView = progressView
-                    strongSelf.countdownProgressView?.setProgress(1, animated: true)
-                }
-            })
-            
             videoPlayerCanResumeObserver = NotificationCenter.default.addObserver(forName: .videoPlayerCanResume, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
                 if let strongSelf = self, !strongSelf.isManuallyPaused {
                     strongSelf.playVideo()
                 }
             })
+        } else if mode == .basicPlayer {
+            applicationWillEnterForegroundObserver = NotificationCenter.default.addObserver(forName: .nextGenApplicationWillEnterForeground, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
+                self?.playVideo()
+            })
         }
+        
+        applicationWillResignActiveObserver = NotificationCenter.default.addObserver(forName: .nextGenApplicationWillResignActive, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
+            if let strongSelf = self, !strongSelf.isExternalPlaybackActive {
+                if #available(iOS 9.0, *) {
+                    if strongSelf.mode != .mainFeature || !AVPictureInPictureController.isPictureInPictureSupported() {
+                        strongSelf.pauseVideo()
+                    }
+                } else {
+                    strongSelf.pauseVideo()
+                }
+            }
+        })
         
         videoPlayerDidPlayVideoObserver = NotificationCenter.default.addObserver(forName: .videoPlayerDidPlayVideo, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
             if let strongSelf = self, strongSelf.didPlayInterstitial, !strongSelf.isExternalPlaybackActive {
@@ -823,7 +831,7 @@ class VideoPlayerViewController: UIViewController {
             skipContainerView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onTapSkip)))
             
             // Localizations
-            homeButton?.setTitle(String.localize("label.home"), for: UIControlState())
+            homeButton?.setTitle(String.localize("label.home"), for: .normal)
             commentaryButton?.setTitle(String.localize("label.commentary"), for: .normal)
             commentaryButton?.setTitle(String.localize("label.commentary_on"), for: .selected)
             commentaryButton?.setTitle(String.localize("label.commentary_on"), for: [.selected, .highlighted])
@@ -943,10 +951,16 @@ class VideoPlayerViewController: UIViewController {
         } else {
             audioOptionsTableView?.removeFromSuperview()
             captionsOptionsTableView?.removeFromSuperview()
+            commentaryTrailingToCastConstraint = nil
+            commentaryTrailingToAirPlayConstraint = nil
+            commentaryTrailingToCropToActivePictureConstraint = nil
             
             if mode == .basicPlayer {
                 topToolbar?.removeFromSuperview()
                 playbackToolbar?.removeFromSuperview()
+                airPlayTrailingToCropToActivePictureConstraint = nil
+                castTrailingToAirPlayConstraint = nil
+                castTrailingToCropToActivePictureConstraint = nil
             } else {
                 commentaryButton?.removeFromSuperview()
                 captionsButton?.removeFromSuperview()
@@ -957,6 +971,9 @@ class VideoPlayerViewController: UIViewController {
                     fullScreenButton?.removeFromSuperview()
                     castButtonContainerView?.removeFromSuperview()
                     airPlayButton?.removeFromSuperview()
+                    airPlayTrailingToCropToActivePictureConstraint = nil
+                    castTrailingToAirPlayConstraint = nil
+                    castTrailingToCropToActivePictureConstraint = nil
                 }
             }
         }
@@ -1340,11 +1357,7 @@ class VideoPlayerViewController: UIViewController {
         // Initial state of controls
         playerControlsVisible = false
         
-        if didPlayInterstitial {
-            if let observer = countdownDurationDidLoadObserver {
-                NotificationCenter.default.removeObserver(observer)
-            }
-        } else {
+        if !didPlayInterstitial {
             if let videoURL = NGDMManifest.sharedInstance.mainExperience?.interstitialVideoURL {
                 playAsset(withURL: videoURL)
                 
@@ -1413,15 +1426,15 @@ class VideoPlayerViewController: UIViewController {
                     DispatchQueue.global(qos: .background).async {
                         if self.mode == .mainFeature {
                             if let triviaTimedEvent = NGDMTimedEvent.findByTimecode(self.currentTime, type: .textItem).first {
-                                if triviaTimedEvent != self.nowPlayingInfoTimedEvent, let title = triviaTimedEvent.experience?.title, let description = triviaTimedEvent.descriptionText {
+                                if triviaTimedEvent != self.nowPlayingInfoTimedEvent, let description = triviaTimedEvent.descriptionText {
                                     self.nowPlayingInfoTimedEvent = triviaTimedEvent
-                                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = triviaTimedEvent.experience.title
                                     nowPlayingInfo[MPMediaItemPropertyArtist] = description
                                 }
                             } else if let clipShareTimedEvent = NGDMTimedEvent.findByTimecode(self.currentTime, type: .clipShare).first {
-                                if clipShareTimedEvent != self.nowPlayingInfoTimedEvent, let title = clipShareTimedEvent.experience?.title, let description = clipShareTimedEvent.descriptionText {
+                                if clipShareTimedEvent != self.nowPlayingInfoTimedEvent, let description = clipShareTimedEvent.descriptionText {
                                     self.nowPlayingInfoTimedEvent = clipShareTimedEvent
-                                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = clipShareTimedEvent.experience.title
                                     nowPlayingInfo[MPMediaItemPropertyArtist] = description
                                 }
                             } else {
@@ -1525,6 +1538,20 @@ class VideoPlayerViewController: UIViewController {
                     NotificationCenter.default.post(name: .outOfMovieExperienceShouldLaunch, object: nil)
                 })
             }
+        }
+    }
+    
+    private func countdownDurationDidLoad() {
+        if countdownProgressView == nil {
+            let progressView = UAProgressView(frame: skipCountdownContainerView.frame)
+            progressView.borderWidth = 0
+            progressView.lineWidth = 2
+            progressView.fillOnTouch = false
+            progressView.tintColor = UIColor.white
+            progressView.animationDuration = playerItemDuration
+            skipContainerView.addSubview(progressView)
+            countdownProgressView = progressView
+            countdownProgressView?.setProgress(1, animated: true)
         }
     }
     

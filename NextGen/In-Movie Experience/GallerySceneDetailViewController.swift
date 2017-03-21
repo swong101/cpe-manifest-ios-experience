@@ -73,7 +73,7 @@ class GallerySceneDetailViewController: SceneDetailViewController, UIScrollViewD
                     shareButton?.removeFromSuperview()
                     shareButton = nil
                 } else {
-                    shareButton?.setTitle(String.localize("gallery.share_button").uppercased(), for: UIControlState())
+                    shareButton?.setTitle(String.localize("gallery.share_button").uppercased(), for: .normal)
                     galleryScrollView?.removeToolbar()
                     pageControl?.numberOfPages = gallery.totalCount
                     if pageControl != nil && pageControl!.numberOfPages > 0 {

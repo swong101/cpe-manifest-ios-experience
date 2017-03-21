@@ -24,17 +24,9 @@ class VideoPlayerScrubber: UISlider {
     
     private func setup() {
         let scrubberImage = UIImage(named: "Scrubber Image")
-        self.setThumbImage(scrubberImage, for: UIControlState())
+        self.setThumbImage(scrubberImage, for: .normal)
         self.setThumbImage(scrubberImage, for: .highlighted)
         self.minimumTrackTintColor = UIColor.themePrimary
     }
-    
-    /*override func thumbRectForBounds(bounds: CGRect, trackRect rect: CGRect, value: Float) -> CGRect {
-        var thumbRect = super.thumbRectForBounds(bounds, trackRect: rect, value: value)
-        thumbRect.origin.x -= Constants.ThumbRectAdjustment
-        thumbRect.size.width += Constants.ThumbRectAdjustment * 2
-        
-        return thumbRect
-    }*/
     
 }

@@ -32,6 +32,8 @@ class HomeViewController: UIViewController {
     private var interfaceCreated = false
     private var onTapHomeViewGestureRecognizer: UITapGestureRecognizer?
     
+    private var applicationWillResignActiveObserver: NSObjectProtocol?
+    private var applicationWillEnterForegroundObserver: NSObjectProtocol?
     private var shouldLaunchExtrasObserver: NSObjectProtocol?
     
     private var backgroundAudioPlayer: AVPlayer?
@@ -105,6 +107,16 @@ class HomeViewController: UIViewController {
     deinit {
         unloadBackground()
         
+        if let observer = applicationWillResignActiveObserver {
+            NotificationCenter.default.removeObserver(observer)
+            applicationWillResignActiveObserver = nil
+        }
+        
+        if let observer = applicationWillEnterForegroundObserver {
+            NotificationCenter.default.removeObserver(observer)
+            applicationWillEnterForegroundObserver = nil
+        }
+        
         if let observer = shouldLaunchExtrasObserver {
             NotificationCenter.default.removeObserver(observer)
             shouldLaunchExtrasObserver = nil
@@ -114,6 +126,17 @@ class HomeViewController: UIViewController {
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        applicationWillResignActiveObserver = NotificationCenter.default.addObserver(forName: .nextGenApplicationWillResignActive, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
+            self?.unloadBackground()
+        })
+        
+        applicationWillEnterForegroundObserver = NotificationCenter.default.addObserver(forName: .nextGenApplicationWillEnterForeground, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
+            if let strongSelf = self, strongSelf.isViewLoaded, strongSelf.view.window != nil {
+                strongSelf.unloadBackground()
+                strongSelf.loadBackground()
+            }
+        })
         
         shouldLaunchExtrasObserver = NotificationCenter.default.addObserver(forName: .outOfMovieExperienceShouldLaunch, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
             self?.onExtras()
@@ -128,7 +151,7 @@ class HomeViewController: UIViewController {
             
             backgroundImageView.isUserInteractionEnabled = false
             
-            exitButton.setTitle(String.localize("label.exit"), for: UIControlState())
+            exitButton.setTitle(String.localize("label.exit"), for: .normal)
             exitButton.titleLabel?.layer.shadowColor = UIColor.black.cgColor
             exitButton.titleLabel?.layer.shadowOpacity = 0.75
             exitButton.titleLabel?.layer.shadowRadius = 2
@@ -159,7 +182,7 @@ class HomeViewController: UIViewController {
                 playButton.contentVerticalAlignment = .fill
                 playButton.imageView?.contentMode = .scaleAspectFit
             } else {
-                playButton.setTitle(String.localize("label.play_movie"), for: UIControlState())
+                playButton.setTitle(String.localize("label.play_movie"), for: .normal)
                 playButton.titleLabel?.font = UIFont.themeCondensedBoldFont(15)
                 playButton.backgroundColor = UIColor.red
             }
@@ -182,7 +205,7 @@ class HomeViewController: UIViewController {
                 extrasButton.contentVerticalAlignment = .fill
                 extrasButton.imageView?.contentMode = .scaleAspectFit
             } else {
-                extrasButton.setTitle(String.localize("label.extras"), for: UIControlState())
+                extrasButton.setTitle(String.localize("label.extras"), for: .normal)
                 extrasButton.titleLabel?.font = UIFont.themeCondensedBoldFont(15)
                 extrasButton.backgroundColor = UIColor.gray
             }
@@ -536,7 +559,7 @@ class HomeViewController: UIViewController {
             videoPlayerViewController.view.isUserInteractionEnabled = false
             videoPlayerViewController.shouldMute = interfaceCreated
             videoPlayerViewController.shouldTrackOutput = true
-            videoPlayerViewController.playAsset(withURL: backgroundVideoURL, fromStartTime: backgroundVideoLastTimecode)
+            videoPlayerViewController.playAsset(withURL: backgroundVideoURL, fromStartTime: (backgroundVideoLastTimecode > 0 || !interfaceCreated ? backgroundVideoLastTimecode : backgroundVideoFadeTime))
             backgroundVideoPlayerViewController = videoPlayerViewController
         } else {
             showHomeScreenViews(animated: false)

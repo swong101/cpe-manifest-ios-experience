@@ -30,7 +30,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         
         // Localizations
         clipShareTitleLabel.text = String.localize("clipshare.select_clip_title").uppercased()
-        shareButton.setTitle(String.localize("clipshare.share_button").uppercased(), for: UIControlState())
+        shareButton.setTitle(String.localize("clipshare.share_button").uppercased(), for: .normal)
     }
     
     private func destroyVideoPlayer() {

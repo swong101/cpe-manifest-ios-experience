@@ -136,9 +136,9 @@ class ExtrasExperienceViewController: UIViewController {
         button.titleEdgeInsets = UIEdgeInsetsMake(0, Constants.HeaderIconPadding + 10, 0, 0)
         button.imageEdgeInsets = UIEdgeInsetsMake(0, Constants.HeaderIconPadding, 0, 0)
         button.titleLabel?.font = UIFont.themeFont(DeviceType.IS_IPAD ? 18 : 14)
-        button.setTitle(title, for: UIControlState())
-        button.setImage(UIImage(named: imageName), for: UIControlState())
-        button.addTarget(self, action: #selector(self.close), for: UIControlEvents.touchUpInside)
+        button.setTitle(title, for: .normal)
+        button.setImage(UIImage(named: imageName), for: .normal)
+        button.addTarget(self, action: #selector(self.close), for: .touchUpInside)
         return button
     }
     

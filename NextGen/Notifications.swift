@@ -5,6 +5,10 @@
 import Foundation
 
 extension Notification.Name {
+    // Application
+    static let nextGenApplicationWillResignActive = Notification.Name("nextgen.notifications.nextGenApplicationWillResignActive")
+    static let nextGenApplicationWillEnterForeground = Notification.Name("nextgen.notifications.nextGenApplicationWillEnterForeground")
+    
     // Out-of-Movie Experience
     static let outOfMovieExperienceShouldLaunch = Notification.Name("nextgen.notifications.outOfMovieExperienceShouldLaunch")
     
@@ -22,7 +26,6 @@ extension Notification.Name {
     static let videoPlayerShouldPause = Notification.Name("nextgen.notifications.videoPlayerShouldPause")
     static let videoPlayerCanResume = Notification.Name("nextgen.notifications.videoPlayerCanResume")
     static let videoPlayerPlaybackStateDidChange = Notification.Name("nextgen.notifications.videoPlayerPlaybackStateDidChange")
-    static let videoPlayerItemDurationDidLoad = Notification.Name("nextgen.notifications.videoPlayerItemDurationDidLoad")
     static let videoPlayerItemReadyToPlayer = Notification.Name("nextgen.notifications.videoPlayerItemReadyToPlayer")
     static let videoPlayerPlaybackBufferEmpty = Notification.Name("nextgen.notifications.videoPlayerPlaybackBufferEmpty")
     static let videoPlayerPlaybackLikelyToKeepUp = Notification.Name("nextgen.notifications.videoPlayerPlaybackLikelyToKeepUp")

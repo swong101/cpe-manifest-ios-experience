@@ -67,7 +67,6 @@ extension ExtrasShoppingItemsViewController: UICollectionViewDelegate {
     
      func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let shoppingDetailViewController = UIStoryboard.getNextGenViewController(ShoppingDetailViewController.self) as? ShoppingDetailViewController, let cell = collectionView.cellForItem(at: indexPath) as? ShoppingSceneDetailCollectionViewCell {
-            shoppingDetailViewController.experience = experience
             shoppingDetailViewController.products = cell.products
             shoppingDetailViewController.modalPresentationStyle = (DeviceType.IS_IPAD ? .overCurrentContext : .overFullScreen)
             shoppingDetailViewController.modalTransitionStyle = .crossDissolve
