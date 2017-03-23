@@ -7,7 +7,7 @@ import NextGenDataManager
 
 class SocialButton: UIButton {
     
-    var socialAccount: TalentSocialAccount!
+    var socialAccount: SocialAccount!
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)

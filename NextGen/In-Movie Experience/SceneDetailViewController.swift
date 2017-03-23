@@ -13,7 +13,7 @@ class SceneDetailViewController: UIViewController {
         static let CloseButtonWidth: CGFloat = (DeviceType.IS_IPAD ? 110 : 100)
     }
     
-    var timedEvent: NGDMTimedEvent?
+    var timedEvent: TimedEvent?
     
     var titleLabel: UILabel!
     var closeButton: UIButton!
@@ -39,7 +39,7 @@ class SceneDetailViewController: UIViewController {
         titleLabel = UILabel()
         titleLabel.font = UIFont.themeCondensedFont(DeviceType.IS_IPAD ? 25 : 18)
         titleLabel.textColor = UIColor.white
-        titleLabel.text = (title ?? timedEvent?.experience.title)?.uppercased()
+        titleLabel.text = (title ?? timedEvent?.experience?.title)?.uppercased()
         self.view.addSubview(titleLabel)
         
         closeButton = UIButton(type: UIButtonType.custom)

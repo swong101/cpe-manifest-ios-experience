@@ -12,7 +12,7 @@ class TitledImageCell: UICollectionViewCell {
     @IBOutlet weak private var titleLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
     
-    var experience: NGDMExperience? {
+    var experience: Experience? {
         didSet {
             title = experience?.title
             imageURL = experience?.thumbnailImageURL

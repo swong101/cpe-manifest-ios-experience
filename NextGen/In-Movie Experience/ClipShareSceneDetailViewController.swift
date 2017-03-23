@@ -17,8 +17,8 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
     @IBOutlet weak private var shareButton: UIButton!
     
     private var videoPlayerViewController: VideoPlayerViewController?
-    private var previousTimedEvent: NGDMTimedEvent?
-    private var nextTimedEvent: NGDMTimedEvent?
+    private var previousTimedEvent: TimedEvent?
+    private var nextTimedEvent: TimedEvent?
     
     // MARK: View Lifecycle
     override func viewDidLoad() {
@@ -54,15 +54,15 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         }
         
         videoContainerView.isHidden = true
-        clipNameLabel.text = timedEvent?.descriptionText
+        clipNameLabel.text = timedEvent?.description
         
         DispatchQueue.global(qos: .userInteractive).async {
-            self.previousTimedEvent = self.timedEvent?.previousTimedEventOfType(.clipShare)
-            self.nextTimedEvent = self.timedEvent?.nextTimedEventOfType(.clipShare)
+            //self.previousTimedEvent = self.timedEvent?.previousTimedEventOfType(.clipShare)
+            //self.nextTimedEvent = self.timedEvent?.nextTimedEventOfType(.clipShare)
             
             DispatchQueue.main.async {
-                self.previousButton.isHidden = self.previousTimedEvent == nil
-                self.nextButton.isHidden = self.nextTimedEvent == nil
+                self.previousButton.isHidden = (self.previousTimedEvent == nil)
+                self.nextButton.isHidden = (self.nextTimedEvent == nil)
             }
         }
     }
@@ -78,7 +78,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         previewImageView.isHidden = true
         previewPlayButton.isHidden = true
         
-        if let videoURL = timedEvent?.videoURL, let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController  {
+        if let videoURL = timedEvent?.video?.url, let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController  {
             videoPlayerViewController.removeCurrentItem()
             videoPlayerViewController.mode = .supplementalInMovie
             videoPlayerViewController.view.frame = videoContainerView.bounds
@@ -91,7 +91,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
             videoPlayerViewController.playAsset(withURL: videoURL)
             self.videoPlayerViewController = videoPlayerViewController
             
-            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectVideo, itemId: timedEvent?.analyticsIdentifier)
+            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectVideo, itemId: timedEvent?.analyticsID)
         }
     }
     
@@ -99,7 +99,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         if let timedEvent = previousTimedEvent {
             self.timedEvent = timedEvent
             reloadClipViews()
-            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectPrevious, itemId: timedEvent.analyticsIdentifier)
+            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectPrevious, itemId: timedEvent.analyticsID)
         }
     }
     
@@ -107,27 +107,27 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         if let timedEvent = nextTimedEvent {
             self.timedEvent = timedEvent
             reloadClipViews()
-            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectNext, itemId: timedEvent.analyticsIdentifier)
+            NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .selectNext, itemId: timedEvent.analyticsID)
         }
     }
     
     @IBAction private func onShare(_ sender: UIButton) {
-        if let url = timedEvent?.videoURL, let videoId = timedEvent?.videoID, let title = NGDMManifest.sharedInstance.mainExperience?.title {
+        if let video = timedEvent?.video, let videoURL = video.url {
             let showShareDialog = { [weak self] (url: URL) in
-                let activityViewController = UIActivityViewController(activityItems: [String.localize("clipshare.share_message", variables: ["movie_name": title, "url": url.absoluteString])], applicationActivities: nil)
+                let activityViewController = UIActivityViewController(activityItems: [String.localize("clipshare.share_message", variables: ["movie_name": CPEXMLSuite.current?.manifest.mainExperience.title, "url": url.absoluteString])], applicationActivities: nil)
                 activityViewController.popoverPresentationController?.sourceView = sender
                 self?.present(activityViewController, animated: true, completion: nil)
                 
-                NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .shareVideo, itemId: self?.timedEvent?.videoAnalyticsIdentifier)
+                NextGenHook.logAnalyticsEvent(.imeClipShareAction, action: .shareVideo, itemId: video.analyticsID)
                 NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
             }
             
             if let delegate = NextGenHook.delegate {
-                delegate.urlForSharedContent(id: videoId, type: .video, completion: { (newUrl) in
-                    showShareDialog(newUrl ?? url)
+                delegate.urlForSharedContent(id: video.id, type: .video, completion: { (newURL) in
+                    showShareDialog(newURL ?? videoURL)
                 })
             } else {
-                showShareDialog(url)
+                showShareDialog(videoURL)
             }
         }
     }

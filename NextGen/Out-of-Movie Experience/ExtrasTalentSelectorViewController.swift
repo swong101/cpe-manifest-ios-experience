@@ -104,12 +104,14 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController {
 extension ExtrasTalentSelectorViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return NGDMManifest.sharedInstance.mainExperience?.orderedActors?.count ?? 0
+        return (CPEXMLSuite.current?.manifest.people?.count ?? 0)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: TalentTableViewCell.ReuseIdentifier) as! TalentTableViewCell
-        cell.talent = NGDMManifest.sharedInstance.mainExperience?.orderedActors?[indexPath.row]
+        if let people = CPEXMLSuite.current?.manifest.people, people.count > indexPath.row {
+            cell.talent = people[indexPath.row]
+        }
         
         return cell
     }

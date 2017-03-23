@@ -42,7 +42,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
     private var willPlayNextItemObserver: NSObjectProtocol?
     private var didEndLastVideoObserver: NSObjectProtocol?
     
-    private var currentGallery: NGDMGallery?
+    private var currentGallery: Gallery?
     private var currentVideoAnalyticsIdentifier: String?
     
     // MARK: Initialization
@@ -93,7 +93,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
         })
 
         willPlayNextItemObserver = NotificationCenter.default.addObserver(forName: .videoPlayerWillPlayNextItem, object: nil, queue: OperationQueue.main) { [weak self] (notification) -> Void in
-            if let strongSelf = self, let index = notification.userInfo?[NotificationConstants.index] as? Int , index < max(strongSelf.experience.numChildren, 1) {
+            if let strongSelf = self, let index = notification.userInfo?[NotificationConstants.index] as? Int, index < max(strongSelf.experience.numChildExperiences, 1) {
                 let indexPath = IndexPath(row: index, section: 0)
                 strongSelf.galleryTableView.selectRow(at: indexPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
                 strongSelf.tableView(strongSelf.galleryTableView, didSelectRowAt: indexPath)
@@ -113,13 +113,13 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
         galleryDidScrollToPageObserver = NotificationCenter.default.addObserver(forName: .imageGalleryDidScrollToPage, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
             if let gallery = self?.currentGallery, let page = notification.userInfo?[NotificationConstants.page] as? Int {
                 self?.galleryPageControl.currentPage = page
-                NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .scrollImageGallery, itemId: gallery.analyticsIdentifier)
+                NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .scrollImageGallery, itemId: gallery.analyticsID)
             }
         })
         
         galleryDidToggleFullScreenObserver = NotificationCenter.default.addObserver(forName: .imageGalleryDidToggleFullScreen, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
             if let gallery = self?.currentGallery, let isFullScreen = notification.userInfo?[NotificationConstants.isFullScreen] as? Bool, isFullScreen {
-                NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .setImageGalleryFullScreen, itemId: gallery.analyticsIdentifier)
+                NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .setImageGalleryFullScreen, itemId: gallery.analyticsID)
             }
         })
         
@@ -160,13 +160,13 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
             }
             
             let videoPlayerExists = videoPlayerViewController != nil
-            if didPlayFirstItem, let videoURL = selectedExperience.videoURL, let videoPlayerViewController = (videoPlayerViewController ?? UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController) {
+            if didPlayFirstItem, let videoURL = selectedExperience.video?.url, let videoPlayerViewController = (videoPlayerViewController ?? UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController) {
                 previewImageView.isHidden = true
                 previewPlayButton.isHidden = true
                 
                 videoPlayerViewController.removeCurrentItem()
                 videoPlayerViewController.mode = VideoPlayerMode.supplemental
-                videoPlayerViewController.queueTotalCount = max(experience.numChildren, 1)
+                videoPlayerViewController.queueTotalCount = max(experience.numChildExperiences, 1)
                 videoPlayerViewController.queueCurrentIndex = selectedIndexPath.row
                 
                 if !videoPlayerExists {
@@ -182,7 +182,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
                 }
                 
                 self.videoPlayerViewController = videoPlayerViewController
-                self.currentVideoAnalyticsIdentifier = selectedExperience.videoAnalyticsIdentifier
+                self.currentVideoAnalyticsIdentifier = selectedExperience.video?.analyticsID
                 NextGenHook.logAnalyticsEvent(.extrasVideoGalleryAction, action: .selectVideo, itemId: self.currentVideoAnalyticsIdentifier)
             }
         }
@@ -195,7 +195,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
         videoPlayerViewController = nil
     }
     
-    fileprivate func updateView(withExperience experience: NGDMExperience) {
+    fileprivate func updateView(withExperience experience: Experience) {
         mediaTitleLabel.isHidden = true
         mediaDescriptionLabel?.isHidden = true
         mediaDescriptionTextView?.isHidden = true
@@ -220,14 +220,14 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
             if !gallery.isTurntable {
                 shareButton.isHidden = false
                 shareButton.setTitle(String.localize("gallery.share_button").uppercased(), for: .normal)
-                if gallery.totalCount < 20 {
+                if gallery.numPictures < 20 {
                     galleryPageControl.isHidden = false
-                    galleryPageControl.numberOfPages = gallery.totalCount
+                    galleryPageControl.numberOfPages = gallery.numPictures
                 }
             }
             
             currentGallery = gallery
-            NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .selectImageGallery, itemId: gallery.analyticsIdentifier)
+            NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .selectImageGallery, itemId: gallery.analyticsID)
         } else if experience.isType(.audioVisual) {
             mediaTitleLabel.text = experience.title
             mediaDescriptionLabel?.text = experience.description
@@ -246,7 +246,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
     }
     
     @IBAction func onShare(_ sender: UIButton?) {
-        if !galleryScrollView.isHidden, let url = galleryScrollView.currentImageURL, let imageId = galleryScrollView.currentImageId, let title = NGDMManifest.sharedInstance.mainExperience?.title {
+        if !galleryScrollView.isHidden, let url = galleryScrollView.currentImageURL, let imageId = galleryScrollView.currentImageId, let title = CPEXMLSuite.current?.manifest.title {
             let showShareDialog = { [weak self] (url: URL) in
                 let activityViewController = UIActivityViewController(activityItems: [String.localize("gallery.share_message", variables: ["movie_name": title, "url": url.absoluteString])], applicationActivities: nil)
                 activityViewController.popoverPresentationController?.sourceView = sender
@@ -281,7 +281,7 @@ extension ExtrasVideoGalleryViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return max(experience.numChildren, 1)
+        return max(experience.numChildExperiences, 1)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

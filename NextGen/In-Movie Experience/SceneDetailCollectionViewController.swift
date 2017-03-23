@@ -7,10 +7,10 @@ import MapKit
 import NextGenDataManager
 
 struct ExperienceCellData {
-    var experience: NGDMExperience!
-    var timedEvent: NGDMTimedEvent!
+    var experience: Experience
+    var timedEvent: TimedEvent
     
-    init(experience: NGDMExperience, timedEvent: NGDMTimedEvent) {
+    init(experience: Experience, timedEvent: TimedEvent) {
         self.experience = experience
         self.timedEvent = timedEvent
     }
@@ -38,7 +38,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
     private var didChangeTimeObserver: NSObjectProtocol!
     
     private var _currentTime: Double = -1
-    private var _currentTimedEvents = [NGDMTimedEvent]()
+    private var _currentTimedEvents = [TimedEvent]()
     private var _isProcessingTimedEvents = false
     
     deinit {
@@ -84,32 +84,46 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
         DispatchQueue.global(qos: .userInteractive).async {
             self._currentTime = time
             
-            var deleteIndexPaths = [IndexPath]()
-            var insertIndexPaths = [IndexPath]()
-            var reloadIndexPaths = [IndexPath]()
+            var deleteIndexPaths: [IndexPath]?
+            var insertIndexPaths: [IndexPath]?
+            var reloadIndexPaths: [IndexPath]?
             
-            var newTimedEvents = [NGDMTimedEvent]()
-            for timedEvent in NGDMTimedEvent.findByTimecode(time) {
-                if !timedEvent.isType(.talent) {
-                    let indexPath = IndexPath(item: newTimedEvents.count, section: 0)
-                    
-                    if newTimedEvents.count < self._currentTimedEvents.count {
-                        if self._currentTimedEvents[newTimedEvents.count] != timedEvent {
-                            reloadIndexPaths.append(indexPath)
-                        } else if timedEvent.isType(.product), let cell = self.collectionView?.cellForItem(at: indexPath) as? ShoppingSceneDetailCollectionViewCell {
-                            cell.currentTime = self._currentTime
+            var newTimedEvents = [TimedEvent]()
+            if let timedEvents = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: time) {
+                for timedEvent in timedEvents {
+                    if !timedEvent.isType(.person) {
+                        let indexPath = IndexPath(item: newTimedEvents.count, section: 0)
+                        
+                        if newTimedEvents.count < self._currentTimedEvents.count {
+                            if self._currentTimedEvents[newTimedEvents.count] != timedEvent {
+                                if reloadIndexPaths == nil {
+                                    reloadIndexPaths = [IndexPath]()
+                                }
+                                
+                                reloadIndexPaths!.append(indexPath)
+                            } else if timedEvent.isType(.product), let cell = self.collectionView?.cellForItem(at: indexPath) as? ShoppingSceneDetailCollectionViewCell {
+                                cell.currentTime = self._currentTime
+                            }
+                        } else {
+                            if insertIndexPaths == nil {
+                                insertIndexPaths = [IndexPath]()
+                            }
+                            
+                            insertIndexPaths!.append(indexPath)
                         }
-                    } else {
-                        insertIndexPaths.append(indexPath)
+                        
+                        newTimedEvents.append(timedEvent)
                     }
-                    
-                    newTimedEvents.append(timedEvent)
                 }
             }
             
             if self._currentTimedEvents.count > newTimedEvents.count {
                 for i in newTimedEvents.count ..< self._currentTimedEvents.count {
-                    deleteIndexPaths.append(IndexPath(item: i, section: 0))
+                    if deleteIndexPaths == nil {
+                        deleteIndexPaths = [IndexPath]()
+                    }
+                    
+                    deleteIndexPaths!.append(IndexPath(item: i, section: 0))
                 }
             }
             
@@ -117,15 +131,15 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
                 self._currentTimedEvents = newTimedEvents
                 
                 self.collectionView?.performBatchUpdates({
-                    if deleteIndexPaths.count > 0 {
+                    if let deleteIndexPaths = deleteIndexPaths, deleteIndexPaths.count > 0 {
                         self.collectionView?.deleteItems(at: deleteIndexPaths)
                     }
                     
-                    if insertIndexPaths.count > 0 {
+                    if let insertIndexPaths = insertIndexPaths, insertIndexPaths.count > 0 {
                         self.collectionView?.insertItems(at: insertIndexPaths)
                     }
                     
-                    if reloadIndexPaths.count > 0 {
+                    if let reloadIndexPaths = reloadIndexPaths, reloadIndexPaths.count > 0 {
                         self.collectionView?.reloadItems(at: reloadIndexPaths)
                     }
                 }, completion: { (completed) in
@@ -186,33 +200,33 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let cell = collectionView.cellForItem(at: indexPath) as? SceneDetailCollectionViewCell, let timedEvent = cell.timedEvent {
             if timedEvent.isType(.appGroup) {
-                if let experienceApp = timedEvent.experienceApp, let url = timedEvent.appGroup?.url {
+                if let experienceApp = timedEvent.experience?.app, let url = experienceApp.url {
                     NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
                     let webViewController = WebViewController(title: experienceApp.title, url: url)
                     let navigationController = LandscapeNavigationController(rootViewController: webViewController)
                     self.present(navigationController, animated: true, completion: nil)
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectApp, itemId: experienceApp.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectApp, itemId: experienceApp.analyticsID)
                 }
             } else {
                 var segueIdentifier: String?
-                if timedEvent.isType(.audioVisual) {
+                if timedEvent.isType(.video) {
                     segueIdentifier = SegueIdentifier.ShowGallery
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectVideo, itemId: timedEvent.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectVideo, itemId: timedEvent.analyticsID)
                 } else if timedEvent.isType(.gallery) {
                     segueIdentifier = SegueIdentifier.ShowGallery
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectImageGallery, itemId: timedEvent.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectImageGallery, itemId: timedEvent.analyticsID)
                 } else if timedEvent.isType(.clipShare) {
                     segueIdentifier = SegueIdentifier.ShowClipShare
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectClipShare, itemId: timedEvent.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectClipShare, itemId: timedEvent.analyticsID)
                 } else if timedEvent.isType(.location) {
                     segueIdentifier = SegueIdentifier.ShowMap
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectLocation, itemId: timedEvent.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectLocation, itemId: timedEvent.analyticsID)
                 } else if timedEvent.isType(.product) {
                     segueIdentifier = SegueIdentifier.ShowShopping
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectShopping, itemId: timedEvent.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectShopping, itemId: timedEvent.analyticsID)
                 } else if timedEvent.isType(.textItem) {
                     segueIdentifier = SegueIdentifier.ShowLargeText
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectTrivia, itemId: timedEvent.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectTrivia, itemId: timedEvent.analyticsID)
                 }
                 
                 if let identifier = segueIdentifier {

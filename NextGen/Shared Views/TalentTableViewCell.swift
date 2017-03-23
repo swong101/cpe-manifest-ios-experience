@@ -49,7 +49,7 @@ class TalentTableViewCell: UITableViewCell {
         }
     }
     
-    private var role: String? {
+    private var character: String? {
         set {
             roleLabel?.text = newValue
         }
@@ -59,17 +59,17 @@ class TalentTableViewCell: UITableViewCell {
         }
     }
     
-    var talent: NGDMTalent? {
+    var talent: Person? {
         didSet {
             if let talent = talent {
                 if talent != oldValue {
                     name = talent.name
-                    role = talent.role
+                    character = talent.character
                     imageURL = talent.thumbnailImageURL
                 }
             } else {
                 name = nil
-                role = nil
+                character = nil
                 imageURL = nil
             }
         }

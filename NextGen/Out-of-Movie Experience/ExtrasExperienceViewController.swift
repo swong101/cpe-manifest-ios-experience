@@ -18,7 +18,7 @@ class ExtrasExperienceViewController: UIViewController {
         static let TitleLabelYOffset: CGFloat = 5
     }
     
-    var experience: NGDMExperience!
+    var experience: Experience!
     var customTitle: String?
     
     private var _homeButton: UIButton!
@@ -29,7 +29,7 @@ class ExtrasExperienceViewController: UIViewController {
         super.viewDidLoad()
         
         var titleView: UIView
-        if experience == NGDMManifest.sharedInstance.outOfMovieExperience, let titleImageURL = experience.getNodeStyle(UIApplication.shared.statusBarOrientation)?.getButtonImage("Title")?.url {
+        if experience.isOutOfMovieExperience, let titleImageURL = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: experience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation)?.theme.baseImageURLForButton("Title") {
             let titleImageView = UIImageView()
             titleImageView.contentMode = .scaleAspectFit
             titleImageView.sd_setImage(with: titleImageURL)
@@ -74,7 +74,7 @@ class ExtrasExperienceViewController: UIViewController {
         self.view.addSubview(_backButton)
         self.view.sendSubview(toBack: _backButton)
         
-        if let titleTreatmentImageURL = NGDMManifest.sharedInstance.inMovieExperience?.thumbnailImageURL {
+        if let titleTreatmentImageURL = CPEXMLSuite.current?.manifest.inMovieExperience.thumbnailImageURL {
             let titleTreatmentImageView = UIImageView()
             titleTreatmentImageView.translatesAutoresizingMaskIntoConstraints = false
             titleTreatmentImageView.contentMode = .scaleAspectFit
@@ -98,7 +98,7 @@ class ExtrasExperienceViewController: UIViewController {
             }
         }
         
-        if let nodeStyle = NGDMManifest.sharedInstance.outOfMovieExperience?.getNodeStyle(UIApplication.shared.statusBarOrientation) {
+        if let nodeStyle = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.outOfMovieExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation) {
             self.view.backgroundColor = nodeStyle.backgroundColor
             
             if let backgroundImageURL = nodeStyle.backgroundImageURL {

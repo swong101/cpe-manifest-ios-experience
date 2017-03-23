@@ -22,7 +22,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
     private var mapTypeDidChangeObserver: NSObjectProtocol?
     
     private var marker: MultiMapMarker!
-    private var location: NGDMLocation {
+    private var location: LocationAppDataItem {
         return timedEvent!.location!
     }
     
@@ -77,16 +77,14 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        let center = CLLocationCoordinate2DMake(location.latitude, location.longitude)
-        mapView.setLocation(center, zoomLevel: location.zoomLevel, animated: false)
-        marker = mapView.addMarker(center, title: location.name, subtitle: location.address, icon: location.iconImage, autoSelect: true)
+        mapView.setLocation(location.centerPoint, zoomLevel: location.zoomLevel, animated: false)
+        marker = mapView.addMarker(location.centerPoint, title: location.name, subtitle: location.address, icon: location.iconImage, autoSelect: true)
         mapView.addControls()
         mapView.maxZoomLevel = (location.zoomLocked ? location.zoomLevel : -1)
     }
     
     fileprivate func animateToCenter() {
-        let center = CLLocationCoordinate2DMake(location.latitude, location.longitude)
-        mapView.setLocation(center, zoomLevel: location.zoomLevel, animated: true)
+        mapView.setLocation(location.centerPoint, zoomLevel: location.zoomLevel, animated: true)
         mapView.selectedMarker = marker
     }
     
@@ -109,7 +107,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
         }
     }
     
-    private func showGallery(_ gallery: NGDMGallery) {
+    private func showGallery(_ gallery: Gallery) {
         closeDetailView()
         
         galleryScrollView.gallery = gallery
@@ -138,7 +136,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.row == 0 && location.mapImageURL == nil {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SimpleMapCollectionViewCell.ReuseIdentifier, for: indexPath) as! SimpleMapCollectionViewCell
-            cell.setLocation(CLLocationCoordinate2DMake(location.latitude, location.longitude), zoomLevel: location.zoomLevel - 4)
+            cell.setLocation(location.centerPoint, zoomLevel: location.zoomLevel - 4)
             return cell
         }
         
@@ -162,14 +160,14 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
         if indexPath.row == 0 {
             closeDetailView()
             animateToCenter()
-            NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectMap, itemId: location.analyticsIdentifier)
+            NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectMap, itemId: location.analyticsID)
         } else if let experience = location.mediaAtIndex(indexPath.row - 1) {
-            if let url = experience.videoURL {
-                playVideo(url)
-                NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectVideo, itemId: experience.videoID)
+            if let video = experience.video, let videoURL = video.url {
+                playVideo(videoURL)
+                NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectVideo, itemId: video.analyticsID)
             } else if let gallery = experience.gallery {
                 showGallery(gallery)
-                NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectImageGallery, itemId: gallery.analyticsIdentifier)
+                NextGenHook.logAnalyticsEvent(.imeLocationAction, action: .selectImageGallery, itemId: gallery.analyticsID)
             }
         }
     }

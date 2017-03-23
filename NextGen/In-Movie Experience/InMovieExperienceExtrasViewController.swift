@@ -22,8 +22,8 @@ class InMovieExperienceExtrasViewController: UIViewController {
     @IBOutlet weak private var showLessButton: UIButton!
     @IBOutlet weak private var showLessGradientView: UIView!
     private var showLessGradient = CAGradientLayer()
-    fileprivate var currentTalents = [NGDMTalent]()
-    private var hiddenTalents: [NGDMTalent]?
+    fileprivate var currentTalents: [Person]?
+    private var hiddenTalents: [Person]?
     fileprivate var isShowingMore = false
     
     private var currentTime: Double = -1
@@ -40,7 +40,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let nodeStyle = NGDMManifest.sharedInstance.inMovieExperience?.getNodeStyle(UIApplication.shared.statusBarOrientation) {
+        if let nodeStyle = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.inMovieExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation) {
             self.view.backgroundColor = nodeStyle.backgroundColor
             
             if let backgroundImageURL = nodeStyle.backgroundImageURL {
@@ -49,7 +49,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
             }
         }
         
-        if let actors = NGDMManifest.sharedInstance.mainExperience?.orderedActors , actors.count > 0 {
+        if CPEXMLSuite.current!.manifest.hasActors {
             talentTableView?.register(UINib(nibName: "TalentTableViewCell-Narrow" + (DeviceType.IS_IPAD ? "" : "_iPhone"), bundle: nil), forCellReuseIdentifier: TalentTableViewCell.ReuseIdentifier)
         } else {
             talentTableView?.removeFromSuperview()
@@ -83,14 +83,16 @@ class InMovieExperienceExtrasViewController: UIViewController {
             DispatchQueue.global(qos: .userInteractive).async {
                 self.currentTime = time
                 
-                let newTalents = NGDMTimedEvent.findByTimecode(time, type: .talent).sorted(by: { (timedEvent1, timedEvent2) -> Bool in
-                    return timedEvent1.talent!.billingBlockOrder < timedEvent2.talent!.billingBlockOrder
-                }).map({ $0.talent! })
+                let newTalents = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: time, type: .person)?.sorted(by: {
+                    return $0.person!.billingBlockOrder < $1.person!.billingBlockOrder
+                }).map({
+                    $0.person!
+                })
                 
                 if self.isShowingMore {
                     self.hiddenTalents = newTalents
                 } else {
-                    if (newTalents.count != self.currentTalents.count || newTalents.contains(where: { !self.currentTalents.contains($0) })) {
+                    if self.currentTalents == nil || newTalents == nil || newTalents!.count != self.currentTalents!.count || newTalents!.contains(where: { !self.currentTalents!.contains($0) }) {
                         DispatchQueue.main.async {
                             self.currentTalents = newTalents
                             self.talentTableView?.reloadData()
@@ -116,10 +118,10 @@ class InMovieExperienceExtrasViewController: UIViewController {
         
         if isShowingMore {
             hiddenTalents = currentTalents
-            currentTalents = NGDMManifest.sharedInstance.mainExperience?.orderedActors ?? [NGDMTalent]()
+            currentTalents = CPEXMLSuite.current!.manifest.actors
             NextGenHook.logAnalyticsEvent(.imeTalentAction, action: .showMore)
         } else {
-            currentTalents = hiddenTalents ?? [NGDMTalent]()
+            currentTalents = hiddenTalents
             NextGenHook.logAnalyticsEvent(.imeTalentAction, action: .showLess)
         }
         
@@ -132,7 +134,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
         if segue.identifier == SegueIdentifier.ShowTalent {
             let talentDetailViewController = segue.destination as! TalentDetailViewController
             talentDetailViewController.title = String.localize("talentdetail.title")
-            talentDetailViewController.talent = sender as! NGDMTalent
+            talentDetailViewController.talent = sender as! Person
             talentDetailViewController.mode = TalentDetailMode.Synced
         }
     }
@@ -142,13 +144,13 @@ class InMovieExperienceExtrasViewController: UIViewController {
 extension InMovieExperienceExtrasViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return currentTalents.count
+        return (currentTalents?.count ?? 0)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: TalentTableViewCell.ReuseIdentifier) as! TalentTableViewCell
-        if currentTalents.count > indexPath.row {
-            cell.talent = currentTalents[indexPath.row]
+        if let talents = currentTalents, talents.count > indexPath.row {
+            cell.talent = talents[indexPath.row]
         }
         
         return cell

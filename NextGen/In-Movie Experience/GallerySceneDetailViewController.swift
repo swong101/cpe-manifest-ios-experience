@@ -40,7 +40,7 @@ class GallerySceneDetailViewController: SceneDetailViewController, UIScrollViewD
         super.viewWillLayoutSubviews()
         
         if let timedEvent = timedEvent {
-            if timedEvent.isType(.audioVisual) {
+            if timedEvent.isType(.video) {
                 galleryScrollView?.removeFromSuperview()
                 pageControl?.removeFromSuperview()
                 shareButton?.removeFromSuperview()
@@ -48,8 +48,8 @@ class GallerySceneDetailViewController: SceneDetailViewController, UIScrollViewD
                 pageControl = nil
                 shareButton = nil
                 
-                if let videoURL = timedEvent.videoURL {
-                    descriptionLabel.text = timedEvent.audioVisual?.descriptionText
+                if let videoURL = timedEvent.video?.url {
+                    descriptionLabel.text = timedEvent.description
                     
                     if let videoContainerView = videoContainerView, let videoPlayerViewController = UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController {
                         videoPlayerViewController.mode = VideoPlayerMode.supplementalInMovie
@@ -75,12 +75,12 @@ class GallerySceneDetailViewController: SceneDetailViewController, UIScrollViewD
                 } else {
                     shareButton?.setTitle(String.localize("gallery.share_button").uppercased(), for: .normal)
                     galleryScrollView?.removeToolbar()
-                    pageControl?.numberOfPages = gallery.totalCount
+                    pageControl?.numberOfPages = gallery.numPictures
                     if pageControl != nil && pageControl!.numberOfPages > 0 {
                         galleryDidScrollToPageObserver = NotificationCenter.default.addObserver(forName: .imageGalleryDidScrollToPage, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
                             if let strongSelf = self, let page = notification.userInfo?[NotificationConstants.page] as? Int {
                                 strongSelf.pageControl?.currentPage = page
-                                NextGenHook.logAnalyticsEvent(.imeImageGalleryAction, action: .scrollImageGallery, itemId: gallery.analyticsIdentifier)
+                                NextGenHook.logAnalyticsEvent(.imeImageGalleryAction, action: .scrollImageGallery, itemId: gallery.analyticsID)
                             }
                         })
                     }
@@ -91,7 +91,7 @@ class GallerySceneDetailViewController: SceneDetailViewController, UIScrollViewD
     
     // MARK: Actions
     @IBAction func onShare(_ sender: UIButton?) {
-        if let url = galleryScrollView?.currentImageURL, let imageId = galleryScrollView?.currentImageId, let title = NGDMManifest.sharedInstance.mainExperience?.title {
+        if let url = galleryScrollView?.currentImageURL, let imageId = galleryScrollView?.currentImageId, let title = CPEXMLSuite.current?.manifest.title {
             let showShareDialog = { [weak self] (url: URL) in
                 let activityViewController = UIActivityViewController(activityItems: [String.localize("gallery.share_message", variables: ["movie_name": title, "url": url.absoluteString])], applicationActivities: nil)
                 activityViewController.popoverPresentationController?.sourceView = sender

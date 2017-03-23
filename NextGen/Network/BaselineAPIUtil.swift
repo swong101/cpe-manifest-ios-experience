@@ -60,30 +60,24 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
         self.customHeaders[Headers.Studio] = studio.rawValue
     }
     
-    public func prefetchCredits(_ completion: @escaping (_ talents: [String: NGDMTalent]?) -> Void) {
+    public func prefetchCredits(_ completion: @escaping (_ people: [Person]?) -> Void) {
         if let apiID = featureAPIID {
             _ = getJSONWithPath(Endpoints.GetCredits, parameters: ["id": apiID], successBlock: { (result) -> Void in
                 if let results = result["result"] as? NSArray {
-                    var talents = [String: NGDMTalent]()
+                    var people = [Person]()
                     
                     var i = 0
                     for talentInfo in results.subarray(with: NSRange(location: 0, length: min(Constants.MaxCredits, results.count))) {
-                        if let talentInfo = talentInfo as? NSDictionary, let talentID = talentInfo[Keys.ParticipantID] as? NSNumber {
-                            let baselineID = (talentInfo[Keys.ParticipantID] as! NSNumber).stringValue
-                            let name = talentInfo[Keys.FullName] as? String
-                            let role = talentInfo[Keys.Credit] as? String
-                            var type: TalentType?
-                            if let creditGroup = talentInfo[Keys.CreditGroup] as? String {
-                                type = TalentType(rawValue: creditGroup)
-                            }
-                            
-                            talents[talentID.stringValue] = NGDMTalent(apiID: baselineID, name: name, role: role, billingBlockOrder: i, type: type ?? .unknown)
+                        if let talentInfo = talentInfo as? NSDictionary, let talentID = talentInfo[Keys.ParticipantID] as? NSNumber, let name = (talentInfo[Keys.FullName] as? String) {
+                            let jobFunction = PersonJobFunction.build(rawValue: (talentInfo[Keys.Credit] as? String))
+                            let character = talentInfo[Keys.Credit] as? String
+                            people.append(Person(apiID: talentID.stringValue, name: name, jobFunction: jobFunction, billingBlockOrder: i, character: character))
                         }
                         
                         i += 1
                     }
                     
-                    completion(talents)
+                    completion(people)
                 }
             }) { (error) in
                 print("Error fetching credits for ID \(apiID): \(error)")
@@ -96,7 +90,7 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
     
     public func getTalentImages(_ talentID: String, completion: @escaping (_ talentImages: [TalentImage]?) -> Void) {
         _ = getJSONWithPath(Endpoints.GetTalentImages, parameters: ["id": talentID], successBlock: { (result) -> Void in
-            if let results = result["result"] as? NSArray , results.count > 0 {
+            if let results = result["result"] as? NSArray, results.count > 0 {
                 var talentImages = [TalentImage]()
                 for talentImageInfo in results {
                     if let talentImageInfo = talentImageInfo as? NSDictionary {
@@ -124,20 +118,20 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
         }
     }
     
-    public func getTalentDetails(_ talentID: String, completion: @escaping (_ biography: String?, _ socialAccounts: [TalentSocialAccount]?, _ films: [TalentFilm]) -> Void) {
+    public func getTalentDetails(_ talentID: String, completion: @escaping (_ biography: String?, _ socialAccounts: [SocialAccount]?, _ films: [Film]) -> Void) {
         _ = getJSONWithPath(Endpoints.GetTalentDetails, parameters: ["id": talentID], successBlock: { (result) in
-            var socialAccounts = [TalentSocialAccount]()
+            var socialAccounts = [SocialAccount]()
             if let socialAccountInfoList = result[Keys.SocialAccounts] as? NSArray {
                 for socialAccountInfo in socialAccountInfoList {
                     if let socialAccountInfo = socialAccountInfo as? NSDictionary {
                         let handle = socialAccountInfo[Keys.Handle] as! String
                         let urlString = socialAccountInfo[Keys.URL] as! String
-                        socialAccounts.append(TalentSocialAccount(handle: handle, urlString: urlString))
+                        socialAccounts.append(SocialAccount(handle: handle, urlString: urlString))
                     }
                 }
             }
             
-            var films = [TalentFilm]()
+            var films = [Film]()
             if let filmInfoList = result[Keys.Filmography] as? NSArray {
                 for filmInfo in filmInfoList {
                     if let filmInfo = filmInfo as? NSDictionary {
@@ -149,7 +143,7 @@ public class BaselineAPIUtil: NextGenDataManager.APIUtil, TalentAPIUtil {
                             imageURL = URL(string: posterImageURLString)
                         }
                         
-                        films.append(TalentFilm(id: id, title: title, imageURL: imageURL))
+                        films.append(Film(id: id, title: title, imageURL: imageURL))
                     }
                 }
             }

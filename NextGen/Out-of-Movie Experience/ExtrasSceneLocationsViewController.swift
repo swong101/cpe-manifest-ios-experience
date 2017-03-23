@@ -40,9 +40,9 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
     @IBOutlet private var containerAspectRatioConstraint: NSLayoutConstraint?
     @IBOutlet private var containerBottomInnerConstraint: NSLayoutConstraint?
     
-    private var locationExperiences = [NGDMExperience]()
+    private var locationExperiences = [Experience]()
     fileprivate var markers = [String: MultiMapMarker]() // ExperienceID: MultiMapMarker
-    fileprivate var selectedExperience: NGDMExperience? {
+    fileprivate var selectedExperience: Experience? {
         didSet {
             if let selectedExperience = selectedExperience {
                 if let marker = markers[selectedExperience.id] {
@@ -56,7 +56,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
             } else {
                 mapView.selectedMarker = nil
                 
-                var lowestZoomLevel = MAXFLOAT
+                var lowestZoomLevel = Int.max
                 for locationExperience in locationExperiences {
                     if let location = locationExperience.location, location.zoomLocked, location.zoomLevel < lowestZoomLevel {
                         lowestZoomLevel = location.zoomLevel
@@ -170,7 +170,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         // Set up map markers
         for locationExperience in locationExperiences {
             if let location = locationExperience.location {
-                markers[locationExperience.id] = mapView.addMarker(CLLocationCoordinate2DMake(location.latitude, location.longitude), title: location.name, subtitle: location.address, icon: location.iconImage, autoSelect: false)
+                markers[locationExperience.id] = mapView.addMarker(location.centerPoint, title: location.name, subtitle: location.address, icon: location.iconImage, autoSelect: false)
             }
         }
         
@@ -215,8 +215,8 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         return .all
     }
     
-    private func playVideo(fromExperience experience: NGDMExperience) {
-        if let videoURL = experience.videoURL {
+    private func playVideo(fromExperience experience: Experience) {
+        if let videoURL = experience.video?.url {
             let shouldAnimateOpen = locationDetailView.isHidden
             closeDetailView(animated: false)
             
@@ -251,7 +251,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         }
     }
     
-    func showGallery(_ gallery: NGDMGallery) {
+    func showGallery(_ gallery: Gallery) {
         let shouldAnimateOpen = locationDetailView.isHidden
         closeDetailView(animated: false)
         
@@ -262,7 +262,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
             galleryPageControl.isHidden = true
         } else {
             galleryPageControl.isHidden = false
-            galleryPageControl.numberOfPages = gallery.totalCount
+            galleryPageControl.numberOfPages = gallery.numPictures
             galleryPageControl.currentPage = 0
         }
         
@@ -379,19 +379,19 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         
         if let selectedExperience = selectedExperience, selectedExperience.locationMediaCount > 0 {
             if let experience = selectedExperience.locationMediaAtIndex(indexPath.row) {
-                if experience.videoURL != nil {
+                if let video = experience.video {
                     playVideo(fromExperience: experience)
-                    currentVideoAnalyticsIdentifier = experience.videoAnalyticsIdentifier
+                    currentVideoAnalyticsIdentifier = video.analyticsID
                     NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectVideo, itemId: currentVideoAnalyticsIdentifier)
                 } else if let gallery = experience.gallery {
                     showGallery(gallery)
-                    currentGalleryAnalyticsIdentifier = gallery.analyticsIdentifier
+                    currentGalleryAnalyticsIdentifier = gallery.analyticsID
                     NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectImageGallery, itemId: currentGalleryAnalyticsIdentifier)
                 }
             }
         } else {
             selectedExperience = locationExperiences[indexPath.row]
-            NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectLocationThumbnail, itemId: selectedExperience?.analyticsIdentifier)
+            NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectLocationThumbnail, itemId: selectedExperience?.analyticsID)
         }
     }
     
@@ -400,10 +400,10 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
 extension ExtrasSceneLocationsViewController: MultiMapViewDelegate {
     
     func mapView(_ mapView: MultiMapView, didTapMarker marker: MultiMapMarker) {
-        for (experienceId, locationMarker) in markers {
+        for (experienceID, locationMarker) in markers {
             if marker == locationMarker {
-                selectedExperience = NGDMExperience.getById(experienceId)
-                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectLocationMarker, itemId: experienceId)
+                selectedExperience = CPEXMLSuite.current!.manifest.experienceWithID(experienceID)
+                NextGenHook.logAnalyticsEvent(.extrasSceneLocationsAction, action: .selectLocationMarker, itemId: experienceID)
                 return
             }
         }

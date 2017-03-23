@@ -15,7 +15,7 @@ class TalentImageGalleryViewController: SceneDetailViewController {
     @IBOutlet weak fileprivate var galleryScrollView: ImageGalleryScrollView!
     @IBOutlet weak private var galleryCollectionView: UICollectionView!
     
-    var talent: NGDMTalent!
+    var talent: Person!
     var initialPage = 0
     
     private var galleryDidScrollToPageObserver: NSObjectProtocol?
@@ -59,17 +59,10 @@ class TalentImageGalleryViewController: SceneDetailViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        var pictures = [NGDMPicture]()
-        if let talentImages = talent.images {
-            for talentImage in talentImages {
-                if let imageURL = talentImage.imageURL {
-                    pictures.append(NGDMPicture(imageURL: imageURL))
-                }
-            }
+        if let imageURLs = talent.images?.flatMap({ $0.imageURL }) {
+            galleryScrollView.gallery = Gallery(imageURLs: imageURLs)
+            galleryScrollView.gotoPage(initialPage, animated: false)
         }
-        
-        galleryScrollView.gallery = NGDMGallery(pictures: pictures)
-        galleryScrollView.gotoPage(initialPage, animated: false)
     }
     
     override var supportedInterfaceOrientations : UIInterfaceOrientationMask {

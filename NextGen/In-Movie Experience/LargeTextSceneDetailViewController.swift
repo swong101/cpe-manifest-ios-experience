@@ -13,7 +13,7 @@ class LargeTextSceneDetailViewController: SceneDetailViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        textLabel.text = timedEvent?.descriptionText
+        textLabel.text = timedEvent?.textItem
         
         if let imageURL = timedEvent?.imageURL {
             imageView?.sd_setImage(with: imageURL)

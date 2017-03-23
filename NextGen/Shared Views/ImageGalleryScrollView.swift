@@ -19,12 +19,12 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     private var originalContainerFrame: CGRect?
     private var closeButton: UIButton!
     
-    var gallery: NGDMGallery? {
+    var gallery: Gallery? {
         didSet {
             resetScrollView()
             
             if let gallery = gallery, gallery.isTurntable {
-                for i in 0 ..< gallery.totalCount {
+                for i in 0 ..< gallery.numPictures {
                     loadGalleryImageForPage(i)
                 }
             }
@@ -84,11 +84,11 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
                 
                 if let toolbarItems = toolbar?.items, let captionLabel = toolbarItems.first?.customView as? UILabel {
                     var captionText: String? = nil
-                    if gallery.totalCount >= 20 {
-                        captionText = String(currentPage + 1) + "/" + String(gallery.totalCount)
+                    if gallery.numPictures >= 20 {
+                        captionText = String(currentPage + 1) + "/" + String(gallery.numPictures)
                     }
                     
-                    if let caption = gallery.getPictureForPage(currentPage)?.caption {
+                    if let caption = gallery.picture(atIndex: currentPage)?.caption {
                         toolbar?.isHidden = false
                         captionText = (captionText != nil ? captionText! + " • " + caption : caption)
                     } else if !allowsFullScreen && captionText == nil {
@@ -102,11 +102,11 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     }
     
     var currentImageURL: URL? {
-        return gallery?.getImageURLForPage(currentPage)
+        return gallery?.picture(atIndex: currentPage)?.imageURL
     }
     
     var currentImageId: String? {
-        return gallery?.getPictureForPage(currentPage)?.imageID
+        return gallery?.picture(atIndex: currentPage)?.imageID
     }
     
     
@@ -195,7 +195,7 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
             if isTurntable {
                 let turntableSlider = UISlider(frame: CGRect(x: 0, y: 0, width: self.frame.width - Constants.ToolbarHeight - 35, height: Constants.ToolbarHeight))
                 turntableSlider.minimumValue = 0
-                turntableSlider.maximumValue = max(Float(gallery!.totalCount - 1), 0)
+                turntableSlider.maximumValue = max(Float(gallery!.numPictures - 1), 0)
                 turntableSlider.value = 0
                 turntableSlider.addTarget(self, action: #selector(self.turntableSliderValueChanged), for: .valueChanged)
                 toolbarItems.append(UIBarButtonItem(customView: turntableSlider))
@@ -235,7 +235,7 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     func layoutPages() {
         if let gallery = gallery {
             scrollViewPageWidth = self.bounds.width
-            for i in 0 ..< gallery.totalCount {
+            for i in 0 ..< gallery.numPictures {
                 var pageView = self.viewWithTag(i + 1) as? UIScrollView
                 var imageView = pageView?.subviews.first as? UIImageView
                 if pageView == nil {
@@ -262,7 +262,7 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
                 imageView!.frame = pageView!.bounds
             }
             
-            self.contentSize = CGSize(width: self.frame.width * CGFloat(gallery.totalCount), height: self.frame.height)
+            self.contentSize = CGSize(width: self.frame.width * CGFloat(gallery.numPictures), height: self.frame.height)
             self.contentOffset.x = scrollViewPageWidth * CGFloat(currentPage)
             
             if let toolbar = toolbar {
@@ -289,7 +289,7 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     
     // MARK: Image Gallery
     private func loadGalleryImageForPage(_ page: Int) {
-        if let url = gallery?.getImageURLForPage(page), let imageView = (self.viewWithTag(page + 1) as? UIScrollView)?.subviews.first as? UIImageView, imageView.image == nil {
+        if let url = gallery?.picture(atIndex: page)?.imageURL, let imageView = (self.viewWithTag(page + 1) as? UIScrollView)?.subviews.first as? UIImageView, imageView.image == nil {
             imageView.sd_setImage(with: url)
         }
     }

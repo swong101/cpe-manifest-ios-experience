@@ -64,7 +64,7 @@ import ReachabilitySwift
         NextGenHook.experienceWillClose()
         UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true, completion: { [weak self] in
             self?.isBeingDismissed = false
-            NGDMManifest.destroyInstance()
+            CPEXMLSuite.current = nil
         })
     }
 

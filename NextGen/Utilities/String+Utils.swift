@@ -30,10 +30,10 @@ extension String {
         return NSLocalizedString(key, tableName: "NextGen", bundle: Bundle.main, value: "", comment: "")
     }
     
-    static func localize(_ key: String, variables: [String: String]) -> String {
+    static func localize(_ key: String, variables: [String: String?]) -> String {
         var localizedString = String.localize(key)
         for (variableName, variableValue) in variables {
-            localizedString = localizedString.replacingOccurrences(of: "%{" + variableName + "}", with: variableValue)
+            localizedString = localizedString.replacingOccurrences(of: "%{" + variableName + "}", with: (variableValue ?? ""))
         }
         
         return localizedString

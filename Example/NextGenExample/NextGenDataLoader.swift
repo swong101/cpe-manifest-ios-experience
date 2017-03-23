@@ -76,114 +76,43 @@ import MBProgressHUD
     func loadTitle(id: String, completion: @escaping (_ success: Bool, _ error: Error?) -> Void) throws {
         guard let titleData = NextGenDataLoader.ManifestData[id] else { throw DataLoaderError.titleNotFound }
         
-        guard let manifestXMLPath = titleData["manifest"] else { throw NGDMError.manifestMissing }
-        loadXMLFile(manifestXMLPath).then(on: DispatchQueue.global(qos: .userInteractive), execute: { localFilePath -> Void in
-            do {
-                if let key = self.productAPIUtilKey {
-                    NGDMConfiguration.productAPIUtil = TheTakeAPIUtil(apiKey: key)
-                }
-                
-                if let key = self.talentAPIUtilKey {
-                    NGDMConfiguration.talentAPIUtil = BaselineAPIUtil(apiKey: key)
-                }
-                
-                try NGDMManifest.sharedInstance.loadManifestXMLFile(localFilePath)
-                
-                NGDMConfiguration.productAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(TheTakeAPIUtil.APINamespace)
-                NGDMConfiguration.talentAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(BaselineAPIUtil.APINamespace)
-                NGDMManifest.sharedInstance.loadProductData()
-                NGDMManifest.sharedInstance.loadTalentData()
-            } catch NGDMError.mainExperienceMissing {
-                print("Error loading Manifest file: no main Experience found")
-                completion(false, NGDMError.mainExperienceMissing)
-            } catch NGDMError.inMovieExperienceMissing {
-                print("Error loading Manifest file: no in-movie Experience found")
-                completion(false, NGDMError.inMovieExperienceMissing)
-            } catch NGDMError.outOfMovieExperienceMissing {
-                print("Error loading Manifest file: no out-of-movie Experience found")
-                completion(false, NGDMError.outOfMovieExperienceMissing)
-            } catch {
-                print("Error loading Manifest file: unknown error")
-                completion(false, error)
+        if let manifestXMLURLString = titleData["manifest"], let manifestXMLURL = URL(string: manifestXMLURLString) {
+            var appDataXMLURL: URL?
+            var cpeStyleXMLURL: URL?
+            
+            if let urlString = titleData["appdata"] {
+                appDataXMLURL = URL(string: urlString)
             }
             
-            var promises = [Promise<String>]()
-            var hasAppData = false
-            
-            if let appDataXMLPath = titleData["appdata"] {
-                promises.append(self.loadXMLFile(appDataXMLPath))
-                hasAppData = true
+            if let urlString = titleData["cpestyle"] {
+                cpeStyleXMLURL = URL(string: urlString)
             }
             
-            if let styleXMLPath = titleData["cpestyle"] {
-                promises.append(self.loadXMLFile(styleXMLPath))
-            }
-            
-            if promises.count > 0 {
-                _ = when(fulfilled: promises).then(on: DispatchQueue.global(qos: .userInteractive), execute: { results -> Void in
-                    var appDataFilePath: String?
-                    var cpeStyleFilePath: String?
-                    if hasAppData {
-                        appDataFilePath = results.first
-                        if results.count > 1 {
-                            cpeStyleFilePath = results.last
-                        }
-                    } else {
-                        cpeStyleFilePath = results.first
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    if let key = self.productAPIUtilKey {
+                        NGDMConfiguration.productAPIUtil = TheTakeAPIUtil(apiKey: key)
                     }
                     
-                    if let localFilePath = appDataFilePath {
-                        do {
-                            try NGDMManifest.sharedInstance.loadAppDataXMLFile(localFilePath)
-                        } catch {
-                            print("Error loading AppData file")
-                        }
+                    if let key = self.talentAPIUtilKey {
+                        NGDMConfiguration.talentAPIUtil = BaselineAPIUtil(apiKey: key)
                     }
                     
-                    if let localFilePath = cpeStyleFilePath {
-                        do {
-                            try NGDMManifest.sharedInstance.loadCPEStyleXMLFile(localFilePath)
-                        } catch {
-                            print ("Error loading CPE-Style file")
-                        }
+                    try CPEXMLSuite.load(manifestXMLURL: manifestXMLURL, appDataXMLURL: appDataXMLURL, cpeStyleXMLURL: cpeStyleXMLURL) {
+                        completion(true, nil)
+                        /*
+                        
+                        NGDMConfiguration.productAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(TheTakeAPIUtil.APINamespace)
+                        NGDMConfiguration.talentAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(BaselineAPIUtil.APINamespace)
+                        NGDMManifest.sharedInstance.loadProductData()
+                        NGDMManifest.sharedInstance.loadTalentData()*/
                     }
+                } catch {
                     
-                    completion(true, nil)
-                })
-            } else {
-                completion(true, nil)
-            }
-        }).catch { error in
-            completion(false, error)
-        }
-    }
-    
-    private func loadXMLFile(_ filePath: String) -> Promise<String> {
-        return Promise { fulfill, reject in
-            if let fileUrl = URL(string: filePath) {
-                if let manifestXMLPath = Bundle.main.path(forResource: "Data/Manifests/" + fileUrl.lastPathComponent.replacingOccurrences(of: ".xml", with: ""), ofType: "xml") {
-                    fulfill(manifestXMLPath)
-                } else if let applicationSupportFileURL = NextGenCacheManager.applicationSupportFileURL(fileUrl) {
-                    if NextGenCacheManager.fileExists(applicationSupportFileURL) {
-                        fulfill(applicationSupportFileURL.path)
-                        NextGenCacheManager.storeApplicationSupportFile(fileUrl, completionHandler: { (_) in
-                            
-                        })
-                    } else {
-                        NextGenCacheManager.storeApplicationSupportFile(fileUrl, completionHandler: { (localFileURL) in
-                            if let filePath = localFileURL?.path {
-                                fulfill(filePath)
-                            } else {
-                                reject(DataLoaderError.fileMissing)
-                            }
-                        })
-                    }
-                } else {
-                    reject(DataLoaderError.fileMissing)
                 }
-            } else {
-                reject(DataLoaderError.fileMissing)
             }
+        } else {
+            
         }
     }
     

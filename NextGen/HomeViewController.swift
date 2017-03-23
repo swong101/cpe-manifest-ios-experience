@@ -51,8 +51,13 @@ class HomeViewController: UIViewController {
         return 0
     }
     
-    private var nodeStyle: NGDMNodeStyle? {
-        return NGDMManifest.sharedInstance.mainExperience?.getNodeStyle(UIApplication.shared.statusBarOrientation)
+    private var _nodeStyle: NodeStyle?
+    private var nodeStyle: NodeStyle? {
+        if _nodeStyle == nil {
+            _nodeStyle = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.mainExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation)
+        }
+        
+        return _nodeStyle
     }
     
     private var backgroundVideoSize: CGSize {
@@ -64,24 +69,24 @@ class HomeViewController: UIViewController {
         return (nodeStyle?.backgroundImageSize ?? observedBackgroundImageSize ?? CGSize.zero)
     }
     
-    private var playButtonImage: NGDMImage? {
-        return nodeStyle?.getButtonImage("Play")
+    private var playButtonImage: Image? {
+        return nodeStyle?.theme.baseImageForButton("Play")
     }
     
-    private var extrasButtonImage: NGDMImage? {
-        return nodeStyle?.getButtonImage("Extras")
+    private var extrasButtonImage: Image? {
+        return nodeStyle?.theme.baseImageForButton("Extras")
     }
     
-    private var buyButtonImage: NGDMImage? {
-        return nodeStyle?.getButtonImage("Buy")
+    private var buyButtonImage: Image? {
+        return nodeStyle?.theme.baseImageForButton("Buy")
     }
     
     private var buttonOverlaySize: CGSize {
-        return (nodeStyle?.buttonOverlaySize ?? CGSize(width: 300, height: 100))
+        return (nodeStyle?.buttonOverlayArea?.size ?? CGSize(width: 300, height: 100))
     }
     
     private var buttonOverlayBottomLeft: CGPoint {
-        return (nodeStyle?.buttonOverlayBottomLeft ?? CGPoint(x: 490, y: 25))
+        return (nodeStyle?.buttonOverlayArea?.bottomLeftPoint ?? CGPoint(x: 490, y: 25))
     }
     
     private var playButtonSize: CGSize {
@@ -97,11 +102,11 @@ class HomeViewController: UIViewController {
     }
     
     private var titleOverlaySize: CGSize {
-        return (nodeStyle?.titleOverlaySize ?? CGSize(width: 400, height: 133))
+        return (nodeStyle?.titleOverlayArea?.size ?? CGSize(width: 400, height: 133))
     }
     
     private var titleOverlayBottomLeft: CGPoint {
-        return (nodeStyle?.titleOverlayBottomLeft ?? CGPoint(x: 440, y: backgroundImageSize.height - (titleOverlaySize.height + 15)))
+        return (nodeStyle?.titleOverlayArea?.bottomLeftPoint ?? CGPoint(x: 440, y: backgroundImageSize.height - (titleOverlaySize.height + 15)))
     }
     
     deinit {
@@ -230,7 +235,7 @@ class HomeViewController: UIViewController {
             self.view.addSubview(buttonOverlayView)
             
             // Title treatment
-            if nodeStyle == nil || nodeStyle!.titleOverlaySize != nil, let imageURL = NGDMManifest.sharedInstance.inMovieExperience?.thumbnailImageURL {
+            if nodeStyle == nil || nodeStyle!.titleOverlayArea?.size != nil, let imageURL = CPEXMLSuite.current?.manifest.titleTreatmentImageURL {
                 titleOverlayView = UIView()
                 titleOverlayView!.isHidden = true
                 titleOverlayView!.isUserInteractionEnabled = false
@@ -287,6 +292,8 @@ class HomeViewController: UIViewController {
         if self.view.window != nil && !self.isBeingDismissed {
             coordinator.animate(alongsideTransition: { [weak self] (_) in
                 if let strongSelf = self, strongSelf.interfaceCreated {
+                    strongSelf._nodeStyle = nil
+                    
                     if let currentURL = strongSelf.backgroundVideoPlayerViewController?.url {
                         if let newURL = self?.nodeStyle?.backgroundVideoURL, currentURL != newURL {
                             strongSelf.unloadBackground()
@@ -322,14 +329,14 @@ class HomeViewController: UIViewController {
                         backgroundSize.width = viewWidth
                         backgroundSize.height = backgroundSize.width / backgroundVideoAspectRatio
                         
-                        if nodeStyle?.backgroundPositionMethod == .centered {
+                        if nodeStyle?.backgroundPositioningMethod == .centered {
                             backgroundPoint.y = (viewHeight - backgroundSize.height) / 2
                         }
                     } else {
                         backgroundSize.height = viewHeight
                         backgroundSize.width = backgroundSize.height * backgroundVideoAspectRatio
                         
-                        if nodeStyle?.backgroundPositionMethod == .centered {
+                        if nodeStyle?.backgroundPositioningMethod == .centered {
                             backgroundPoint.x = (viewWidth - backgroundSize.width) / 2
                         }
                     }
@@ -342,7 +349,7 @@ class HomeViewController: UIViewController {
                         backgroundSize.height = backgroundSize.width / backgroundVideoAspectRatio
                     }
                     
-                    if nodeStyle?.backgroundPositionMethod == .centered {
+                    if nodeStyle?.backgroundPositioningMethod == .centered {
                         backgroundPoint.x = (backgroundSize.width - viewWidth) / -2
                         backgroundPoint.y = (backgroundSize.height - viewHeight) / -2
                     }
@@ -362,14 +369,14 @@ class HomeViewController: UIViewController {
                         backgroundSize.width = viewWidth
                         backgroundSize.height = backgroundSize.width / backgroundImageAspectRatio
                         
-                        if nodeStyle?.backgroundPositionMethod == .centered {
+                        if nodeStyle?.backgroundPositioningMethod == .centered {
                             backgroundPoint.y = (viewHeight - backgroundSize.height) / 2
                         }
                     } else {
                         backgroundSize.height = viewHeight
                         backgroundSize.width = backgroundSize.height * backgroundImageAspectRatio
                         
-                        if nodeStyle?.backgroundPositionMethod == .centered {
+                        if nodeStyle?.backgroundPositioningMethod == .centered {
                             backgroundPoint.x = (viewWidth - backgroundSize.width) / 2
                         }
                     }
@@ -382,7 +389,7 @@ class HomeViewController: UIViewController {
                         backgroundSize.height = backgroundSize.width / backgroundImageAspectRatio
                     }
                     
-                    if nodeStyle == nil || nodeStyle?.backgroundVideoURL != nil || nodeStyle?.backgroundPositionMethod == .centered {
+                    if nodeStyle == nil || nodeStyle?.backgroundVideoURL != nil || nodeStyle?.backgroundPositioningMethod == .centered {
                         backgroundPoint.x = (backgroundSize.width - viewWidth) / -2
                         backgroundPoint.y = (backgroundSize.height - viewHeight) / -2
                     }
@@ -568,7 +575,7 @@ class HomeViewController: UIViewController {
         if let backgroundImageURL = nodeStyle?.backgroundImageURL {
             backgroundImageView.sd_setImage(with: backgroundImageURL)
         } else if nodeStyle?.backgroundVideoURL == nil {
-            if let backgroundImageURL = NGDMManifest.sharedInstance.outOfMovieExperience?.thumbnailImageURL {
+            if let backgroundImageURL = CPEXMLSuite.current?.manifest.backgroundImageURL {
                 backgroundImageView.sd_setImage(with: backgroundImageURL, completed: { [weak self] (image, _, _, _) in
                     if let image = image {
                         self?.observedBackgroundImageSize = CGSize(width: image.size.width * image.scale, height: image.size.height * image.scale)
@@ -630,7 +637,7 @@ class HomeViewController: UIViewController {
     }
     
     @objc private func onExtras() {
-        self.performSegue(withIdentifier: SegueIdentifier.ShowOutOfMovieExperience, sender: NGDMManifest.sharedInstance.outOfMovieExperience)
+        self.performSegue(withIdentifier: SegueIdentifier.ShowOutOfMovieExperience, sender: CPEXMLSuite.current?.manifest.outOfMovieExperience)
         NextGenHook.logAnalyticsEvent(.homeAction, action: .launchExtras)
     }
     
@@ -646,7 +653,7 @@ class HomeViewController: UIViewController {
     
     // MARK: Storyboard
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let viewController = segue.destination as? ExtrasExperienceViewController, let experience = sender as? NGDMExperience {
+        if let viewController = segue.destination as? ExtrasExperienceViewController, let experience = sender as? Experience {
             viewController.experience = experience
         }
     }

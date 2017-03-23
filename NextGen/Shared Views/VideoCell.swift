@@ -19,23 +19,23 @@ class VideoCell: UITableViewCell {
     
     private var didPlayVideoObserver: NSObjectProtocol?
     
-    var experience: NGDMExperience? {
+    var experience: Experience? {
         didSet {
             captionLabel.text = experience?.title
             if !DeviceType.IS_IPAD {
                 captionLabel.sizeToFit()
             }
             
-            if let videoURL = experience?.videoURL {
-                if let runtime = experience?.videoRuntime , runtime > 0 {
+            if let video = experience?.video, let videoURL = video.url {
+                if video.runtimeInSeconds > 0 {
                     runtimeLabel.isHidden = false
-                    runtimeLabel.text = SettingsManager.didWatchVideo(videoURL) ? String.localize("label.watched") : runtime.formattedTime()
+                    runtimeLabel.text = SettingsManager.didWatchVideo(videoURL) ? String.localize("label.watched") : video.runtimeInSeconds.formattedTime()
                 } else {
                     runtimeLabel.isHidden = true
                 }
                 
                 didPlayVideoObserver = NotificationCenter.default.addObserver(forName: .videoPlayerDidPlayVideo, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
-                    if let strongSelf = self, let playingVideoURL = notification.userInfo?[NotificationConstants.videoUrl] as? URL , playingVideoURL == videoURL {
+                    if let strongSelf = self, let playingVideoURL = notification.userInfo?[NotificationConstants.videoUrl] as? URL, playingVideoURL == videoURL {
                         strongSelf.runtimeLabel.text = String.localize("label.playing")
                     }
                 })
@@ -85,10 +85,12 @@ class VideoCell: UITableViewCell {
             UIView.animate(withDuration: 0.25, animations: {
                 self.thumbnailImageView.alpha = 0.5
                 self.captionLabel.alpha = 0.5
-                if let videoURL = self.experience?.videoURL {
-                    self.runtimeLabel.text = SettingsManager.didWatchVideo(videoURL) ? String.localize("label.watched") : self.experience?.videoRuntime.formattedTime()
-                } else {
-                    self.runtimeLabel.text = self.experience?.videoRuntime.formattedTime()
+                if let video = self.experience?.video {
+                    if let videoURL = video.url {
+                        self.runtimeLabel.text = SettingsManager.didWatchVideo(videoURL) ? String.localize("label.watched") : video.runtimeInSeconds.formattedTime()
+                    } else {
+                        self.runtimeLabel.text = video.runtimeInSeconds.formattedTime()
+                    }
                 }
             }, completion: nil)
         }

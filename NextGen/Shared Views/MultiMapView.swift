@@ -44,10 +44,10 @@ class MultiMapView: UIView, MKMapViewDelegate, GMSMapViewDelegate {
     
     var delegate: MultiMapViewDelegate?
     
-    var maxZoomLevel: Float = -1 {
+    var maxZoomLevel: Int = -1 {
         didSet {
             if let mapView = googleMapView {
-                mapView.setMinZoom(kGMSMinZoomLevel, maxZoom: (maxZoomLevel > 0 ? maxZoomLevel : kGMSMaxZoomLevel))
+                mapView.setMinZoom(kGMSMinZoomLevel, maxZoom: (maxZoomLevel > 0 ? Float(maxZoomLevel) : kGMSMaxZoomLevel))
             }
         }
     }
@@ -154,12 +154,12 @@ class MultiMapView: UIView, MKMapViewDelegate, GMSMapViewDelegate {
         }
     }
 
-    func setLocation(_ location: CLLocationCoordinate2D, zoomLevel: Float, animated: Bool, adjustView: Bool = !DeviceType.IS_IPAD) {
+    func setLocation(_ location: CLLocationCoordinate2D, zoomLevel: Int, animated: Bool, adjustView: Bool = !DeviceType.IS_IPAD) {
         if let mapView = googleMapView {
             var location = location
             if adjustView {
                 let currentCamera = mapView.camera
-                mapView.camera = GMSCameraPosition(target: currentCamera.target, zoom: zoomLevel, bearing: currentCamera.bearing, viewingAngle: currentCamera.viewingAngle)
+                mapView.camera = GMSCameraPosition(target: currentCamera.target, zoom: Float(zoomLevel), bearing: currentCamera.bearing, viewingAngle: currentCamera.viewingAngle)
                 
                 var mapPoint = mapView.projection.point(for: location)
                 mapPoint.y -= 70
@@ -169,9 +169,9 @@ class MultiMapView: UIView, MKMapViewDelegate, GMSMapViewDelegate {
             }
             
             if animated {
-                mapView.animate(with: GMSCameraUpdate.setTarget(location, zoom: zoomLevel))
+                mapView.animate(with: GMSCameraUpdate.setTarget(location, zoom: Float(zoomLevel)))
             } else {
-                mapView.camera = GMSCameraPosition(target: location, zoom: zoomLevel, bearing: mapView.camera.bearing, viewingAngle: mapView.camera.viewingAngle)
+                mapView.camera = GMSCameraPosition(target: location, zoom: Float(zoomLevel), bearing: mapView.camera.bearing, viewingAngle: mapView.camera.viewingAngle)
             }
         } else if let mapView = appleMapView {
             let span = MKCoordinateSpanMake(0, 360 / pow(2.0, Double(zoomLevel)) * Double(mapView.frame.width) / 256);

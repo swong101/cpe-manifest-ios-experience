@@ -14,9 +14,8 @@ class MapSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
         super.timedEventDidChange()
         
         if let location = timedEvent?.location {
-            let center = CLLocationCoordinate2DMake(location.latitude, location.longitude)
-            mapView.setLocation(center, zoomLevel: location.zoomLevel - 4, animated: false, adjustView: false)
-            _ = mapView.addMarker(center, title: location.name, subtitle: location.address, icon: location.iconImage, autoSelect: false)
+            mapView.setLocation(location.centerPoint, zoomLevel: location.zoomLevel - 4, animated: false, adjustView: false)
+            _ = mapView.addMarker(location.centerPoint, title: location.name, subtitle: location.address, icon: location.iconImage, autoSelect: false)
         }
         
         mapView.isUserInteractionEnabled = false

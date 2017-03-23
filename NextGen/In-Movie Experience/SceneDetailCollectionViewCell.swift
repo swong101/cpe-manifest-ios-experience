@@ -34,7 +34,7 @@ class SceneDetailCollectionViewCell: UICollectionViewCell {
         }
     }
     
-    var timedEvent: NGDMTimedEvent? {
+    var timedEvent: TimedEvent? {
         didSet {
             if timedEvent != oldValue {
                 timedEventDidChange()
@@ -65,7 +65,7 @@ class SceneDetailCollectionViewCell: UICollectionViewCell {
         if timedEvent != nil && timedEvent!.isType(.clipShare) {
             descriptionText = String.localize("clipshare.description")
         } else {
-            descriptionText = timedEvent?.descriptionText
+            descriptionText = timedEvent?.description
         }
     }
     

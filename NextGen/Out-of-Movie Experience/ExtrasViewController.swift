@@ -32,23 +32,21 @@ class ExtrasViewController: ExtrasExperienceViewController {
     fileprivate var selectedIndexPath: IndexPath?
     
     fileprivate var showActorsInGrid: Bool {
-        return !DeviceType.IS_IPAD && NGDMManifest.sharedInstance.hasActors
+        return (!DeviceType.IS_IPAD && CPEXMLSuite.current!.manifest.hasActors)
     }
     
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        experience = NGDMManifest.sharedInstance.outOfMovieExperience!
+        experience = CPEXMLSuite.current!.manifest.outOfMovieExperience
         
-        if let talentTableView = talentTableView {
-            if let actors = NGDMManifest.sharedInstance.mainExperience?.orderedActors , actors.count > 0 {
-                talentTableView.register(UINib(nibName: "TalentTableViewCell-Wide", bundle: nil), forCellReuseIdentifier: TalentTableViewCell.ReuseIdentifier)
-                talentTableView.contentInset = UIEdgeInsetsMake(15, 0, 0, 0)
-            } else {
-                talentTableView.removeFromSuperview()
-                self.talentTableView = nil
-            }
+        if let talentTableView = talentTableView, CPEXMLSuite.current!.manifest.hasActors {
+            talentTableView.register(UINib(nibName: "TalentTableViewCell-Wide", bundle: nil), forCellReuseIdentifier: TalentTableViewCell.ReuseIdentifier)
+            talentTableView.contentInset = UIEdgeInsetsMake(15, 0, 0, 0)
+        } else {
+            talentTableView?.removeFromSuperview()
+            talentTableView = nil
         }
         
         extrasCollectionView.register(UINib(nibName: "TitledImageCell", bundle: nil), forCellWithReuseIdentifier: TitledImageCell.ReuseIdentifier)
@@ -139,7 +137,7 @@ class ExtrasViewController: ExtrasExperienceViewController {
     
     // MARK: Storyboard
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let viewController = segue.destination as? ExtrasExperienceViewController, let experience = sender as? NGDMExperience {
+        if let viewController = segue.destination as? ExtrasExperienceViewController, let experience = sender as? Experience {
             viewController.experience = experience
         }
     }
@@ -149,12 +147,14 @@ class ExtrasViewController: ExtrasExperienceViewController {
 extension ExtrasViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return NGDMManifest.sharedInstance.mainExperience?.orderedActors?.count ?? 0
+        return CPEXMLSuite.current!.manifest.numActors
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: TalentTableViewCell.ReuseIdentifier) as! TalentTableViewCell
-        cell.talent = NGDMManifest.sharedInstance.mainExperience?.orderedActors?[indexPath.row]
+        if let actors = CPEXMLSuite.current!.manifest.actors, actors.count > indexPath.row {
+            cell.talent = actors[indexPath.row]
+        }
         
         return cell
     }
@@ -192,7 +192,7 @@ extension ExtrasViewController: TalentDetailViewPresenter {
 extension ExtrasViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return (showActorsInGrid ? (experience.numChildren + 1) : experience.numChildren)
+        return (showActorsInGrid ? (experience.numChildExperiences + 1) : experience.numChildExperiences)
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -203,7 +203,7 @@ extension ExtrasViewController: UICollectionViewDataSource {
             if childExperienceIndex == 0 {
                 cell.experience = nil
                 cell.title = String.localize("label.actors")
-                cell.imageURL = NGDMManifest.sharedInstance.mainExperience?.orderedActors?.first?.images?.first?.thumbnailImageURL
+                cell.imageURL = CPEXMLSuite.current!.manifest.actors?.first?.thumbnailImageURL
                 cell.imageView.contentMode = .scaleAspectFit
                 return cell
             }
@@ -224,7 +224,7 @@ extension ExtrasViewController: UICollectionViewDelegate {
         var childExperienceIndex = indexPath.row
         if showActorsInGrid {
             if childExperienceIndex == 0 {
-                self.performSegue(withIdentifier: SegueIdentifier.ShowTalentSelector, sender: nil)
+                self.performSegue(withIdentifier: SegueIdentifier.ShowTalentSelector, sender: CPEXMLSuite.current!.manifest.mainExperience)
                 return
             }
             
@@ -236,7 +236,7 @@ extension ExtrasViewController: UICollectionViewDelegate {
         }
     }
     
-    private func launchExperience(_ experience: NGDMExperience) {
+    private func launchExperience(_ experience: Experience) {
         if experience.isType(.product) {
             self.performSegue(withIdentifier: SegueIdentifier.ShowShopping, sender: experience)
             NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectShopping)
@@ -249,19 +249,19 @@ extension ExtrasViewController: UICollectionViewDelegate {
                 webViewController.shouldDisplayFullScreen = true
                 let navigationController = LandscapeNavigationController(rootViewController: webViewController)
                 self.present(navigationController, animated: true, completion: nil)
-                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectApp, itemId: app.analyticsIdentifier)
+                NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectApp, itemId: app.analyticsID)
             }
         } else {
             if let firstChildExperience = experience.childExperience(atIndex: 0) {
                 if firstChildExperience.isType(.audioVisual) {
                     self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
-                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectVideoGallery, itemId: experience.analyticsID)
                 } else if firstChildExperience.isType(.gallery) {
                     self.performSegue(withIdentifier: SegueIdentifier.ShowGallery, sender: experience)
-                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.analyticsIdentifier)
-                } else if experience.numChildren > 1 {
+                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectImageGalleries, itemId: experience.analyticsID)
+                } else if experience.numChildExperiences > 1 {
                     self.performSegue(withIdentifier: SegueIdentifier.ShowList, sender: experience)
-                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectExperienceList, itemId: experience.analyticsIdentifier)
+                    NextGenHook.logAnalyticsEvent(.extrasAction, action: .selectExperienceList, itemId: experience.analyticsID)
                 } else {
                     launchExperience(firstChildExperience)
                 }

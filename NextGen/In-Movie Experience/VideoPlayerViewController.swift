@@ -238,9 +238,9 @@ class VideoPlayerViewController: UIViewController {
     @IBOutlet weak private var playbackOverlayView: UIView!
     @IBOutlet weak private var playbackOverlayImageView: UIImageView!
     @IBOutlet weak private var playbackOverlayLabel: UILabel!
-    private var playbackOverlayTimedEvent: NGDMTimedEvent?
+    private var playbackOverlayTimedEvent: TimedEvent?
     private var nowPlayingInfoImage: UIImage?
-    private var nowPlayingInfoTimedEvent: NGDMTimedEvent? {
+    private var nowPlayingInfoTimedEvent: TimedEvent? {
         didSet {
             if let imageURL = nowPlayingInfoTimedEvent?.thumbnailImageURL {
                 SDWebImageDownloader.shared().downloadImage(with: imageURL, options: .lowPriority, progress: nil, completed: { [weak self] (image, _, _, _) in
@@ -1358,7 +1358,7 @@ class VideoPlayerViewController: UIViewController {
         playerControlsVisible = false
         
         if !didPlayInterstitial {
-            if let videoURL = NGDMManifest.sharedInstance.mainExperience?.interstitialVideoURL {
+            if let videoURL = CPEXMLSuite.current!.manifest.interstitialVideo?.url {
                 playAsset(withURL: videoURL)
                 
                 playerControlsLocked = true
@@ -1373,7 +1373,7 @@ class VideoPlayerViewController: UIViewController {
         playerControlsLocked = false
         skipContainerView.isHidden = true
         
-        if let mainExperience = NGDMManifest.sharedInstance.mainExperience, let videoURL = mainExperience.videoURL {
+        if let videoURL = CPEXMLSuite.current!.manifest.featureVideo.url {
             NotificationCenter.default.post(name: .videoPlayerDidPlayMainExperience, object: nil)
             playAsset(withURL: videoURL)
         }
@@ -1425,16 +1425,16 @@ class VideoPlayerViewController: UIViewController {
                 if currentTime > 0 {
                     DispatchQueue.global(qos: .background).async {
                         if self.mode == .mainFeature {
-                            if let triviaTimedEvent = NGDMTimedEvent.findByTimecode(self.currentTime, type: .textItem).first {
-                                if triviaTimedEvent != self.nowPlayingInfoTimedEvent, let description = triviaTimedEvent.descriptionText {
+                            if let triviaTimedEvent = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: self.currentTime, type: .textItem)?.first {
+                                if triviaTimedEvent != self.nowPlayingInfoTimedEvent, let description = triviaTimedEvent.description {
                                     self.nowPlayingInfoTimedEvent = triviaTimedEvent
-                                    nowPlayingInfo[MPMediaItemPropertyTitle] = triviaTimedEvent.experience.title
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = triviaTimedEvent.experience?.title
                                     nowPlayingInfo[MPMediaItemPropertyArtist] = description
                                 }
-                            } else if let clipShareTimedEvent = NGDMTimedEvent.findByTimecode(self.currentTime, type: .clipShare).first {
-                                if clipShareTimedEvent != self.nowPlayingInfoTimedEvent, let description = clipShareTimedEvent.descriptionText {
+                            } else if let clipShareTimedEvent = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: self.currentTime, type: .clipShare)?.first {
+                                if clipShareTimedEvent != self.nowPlayingInfoTimedEvent, let description = clipShareTimedEvent.description {
                                     self.nowPlayingInfoTimedEvent = clipShareTimedEvent
-                                    nowPlayingInfo[MPMediaItemPropertyTitle] = clipShareTimedEvent.experience.title
+                                    nowPlayingInfo[MPMediaItemPropertyTitle] = clipShareTimedEvent.experience?.title
                                     nowPlayingInfo[MPMediaItemPropertyArtist] = description
                                 }
                             } else {
@@ -1480,7 +1480,7 @@ class VideoPlayerViewController: UIViewController {
             }
             
             DispatchQueue.global(qos: .background).async {
-                if let closestClipShareTimedEvent = NGDMTimedEvent.findClosestToTimecode(self.currentTime, type: .clipShare) {
+                if let closestClipShareTimedEvent = CPEXMLSuite.current!.manifest.closedTimedEvent(toTimecode: self.currentTime, type: .clipShare) {
                     if !self.playbackOverlayView.isHidden && closestClipShareTimedEvent != self.playbackOverlayTimedEvent {
                         DispatchQueue.main.async {
                             if let imageURL = closestClipShareTimedEvent.thumbnailImageURL {

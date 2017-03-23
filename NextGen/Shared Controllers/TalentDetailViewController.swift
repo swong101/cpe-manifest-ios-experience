@@ -50,7 +50,7 @@ class TalentDetailViewController: SceneDetailViewController {
     @IBOutlet weak private var instagramButton: SocialButton?
     
     var images = [String]()
-    var talent: NGDMTalent!
+    var talent: Person!
     var mode = TalentDetailMode.Extras
     
     var currentAnalyticsEvent: NextGenAnalyticsEvent {
@@ -96,7 +96,7 @@ class TalentDetailViewController: SceneDetailViewController {
         }
         
         // Fill data
-        talentNameLabel.text = talent.name?.uppercased()
+        talentNameLabel.text = talent.name.uppercased()
         if let imageURL = talent.fullImageURL {
             talentImageView?.sd_setImage(with: imageURL)
         } else {
