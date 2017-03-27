@@ -1616,8 +1616,9 @@ class VideoPlayerViewController: UIViewController {
             CastManager.sharedInstance.seekMedia(to: time)
             isSeeking = false
             hasSeekedToPlaybackSyncStartTime = true
-        } else {
-            player?.seek(to: CMTimeMakeWithSeconds(time, 1), toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero, completionHandler: { [weak self] (finished) in
+        } else if let player = player {
+            let timescale = (player.currentItem?.duration.timescale ?? 1)
+            player.seek(to: CMTimeMakeWithSeconds(time, timescale), toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero, completionHandler: { [weak self] (finished) in
                 if finished {
                     DispatchQueue.main.async {
                         self?.isSeeking = false
@@ -1856,8 +1857,9 @@ class VideoPlayerViewController: UIViewController {
             /* Update the scrubber during normal playback. */
             if isCastingActive {
                 playerTimeObserver = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(syncScrubber), userInfo: nil, repeats: true)
-            } else {
-                playerTimeObserver = player?.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, 1), queue: nil, using: { [weak self] (_) in
+            } else if let player = player {
+                let timescale = (player.currentItem?.duration.timescale ?? 1)
+                playerTimeObserver = player.addPeriodicTimeObserver(forInterval: CMTimeMakeWithSeconds(1, timescale), queue: nil, using: { [weak self] (_) in
                     self?.syncScrubber()
                 })
             }

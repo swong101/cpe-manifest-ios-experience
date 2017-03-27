@@ -209,15 +209,15 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
                 }
             } else {
                 var segueIdentifier: String?
-                if timedEvent.isType(.video) {
+                if timedEvent.isType(.clipShare) {
+                    segueIdentifier = SegueIdentifier.ShowClipShare
+                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectClipShare, itemId: timedEvent.analyticsID)
+                } else if timedEvent.isType(.video) {
                     segueIdentifier = SegueIdentifier.ShowGallery
                     NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectVideo, itemId: timedEvent.analyticsID)
                 } else if timedEvent.isType(.gallery) {
                     segueIdentifier = SegueIdentifier.ShowGallery
                     NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectImageGallery, itemId: timedEvent.analyticsID)
-                } else if timedEvent.isType(.clipShare) {
-                    segueIdentifier = SegueIdentifier.ShowClipShare
-                    NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectClipShare, itemId: timedEvent.analyticsID)
                 } else if timedEvent.isType(.location) {
                     segueIdentifier = SegueIdentifier.ShowMap
                     NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectLocation, itemId: timedEvent.analyticsID)

@@ -34,7 +34,7 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     
     private var currentProduct: ProductItem? {
         didSet {
-            if currentProduct?.externalID != oldValue?.externalID {
+            if currentProduct != oldValue {
                 descriptionText = currentProduct?.brand
                 extraDescription = currentProduct?.name
                 if productImageType == .scene {
@@ -60,7 +60,9 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
     
     override func currentTimeDidChange() {
         if let timedEvent = timedEvent, timedEvent.isType(.product) {
-            if timedEvent.productNamespace != nil, let productAPIUtil = NGDMConfiguration.productAPIUtil {
+            if let product = timedEvent.product {
+                products = [product]
+            } else if let productAPIUtil = CPEXMLSuite.Settings.productAPIUtil {
                 DispatchQueue.global(qos: .userInteractive).async {
                     let newFrameTime = productAPIUtil.closestFrameTime(self.currentTime)
                     if newFrameTime != self.currentProductFrameTime {
@@ -78,8 +80,6 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
                         })
                     }
                 }
-            } else if let product = timedEvent.product {
-                products = [product]
             }
         }
     }
@@ -110,6 +110,7 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
             bullseyeImageView.layer.shadowOpacity = 0.75;
             bullseyeImageView.layer.shadowRadius = 2;
             bullseyeImageView.clipsToBounds = false;
+            bullseyeImageView.isHidden = false
         } else {
             bullseyeImageView.isHidden = true
         }

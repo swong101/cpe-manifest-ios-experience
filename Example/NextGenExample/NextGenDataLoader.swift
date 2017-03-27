@@ -8,7 +8,6 @@ import AVKit
 import MediaPlayer
 import GoogleMaps
 import NextGenDataManager
-import PromiseKit
 import MBProgressHUD
 
 @objc class NextGenDataLoader: NSObject {
@@ -41,8 +40,8 @@ import MBProgressHUD
     }
     
     static let sharedInstance = NextGenDataLoader()
-    private var productAPIUtilKey: String?
-    private var talentAPIUtilKey: String?
+    private var theTakeAPIKey: String?
+    private var baselineAPIKey: String?
     
     override init() {
         super.init()
@@ -56,13 +55,13 @@ import MBProgressHUD
             do {
                 let configData = try Data(contentsOf: URL(fileURLWithPath: configDataPath), options: NSData.ReadingOptions.mappedIfSafe)
                 if let configJSON = try JSONSerialization.jsonObject(with: configData, options: JSONSerialization.ReadingOptions.mutableContainers) as? NSDictionary {
-                    productAPIUtilKey = configJSON[Constants.ConfigKey.TheTakeAPI] as? String
-                    talentAPIUtilKey = configJSON[Constants.ConfigKey.BaselineAPI] as? String
+                    theTakeAPIKey = configJSON[Constants.ConfigKey.TheTakeAPI] as? String
+                    baselineAPIKey = configJSON[Constants.ConfigKey.BaselineAPI] as? String
                     
                     if let key = configJSON[Constants.ConfigKey.GoogleMapsAPI] as? String {
                         GMSServices.provideAPIKey(key)
-                        NGDMConfiguration.mapService = .googleMaps
-                        NGDMConfiguration.googleMapsAPIKey = key
+                        CPEXMLSuite.Settings.mapsAPIService = .googleMaps
+                        CPEXMLSuite.Settings.mapsAPIKey = key
                     }
                 }
             } catch let error as NSError {
@@ -90,22 +89,16 @@ import MBProgressHUD
             
             DispatchQueue.global(qos: .userInitiated).async {
                 do {
-                    if let key = self.productAPIUtilKey {
-                        NGDMConfiguration.productAPIUtil = TheTakeAPIUtil(apiKey: key)
+                    if let key = self.theTakeAPIKey {
+                        CPEXMLSuite.Settings.productAPIUtil = TheTakeAPIUtil(apiKey: key)
                     }
                     
-                    if let key = self.talentAPIUtilKey {
-                        NGDMConfiguration.talentAPIUtil = BaselineAPIUtil(apiKey: key)
+                    if let key = self.baselineAPIKey {
+                        CPEXMLSuite.Settings.talentAPIUtil = BaselineAPIUtil(apiKey: key)
                     }
                     
                     try CPEXMLSuite.load(manifestXMLURL: manifestXMLURL, appDataXMLURL: appDataXMLURL, cpeStyleXMLURL: cpeStyleXMLURL) {
                         completion(true, nil)
-                        /*
-                        
-                        NGDMConfiguration.productAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(TheTakeAPIUtil.APINamespace)
-                        NGDMConfiguration.talentAPIUtil?.featureAPIID = NGDMManifest.sharedInstance.mainExperience?.customIdentifier(BaselineAPIUtil.APINamespace)
-                        NGDMManifest.sharedInstance.loadProductData()
-                        NGDMManifest.sharedInstance.loadTalentData()*/
                     }
                 } catch {
                     

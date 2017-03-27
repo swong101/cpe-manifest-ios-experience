@@ -155,7 +155,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
     
     private func playSelectedExperience() {
         if let selectedIndexPath = galleryTableView.indexPathForSelectedRow, let selectedExperience = (experience.childExperience(atIndex: selectedIndexPath.row) ?? experience) {
-            if let imageURL = selectedExperience.thumbnailImageURL {
+            if let imageURL = selectedExperience.largeImageURL {
                 previewImageView.sd_setImage(with: imageURL)
             }
             

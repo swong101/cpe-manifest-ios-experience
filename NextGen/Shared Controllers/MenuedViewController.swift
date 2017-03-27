@@ -97,7 +97,7 @@ extension MenuedViewController: UITableViewDelegate {
             CATransaction.commit()
         } else {
             selectedItemValue = menuSection.items[indexPath.row - 1].value
-            selectedSectionValue = nil
+            selectedSectionValue = menuSection.value
             updateActiveCells()
         }
     }

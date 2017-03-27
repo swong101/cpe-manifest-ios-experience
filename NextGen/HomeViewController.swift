@@ -51,13 +51,8 @@ class HomeViewController: UIViewController {
         return 0
     }
     
-    private var _nodeStyle: NodeStyle?
     private var nodeStyle: NodeStyle? {
-        if _nodeStyle == nil {
-            _nodeStyle = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.mainExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation)
-        }
-        
-        return _nodeStyle
+        return CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.mainExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation)
     }
     
     private var backgroundVideoSize: CGSize {
@@ -292,8 +287,6 @@ class HomeViewController: UIViewController {
         if self.view.window != nil && !self.isBeingDismissed {
             coordinator.animate(alongsideTransition: { [weak self] (_) in
                 if let strongSelf = self, strongSelf.interfaceCreated {
-                    strongSelf._nodeStyle = nil
-                    
                     if let currentURL = strongSelf.backgroundVideoPlayerViewController?.url {
                         if let newURL = self?.nodeStyle?.backgroundVideoURL, currentURL != newURL {
                             strongSelf.unloadBackground()

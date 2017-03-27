@@ -9,11 +9,6 @@ target 'NextGenExample' do
     
     use_frameworks!
     
-    ##############################
-    ## For example project only ##
-    ##############################
-    pod 'PromiseKit',               '~> 4.0'
-    
     ################################
     ## Required NextGen libraries ##
     ################################

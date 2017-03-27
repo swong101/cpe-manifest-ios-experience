@@ -44,7 +44,7 @@ class ShoppingDetailViewController: SceneDetailViewController {
     
     var currentProduct: ProductItem? {
         didSet {
-            if currentProduct?.externalID != oldValue?.externalID {
+            if currentProduct != oldValue {
                 if let product = currentProduct, product.hasExactMatchData {
                     productNameToExactMatchConstraint.isActive = true
                     productMatchContainerView.isHidden = false

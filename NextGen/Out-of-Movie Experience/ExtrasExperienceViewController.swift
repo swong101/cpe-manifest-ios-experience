@@ -42,7 +42,7 @@ class ExtrasExperienceViewController: UIViewController {
             titleLabel.adjustsFontSizeToFitWidth = true
             titleLabel.numberOfLines = 2
             titleLabel.minimumScaleFactor = 0.5
-            titleLabel.text = (customTitle ?? (experience?.title == "out-of-movie" ? String.localize("out_of_movie.extras_title") : experience?.title))?.uppercased()
+            titleLabel.text = (customTitle ?? (experience.title == "out-of-movie" ? String.localize("out_of_movie.extras_title") : experience.title))?.uppercased()
             titleLabel.textAlignment = .right
             titleLabel.textColor = UIColor(netHex: 0xdddddd)
             self.view.addSubview(titleLabel)

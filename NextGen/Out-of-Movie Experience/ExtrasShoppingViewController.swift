@@ -45,24 +45,18 @@ class ExtrasShoppingViewController: MenuedViewController {
         menuSections.append(MenuSection(info: [MenuSection.Keys.Title: String.localize("label.all")]))
         
         if let productCategories = experience.productCategories {
-            for category in productCategories {
-                let info = NSMutableDictionary()
-                info[MenuSection.Keys.Title] = category.name
-                info[MenuSection.Keys.Value] = String(category.id)
-                
-                if let children = (category.childCategories ?? nil) {
-                    if children.count > 1 {
-                        var rows = [[MenuItem.Keys.Title: String.localize("label.all"), MenuItem.Keys.Value: String(category.id)]]
-                        for child in children {
-                            rows.append([MenuItem.Keys.Title: child.name, MenuItem.Keys.Value: String(child.id)])
-                        }
-                        
-                        info[MenuSection.Keys.Rows] = rows
+            populateMenu(withCategories: productCategories)
+        } else if let productAPIUtil = CPEXMLSuite.Settings.productAPIUtil {
+            _ = productAPIUtil.getProductCategories(completion: { [weak self] (productCategories) in
+                DispatchQueue.main.async {
+                    if let productCategories = productCategories {
+                        self?.experience.productCategories = productCategories
+                        self?.populateMenu(withCategories: productCategories)
                     }
+                    
+                    self?.autoSelectFirstCategory()
                 }
-                
-                menuSections.append(MenuSection(info: info))
-            }
+            })
         } else {
             menuTableView?.removeFromSuperview()
         }
@@ -71,28 +65,58 @@ class ExtrasShoppingViewController: MenuedViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        autoSelectFirstCategory()
+    }
+    
+    private func populateMenu(withCategories productCategories: [ProductCategory]) {
+        for category in productCategories {
+            let info = NSMutableDictionary()
+            info[MenuSection.Keys.Title] = category.name
+            info[MenuSection.Keys.Value] = String(category.id)
+            
+            if let children = (category.childCategories ?? nil) {
+                if children.count > 1 {
+                    var rows = [[MenuItem.Keys.Title: String.localize("label.all"), MenuItem.Keys.Value: String(category.id)]]
+                    for child in children {
+                        rows.append([MenuItem.Keys.Title: child.name, MenuItem.Keys.Value: String(child.id)])
+                    }
+                    
+                    info[MenuSection.Keys.Rows] = rows
+                }
+            }
+            
+            menuSections.append(MenuSection(info: info))
+        }
+        
+        menuTableView?.reloadData()
+    }
+    
+    private func autoSelectFirstCategory() {
         if !didAutoSelectCategory {
             if let menuTableView = menuTableView {
                 let selectedPath = IndexPath(row: 0, section: 0)
-                menuTableView.selectRow(at: selectedPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
-                self.tableView(menuTableView, didSelectRowAt: selectedPath)
-                if let menuSection = menuSections.first {
-                    if menuSection.expandable {
-                        let selectedPath = IndexPath(row: 1, section: 0)
-                        menuTableView.selectRow(at: selectedPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
-                        self.tableView(menuTableView, didSelectRowAt: selectedPath)
+                if menuTableView.cellForRow(at: selectedPath) != nil {
+                    menuTableView.selectRow(at: selectedPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
+                    self.tableView(menuTableView, didSelectRowAt: selectedPath)
+                    if let menuSection = menuSections.first {
+                        if menuSection.expandable {
+                            let selectedPath = IndexPath(row: 1, section: 0)
+                            menuTableView.selectRow(at: selectedPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
+                            self.tableView(menuTableView, didSelectRowAt: selectedPath)
+                        }
+                        
+                        didAutoSelectCategory = true
                     }
                 }
             } else {
                 selectProducts()
+                didAutoSelectCategory = true
             }
-            
-            didAutoSelectCategory = true
         }
     }
     
     private func selectProducts(categoryID: String? = nil) {
-        if let productAPIUtil = NGDMConfiguration.productAPIUtil {
+        if let app = experience.app, app.isProductApp, let productAPIUtil = CPEXMLSuite.Settings.productAPIUtil {
             productListSessionDataTask?.cancel()
             DispatchQueue.main.async {
                 self.hud = MBProgressHUD.showAdded(to: self.view, animated: true)
@@ -133,14 +157,15 @@ class ExtrasShoppingViewController: MenuedViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         super.tableView(tableView, didSelectRowAt: indexPath)
         
-        var categoryID: String?
-        if let menuSection = (tableView.cellForRow(at: indexPath) as? MenuSectionCell)?.menuSection, !menuSection.expandable {
-            categoryID = menuSection.value
-        } else {
-            categoryID = (tableView.cellForRow(at: indexPath) as? MenuItemCell)?.menuItem?.value
+        if let cell = tableView.cellForRow(at: indexPath) {
+            if let menuSection = (cell as? MenuSectionCell)?.menuSection {
+                if !menuSection.expandable {
+                    selectProducts(categoryID: menuSection.value)
+                }
+            } else {
+                selectProducts(categoryID: (cell as? MenuItemCell)?.menuItem?.value)
+            }
         }
-        
-        selectProducts(categoryID: categoryID)
     }
 
 }

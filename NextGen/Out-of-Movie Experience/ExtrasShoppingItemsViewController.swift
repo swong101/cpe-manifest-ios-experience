@@ -5,7 +5,7 @@
 import UIKit
 import NextGenDataManager
 
-class ExtrasShoppingItemsViewController: ExtrasExperienceViewController {
+class ExtrasShoppingItemsViewController: UIViewController {
     
     fileprivate struct Constants {
         static let ItemSpacing: CGFloat = 12

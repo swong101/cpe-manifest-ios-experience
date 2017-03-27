@@ -22,7 +22,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
     private var mapTypeDidChangeObserver: NSObjectProtocol?
     
     private var marker: MultiMapMarker!
-    private var location: LocationAppDataItem {
+    private var location: AppDataItemLocation {
         return timedEvent!.location!
     }
     

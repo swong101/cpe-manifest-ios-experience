@@ -84,7 +84,7 @@ class MultiMapView: UIView, MKMapViewDelegate, GMSMapViewDelegate {
     }
     
     private func setup() {
-        if NGDMConfiguration.mapService == .googleMaps && googleMapView == nil {
+        if CPEXMLSuite.Settings.mapsAPIService == .googleMaps && googleMapView == nil {
             googleMapView = GMSMapView(frame: self.bounds)
             googleMapView?.delegate = self
             self.addSubview(googleMapView!)
