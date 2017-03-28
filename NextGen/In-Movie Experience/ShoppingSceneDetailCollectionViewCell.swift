@@ -12,26 +12,26 @@ enum ShoppingProductImageType {
 }
 
 class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
-    
+
     static let NibName = "ShoppingSceneDetailCollectionViewCell"
     static let ReuseIdentifier = "ShoppingSceneDetailCollectionViewCellReuseIdentifier"
-    
+
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var bullseyeImageView: UIImageView!
     @IBOutlet weak private var extraDescriptionLabel: UILabel!
-    
+
     var productImageType = ShoppingProductImageType.product
-    
+
     private var extraDescription: String? {
         set {
             extraDescriptionLabel?.text = newValue
         }
-        
+
         get {
             return extraDescriptionLabel?.text
         }
     }
-    
+
     private var currentProduct: ProductItem? {
         didSet {
             if currentProduct != oldValue {
@@ -43,13 +43,13 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
                     setImageURL(currentProduct?.productImageURL)
                 }
             }
-            
+
             if currentProduct == nil {
                 currentProductFrameTime = -1
             }
         }
     }
-    
+
     private var currentProductFrameTime = -1.0
     private var currentProductSessionDataTask: URLSessionDataTask?
     var products: [ProductItem]? {
@@ -57,7 +57,7 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
             currentProduct = products?.first
         }
     }
-    
+
     override func currentTimeDidChange() {
         if let timedEvent = timedEvent, timedEvent.isType(.product) {
             if let product = timedEvent.product {
@@ -67,11 +67,11 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
                     let newFrameTime = productAPIUtil.closestFrameTime(self.currentTime)
                     if newFrameTime != self.currentProductFrameTime {
                         self.currentProductFrameTime = newFrameTime
-                        
+
                         if let currentTask = self.currentProductSessionDataTask {
                             currentTask.cancel()
                         }
-                        
+
                         self.currentProductSessionDataTask = productAPIUtil.getFrameProducts(self.currentProductFrameTime, completion: { [weak self] (products) -> Void in
                             self?.currentProductSessionDataTask = nil
                             DispatchQueue.main.async {
@@ -83,39 +83,39 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
             }
         }
     }
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
-        
+
         products = nil
         bullseyeImageView.isHidden = true
-        
+
         if let task = currentProductSessionDataTask {
             task.cancel()
             currentProductSessionDataTask = nil
         }
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+
         if productImageType == .scene, let product = currentProduct, product.bullseyePoint != CGPoint.zero {
             var bullseyeFrame = bullseyeImageView.frame
             let bullseyePoint = CGPoint(x: imageView.frame.width * product.bullseyePoint.x, y: imageView.frame.height * product.bullseyePoint.y)
             bullseyeFrame.origin = CGPoint(x: bullseyePoint.x + imageView.frame.minX - (bullseyeFrame.width / 2), y: bullseyePoint.y + imageView.frame.minY - (bullseyeFrame.height / 2))
             bullseyeImageView.frame = bullseyeFrame
-            
-            bullseyeImageView.layer.shadowColor = UIColor.black.cgColor;
-            bullseyeImageView.layer.shadowOffset = CGSize(width: 1, height: 1);
-            bullseyeImageView.layer.shadowOpacity = 0.75;
-            bullseyeImageView.layer.shadowRadius = 2;
-            bullseyeImageView.clipsToBounds = false;
+
+            bullseyeImageView.layer.shadowColor = UIColor.black.cgColor
+            bullseyeImageView.layer.shadowOffset = CGSize(width: 1, height: 1)
+            bullseyeImageView.layer.shadowOpacity = 0.75
+            bullseyeImageView.layer.shadowRadius = 2
+            bullseyeImageView.clipsToBounds = false
             bullseyeImageView.isHidden = false
         } else {
             bullseyeImageView.isHidden = true
         }
     }
-    
+
     private func setImageURL(_ imageURL: URL?) {
         if let url = imageURL {
             imageView.contentMode = .scaleAspectFit
@@ -125,5 +125,5 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
             imageView.image = nil
         }
     }
-    
+
 }

@@ -8,18 +8,18 @@ import NextGenDataManager
 enum ShoppingDetailMode {
     case ime
     case extras
-    
+
     var analyticsEvent: NextGenAnalyticsEvent {
         if self == .ime {
             return .imeShopAction
         }
-        
+
         return .extrasShopAction
     }
 }
 
 class ShoppingDetailViewController: SceneDetailViewController {
-    
+
     @IBOutlet weak private var productMatchContainerView: UIView!
     @IBOutlet weak private var productMatchIcon: UIView!
     @IBOutlet weak private var productMatchLabel: UILabel!
@@ -31,17 +31,17 @@ class ShoppingDetailViewController: SceneDetailViewController {
     @IBOutlet weak private var emailButton: UIButton!
     @IBOutlet private var productNameToExactMatchConstraint: NSLayoutConstraint!
     @IBOutlet private var shopToProductPriceConstraint: NSLayoutConstraint!
-    
+
     var mode = ShoppingDetailMode.extras
     var products: [ProductItem]?
     private var closeDetailsViewObserver: NSObjectProtocol?
-    
+
     deinit {
         if let observer = closeDetailsViewObserver {
             NotificationCenter.default.removeObserver(observer)
         }
     }
-    
+
     var currentProduct: ProductItem? {
         didSet {
             if currentProduct != oldValue {
@@ -54,10 +54,10 @@ class ShoppingDetailViewController: SceneDetailViewController {
                     productNameToExactMatchConstraint.isActive = false
                     productMatchContainerView.isHidden = true
                 }
-                
+
                 productBrandLabel.text = currentProduct?.brand
                 productNameLabel.text = currentProduct?.name
-                
+
                 if let price = currentProduct?.displayPrice {
                     shopToProductPriceConstraint.isActive = true
                     productPriceLabel.isHidden = false
@@ -66,7 +66,7 @@ class ShoppingDetailViewController: SceneDetailViewController {
                     shopToProductPriceConstraint.isActive = false
                     productPriceLabel.isHidden = true
                 }
-                
+
                 if let imageURL = currentProduct?.productImageURL {
                     productImageView.sd_setImage(with: imageURL)
                 } else {
@@ -77,34 +77,33 @@ class ShoppingDetailViewController: SceneDetailViewController {
             }
         }
     }
-    
-    
+
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // Localizations
         shopButton.setTitle(String.localize("shopping.shop_button").uppercased(), for: .normal)
         emailButton.setTitle(String.localize("shopping.send_button").uppercased(), for: .normal)
-        
+
         // Notifications
-        closeDetailsViewObserver = NotificationCenter.default.addObserver(forName: .shoppingShouldCloseDetails, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
+        closeDetailsViewObserver = NotificationCenter.default.addObserver(forName: .shoppingShouldCloseDetails, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
             self?.onClose()
         })
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
         currentProduct = products?.first
     }
-    
+
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
-        
+
         productMatchIcon.layer.cornerRadius = (productMatchIcon.frame.width / 2)
     }
-    
+
     // MARK: Actions
     @IBAction private func onShop(_ sender: AnyObject) {
         if let product = currentProduct, let externalURL = product.externalURL {
@@ -112,11 +111,11 @@ class ShoppingDetailViewController: SceneDetailViewController {
             externalURL.promptLaunch(cancelHandler: {
                 NotificationCenter.default.post(name: .videoPlayerCanResume, object: nil)
             })
-            
+
             NextGenHook.logAnalyticsEvent(mode.analyticsEvent, action: .selectShopProduct, itemName: product.name)
         }
     }
-    
+
     @IBAction private func onSendLink(_ sender: AnyObject) {
         if let button = sender as? UIButton, let product = currentProduct {
             NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
@@ -125,10 +124,10 @@ class ShoppingDetailViewController: SceneDetailViewController {
             activityViewController.completionWithItemsHandler = { (_, _, _, _) in
                 NotificationCenter.default.post(name: .videoPlayerCanResume, object: nil)
             }
-            
+
             self.present(activityViewController, animated: true, completion: nil)
             NextGenHook.logAnalyticsEvent(mode.analyticsEvent, action: .selectShareProductLink, itemName: product.name)
         }
     }
-    
+
 }

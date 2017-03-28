@@ -7,32 +7,32 @@ import NextGenDataManager
 import MBProgressHUD
 
 class ExtrasShoppingViewController: MenuedViewController {
-    
+
     private var extrasShoppingItemsViewController: ExtrasShoppingItemsViewController? {
         for viewController in self.childViewControllers {
             if let viewController = viewController as? ExtrasShoppingItemsViewController {
                 return viewController
             }
-            
+
             if let navigationController = viewController as? UINavigationController, let viewController = navigationController.topViewController as? ExtrasShoppingItemsViewController {
                 return viewController
             }
         }
-        
+
         return nil
     }
-    
+
     private var hud: MBProgressHUD?
     private var didAutoSelectCategory = false
     private var productCategoriesSessionDataTask: URLSessionDataTask?
     private var productListSessionDataTask: URLSessionDataTask?
-    
+
     deinit {
         if let currentTask = productCategoriesSessionDataTask {
             currentTask.cancel()
             productCategoriesSessionDataTask = nil
         }
-        
+
         if let currentTask = productListSessionDataTask {
             currentTask.cancel()
             productListSessionDataTask = nil
@@ -41,9 +41,9 @@ class ExtrasShoppingViewController: MenuedViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        menuSections.append(MenuSection(info: [MenuSection.Keys.Title: String.localize("label.all")]))
-        
+
+        menuSections.append(MenuSection(title: String.localize("label.all")))
+
         if let productCategories = experience.productCategories {
             populateMenu(withCategories: productCategories)
         } else if let productAPIUtil = CPEXMLSuite.Settings.productAPIUtil {
@@ -53,7 +53,7 @@ class ExtrasShoppingViewController: MenuedViewController {
                         self?.experience.productCategories = productCategories
                         self?.populateMenu(withCategories: productCategories)
                     }
-                    
+
                     self?.autoSelectFirstCategory()
                 }
             })
@@ -61,36 +61,34 @@ class ExtrasShoppingViewController: MenuedViewController {
             menuTableView?.removeFromSuperview()
         }
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
         autoSelectFirstCategory()
     }
-    
+
     private func populateMenu(withCategories productCategories: [ProductCategory]) {
         for category in productCategories {
-            let info = NSMutableDictionary()
-            info[MenuSection.Keys.Title] = category.name
-            info[MenuSection.Keys.Value] = String(category.id)
-            
+            let categoryTitle = category.name
+            let categoryValue = String(category.id)
+            var categoryChildren: [MenuItem]?
+
             if let children = (category.childCategories ?? nil) {
                 if children.count > 1 {
-                    var rows = [[MenuItem.Keys.Title: String.localize("label.all"), MenuItem.Keys.Value: String(category.id)]]
+                    categoryChildren = [MenuItem(title: String.localize("label.all"), value: String(category.id))]
                     for child in children {
-                        rows.append([MenuItem.Keys.Title: child.name, MenuItem.Keys.Value: String(child.id)])
+                        categoryChildren!.append(MenuItem(title: child.name, value: String(child.id)))
                     }
-                    
-                    info[MenuSection.Keys.Rows] = rows
                 }
             }
-            
-            menuSections.append(MenuSection(info: info))
+
+            menuSections.append(MenuSection(title: categoryTitle, value: categoryValue, items: categoryChildren))
         }
-        
+
         menuTableView?.reloadData()
     }
-    
+
     private func autoSelectFirstCategory() {
         if !didAutoSelectCategory {
             if let menuTableView = menuTableView {
@@ -99,12 +97,12 @@ class ExtrasShoppingViewController: MenuedViewController {
                     menuTableView.selectRow(at: selectedPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
                     self.tableView(menuTableView, didSelectRowAt: selectedPath)
                     if let menuSection = menuSections.first {
-                        if menuSection.expandable {
+                        if menuSection.isExpandable {
                             let selectedPath = IndexPath(row: 1, section: 0)
                             menuTableView.selectRow(at: selectedPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
                             self.tableView(menuTableView, didSelectRowAt: selectedPath)
                         }
-                        
+
                         didAutoSelectCategory = true
                     }
                 }
@@ -114,17 +112,17 @@ class ExtrasShoppingViewController: MenuedViewController {
             }
         }
     }
-    
+
     private func selectProducts(categoryID: String? = nil) {
         if let app = experience.app, app.isProductApp, let productAPIUtil = CPEXMLSuite.Settings.productAPIUtil {
             productListSessionDataTask?.cancel()
             DispatchQueue.main.async {
                 self.hud = MBProgressHUD.showAdded(to: self.view, animated: true)
-                
+
                 DispatchQueue.global(qos: .userInteractive).async {
                     self.productListSessionDataTask = productAPIUtil.getCategoryProducts(categoryID, completion: { [weak self] (products) in
                         self?.productListSessionDataTask = nil
-                        
+
                         DispatchQueue.main.async {
                             self?.extrasShoppingItemsViewController?.products = products
                             self?.hud?.hide(true)
@@ -132,9 +130,9 @@ class ExtrasShoppingViewController: MenuedViewController {
                     })
                 }
             }
-            
+
             NextGenHook.logAnalyticsEvent(.extrasShopAction, action: .selectCategory, itemId: categoryID)
-        }  else if let childExperiences = experience.childExperiences {
+        } else if let childExperiences = experience.childExperiences {
             var products = [ProductItem]()
             for childExperience in childExperiences {
                 if let product = childExperience.product {
@@ -147,19 +145,19 @@ class ExtrasShoppingViewController: MenuedViewController {
                     }
                 }
             }
-            
+
             extrasShoppingItemsViewController?.products = products
             NextGenHook.logAnalyticsEvent(.extrasShopAction, action: .selectCategory, itemId: categoryID, itemName: products.first?.category??.name)
         }
     }
-    
+
     // MARK: UITableViewDelegate
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         super.tableView(tableView, didSelectRowAt: indexPath)
-        
+
         if let cell = tableView.cellForRow(at: indexPath) {
             if let menuSection = (cell as? MenuSectionCell)?.menuSection {
-                if !menuSection.expandable {
+                if !menuSection.isExpandable {
                     selectProducts(categoryID: menuSection.value)
                 }
             } else {

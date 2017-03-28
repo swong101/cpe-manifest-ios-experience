@@ -6,16 +6,16 @@ import UIKit
 import NextGenDataManager
 
 class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
-    
+
     fileprivate struct Constants {
         static let GalleryTableViewImageAspectRatio: CGFloat = 16 / 9
         static let GalleryTableViewLabelHeight: CGFloat = 10
         static let GalleryTableViewPadding: CGFloat = 50
         static let GalleryTableViewMobileAspectRatio: CGFloat = 600 / 195
     }
-    
+
     @IBOutlet weak private var galleryTableView: UITableView!
-    
+
     @IBOutlet weak private var videoContainerView: UIView!
     @IBOutlet weak private var previewImageView: UIImageView!
     @IBOutlet weak private var previewPlayButton: UIButton!
@@ -24,68 +24,67 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
     @IBOutlet weak private var mediaDescriptionTextView: UITextView?
     private var videoPlayerViewController: VideoPlayerViewController?
     private var videoPlayerDidToggleFullScreenObserver: NSObjectProtocol?
-    
+
     @IBOutlet weak private var galleryScrollView: ImageGalleryScrollView!
     @IBOutlet weak private var galleryPageControl: UIPageControl!
     private var galleryDidScrollToPageObserver: NSObjectProtocol?
     private var galleryDidToggleFullScreenObserver: NSObjectProtocol?
-    
+
     @IBOutlet private var containerTopConstraint: NSLayoutConstraint?
     @IBOutlet private var containerBottomConstraint: NSLayoutConstraint?
     @IBOutlet private var containerAspectRatioConstraint: NSLayoutConstraint?
-    
+
     @IBOutlet weak private var shareButton: UIButton!
-    
+
     private var didInitialSetup = false
     fileprivate var didPlayFirstItem = false
-    
+
     private var willPlayNextItemObserver: NSObjectProtocol?
     private var didEndLastVideoObserver: NSObjectProtocol?
-    
+
     private var currentGallery: Gallery?
     private var currentVideoAnalyticsIdentifier: String?
-    
+
     // MARK: Initialization
     deinit {
         let center = NotificationCenter.default
-        
+
         if let observer = videoPlayerDidToggleFullScreenObserver {
             center.removeObserver(observer)
             videoPlayerDidToggleFullScreenObserver = nil
         }
-        
+
         if let observer = willPlayNextItemObserver {
             center.removeObserver(observer)
             willPlayNextItemObserver = nil
         }
-        
+
         if let observer = didEndLastVideoObserver {
             center.removeObserver(observer)
             didEndLastVideoObserver = nil
         }
-        
+
         if let observer = galleryDidScrollToPageObserver {
             center.removeObserver(observer)
             galleryDidScrollToPageObserver = nil
         }
-        
+
         if let observer = galleryDidToggleFullScreenObserver {
             center.removeObserver(observer)
             galleryDidToggleFullScreenObserver = nil
         }
     }
-    
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        
+
         galleryScrollView.cleanInvisibleImages()
     }
-    
-    
+
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         videoPlayerDidToggleFullScreenObserver = NotificationCenter.default.addObserver(forName: .videoPlayerDidToggleFullScreen, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
             if let isFullScreen = notification.userInfo?[NotificationConstants.isFullScreen] as? Bool, isFullScreen {
                 NextGenHook.logAnalyticsEvent(.extrasVideoGalleryAction, action: .setVideoFullScreen, itemId: self?.currentVideoAnalyticsIdentifier)
@@ -99,41 +98,41 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
                 strongSelf.tableView(strongSelf.galleryTableView, didSelectRowAt: indexPath)
             }
         }
-        
+
         didEndLastVideoObserver = NotificationCenter.default.addObserver(forName: .videoPlayerDidEndLastVideo, object: nil, queue: OperationQueue.main, using: { [weak self] (_) in
             self?.previewImageView.isHidden = false
             self?.previewPlayButton.isHidden = false
             self?.destroyVideoPlayer()
-            
+
             if let selectedIndexPath = self?.galleryTableView.indexPathForSelectedRow, let cell = self?.galleryTableView.cellForRow(at: selectedIndexPath) as? VideoCell {
                 cell.setWatched()
             }
         })
-        
+
         galleryDidScrollToPageObserver = NotificationCenter.default.addObserver(forName: .imageGalleryDidScrollToPage, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
             if let gallery = self?.currentGallery, let page = notification.userInfo?[NotificationConstants.page] as? Int {
                 self?.galleryPageControl.currentPage = page
                 NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .scrollImageGallery, itemId: gallery.analyticsID)
             }
         })
-        
+
         galleryDidToggleFullScreenObserver = NotificationCenter.default.addObserver(forName: .imageGalleryDidToggleFullScreen, object: nil, queue: OperationQueue.main, using: { [weak self] (notification) in
             if let gallery = self?.currentGallery, let isFullScreen = notification.userInfo?[NotificationConstants.isFullScreen] as? Bool, isFullScreen {
                 NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .setImageGalleryFullScreen, itemId: gallery.analyticsID)
             }
         })
-        
+
         galleryTableView.register(UINib(nibName: VideoCell.NibName, bundle: nil), forCellReuseIdentifier: VideoCell.ReuseIdentifier)
         galleryScrollView.allowsFullScreen = DeviceType.IS_IPAD
     }
-    
-    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return (DeviceType.IS_IPAD ? .landscape : .all)
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
+
         if !didInitialSetup {
             let selectedPath = IndexPath(row: 0, section: 0)
             galleryTableView.selectRow(at: selectedPath, animated: false, scrollPosition: UITableViewScrollPosition.top)
@@ -143,63 +142,63 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
             galleryScrollView.layoutPages()
         }
     }
-    
+
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        
+
         let toLandscape = (size.width > size.height)
         containerAspectRatioConstraint?.isActive = !toLandscape
         containerTopConstraint?.constant = (toLandscape ? 0 : ExtrasExperienceViewController.Constants.TitleImageHeight)
         containerBottomConstraint?.isActive = !toLandscape
     }
-    
+
     private func playSelectedExperience() {
         if let selectedIndexPath = galleryTableView.indexPathForSelectedRow, let selectedExperience = (experience.childExperience(atIndex: selectedIndexPath.row) ?? experience) {
             if let imageURL = selectedExperience.largeImageURL {
                 previewImageView.sd_setImage(with: imageURL)
             }
-            
+
             let videoPlayerExists = videoPlayerViewController != nil
             if didPlayFirstItem, let videoURL = selectedExperience.video?.url, let videoPlayerViewController = (videoPlayerViewController ?? UIStoryboard.getNextGenViewController(VideoPlayerViewController.self) as? VideoPlayerViewController) {
                 previewImageView.isHidden = true
                 previewPlayButton.isHidden = true
-                
+
                 videoPlayerViewController.removeCurrentItem()
                 videoPlayerViewController.mode = VideoPlayerMode.supplemental
                 videoPlayerViewController.queueTotalCount = max(experience.numChildExperiences, 1)
                 videoPlayerViewController.queueCurrentIndex = selectedIndexPath.row
-                
+
                 if !videoPlayerExists {
                     videoPlayerViewController.view.frame = videoContainerView.bounds
                     videoContainerView.addSubview(videoPlayerViewController.view)
                     self.addChildViewController(videoPlayerViewController)
                     videoPlayerViewController.didMove(toParentViewController: self)
                 }
-                
+
                 videoPlayerViewController.playAsset(withURL: videoURL, title: selectedExperience.title, imageURL: selectedExperience.thumbnailImageURL)
                 if !DeviceType.IS_IPAD && videoPlayerViewController.fullScreenButton != nil {
                     videoPlayerViewController.fullScreenButton?.removeFromSuperview()
                 }
-                
+
                 self.videoPlayerViewController = videoPlayerViewController
                 self.currentVideoAnalyticsIdentifier = selectedExperience.video?.analyticsID
                 NextGenHook.logAnalyticsEvent(.extrasVideoGalleryAction, action: .selectVideo, itemId: self.currentVideoAnalyticsIdentifier)
             }
         }
     }
-    
+
     private func destroyVideoPlayer() {
         videoPlayerViewController?.willMove(toParentViewController: nil)
         videoPlayerViewController?.view.removeFromSuperview()
         videoPlayerViewController?.removeFromParentViewController()
         videoPlayerViewController = nil
     }
-    
+
     fileprivate func updateView(withExperience experience: Experience) {
         mediaTitleLabel.isHidden = true
         mediaDescriptionLabel?.isHidden = true
         mediaDescriptionTextView?.isHidden = true
-        
+
         // Reset media detail views
         shareButton.isHidden = true
         galleryPageControl.isHidden = true
@@ -207,7 +206,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
         videoContainerView.isHidden = false
         previewImageView.isHidden = didPlayFirstItem
         previewPlayButton.isHidden = didPlayFirstItem
-        
+
         // Set new media detail views
         if let gallery = experience.gallery {
             mediaTitleLabel.text = nil
@@ -215,7 +214,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
             videoContainerView.isHidden = true
             previewImageView.isHidden = true
             previewPlayButton.isHidden = true
-            
+
             galleryScrollView.gallery = gallery
             if !gallery.isTurntable {
                 shareButton.isHidden = false
@@ -225,7 +224,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
                     galleryPageControl.numberOfPages = gallery.numPictures
                 }
             }
-            
+
             currentGallery = gallery
             NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .selectImageGallery, itemId: gallery.analyticsID)
         } else if experience.isType(.audioVisual) {
@@ -238,13 +237,13 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
             playSelectedExperience()
         }
     }
-    
+
     // MARK: Actions
     @IBAction func onPlay() {
         didPlayFirstItem = true
         playSelectedExperience()
     }
-    
+
     @IBAction func onShare(_ sender: UIButton?) {
         if !galleryScrollView.isHidden, let url = galleryScrollView.currentImageURL, let imageId = galleryScrollView.currentImageId, let title = CPEXMLSuite.current?.manifest.title {
             let showShareDialog = { [weak self] (url: URL) in
@@ -253,7 +252,7 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
                 self?.present(activityViewController, animated: true, completion: nil)
                 NextGenHook.logAnalyticsEvent(.extrasImageGalleryAction, action: .shareImage, itemId: imageId)
             }
-            
+
             if let delegate = NextGenHook.delegate {
                 delegate.urlForSharedContent(id: imageId, type: .image, completion: { (newUrl) in
                     showShareDialog(newUrl ?? url)
@@ -263,55 +262,59 @@ class ExtrasVideoGalleryViewController: ExtrasExperienceViewController {
             }
         }
     }
-    
+
     @IBAction func onPageControlValueChanged() {
         galleryScrollView.gotoPage(galleryPageControl.currentPage, animated: true)
     }
-    
+
 }
 
 extension ExtrasVideoGalleryViewController: UITableViewDataSource {
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: VideoCell.ReuseIdentifier, for: indexPath) as! VideoCell
+        let tableViewCell = tableView.dequeueReusableCell(withIdentifier: VideoCell.ReuseIdentifier, for: indexPath)
+        guard let cell = tableViewCell as? VideoCell else {
+            return tableViewCell
+        }
+
         cell.backgroundColor = UIColor.clear
         cell.selectionStyle = .none
         cell.experience = (experience.childExperience(atIndex: indexPath.row) ?? experience)
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return max(experience.numChildExperiences, 1)
     }
-    
+
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if DeviceType.IS_IPAD {
             return (tableView.frame.width / Constants.GalleryTableViewImageAspectRatio) + Constants.GalleryTableViewLabelHeight + Constants.GalleryTableViewPadding
         }
-        
+
         return tableView.frame.width / Constants.GalleryTableViewMobileAspectRatio
     }
-    
+
 }
 
 extension ExtrasVideoGalleryViewController: UITableViewDelegate {
-    
+
     func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
         if let cell = tableView.cellForRow(at: indexPath), !cell.isSelected {
             return indexPath
         }
-        
+
         return nil
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row > 0 {
             didPlayFirstItem = true
         }
-        
+
         if let thisExperience = (experience.childExperience(atIndex: indexPath.row) ?? experience) {
             updateView(withExperience: thisExperience)
         }
     }
-    
+
 }

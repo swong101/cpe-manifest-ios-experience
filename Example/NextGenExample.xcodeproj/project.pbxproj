@@ -12,7 +12,6 @@
 		7021D3691D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */; };
 		70239F041E496876006B9B9A /* AirPlayButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70239F031E496876006B9B9A /* AirPlayButton.swift */; };
 		703876431DAC1C1000544D5B /* NextGenLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703876421DAC1C1000544D5B /* NextGenLauncher.swift */; };
-		708488DC1D0F7EC900670B45 /* NextGenDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */; };
 		708D535F1D525944009CED95 /* NextGenHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708D535E1D525944009CED95 /* NextGenHook.swift */; };
 		70977FEF1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70977FEE1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift */; };
 		70977FF11DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70977FF01DA580C200627547 /* TalentTableViewCell-Narrow_iPhone.xib */; };
@@ -110,6 +109,7 @@
 		70E12AEA1E4B9197004D046D /* TimeInterval+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E12AE71E4B9197004D046D /* TimeInterval+Utils.swift */; };
 		70E12AEB1E4B9197004D046D /* UIViewController+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E12AE81E4B9197004D046D /* UIViewController+Utils.swift */; };
 		70E12AEC1E4B9197004D046D /* URL+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E12AE91E4B9197004D046D /* URL+Utils.swift */; };
+		70F2FE431E89D15E006F8A12 /* ExtrasExperienceListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70F2FE421E89D15E006F8A12 /* ExtrasExperienceListViewController.swift */; };
 		70FECF7D1C657976005B1A44 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70FECF7C1C657976005B1A44 /* MapKit.framework */; };
 		A7CA836CCC8C043A4AC75B98 /* Pods_NextGenExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A9B12FE4232619740870843F /* Pods_NextGenExample.framework */; };
 /* End PBXBuildFile section */
@@ -124,7 +124,6 @@
 		7021D3681D23148F00EE6DB6 /* ClipShareSceneDetailCollectionViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ClipShareSceneDetailCollectionViewCell.xib; sourceTree = "<group>"; };
 		70239F031E496876006B9B9A /* AirPlayButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AirPlayButton.swift; sourceTree = "<group>"; };
 		703876421DAC1C1000544D5B /* NextGenLauncher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenLauncher.swift; sourceTree = "<group>"; };
-		708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenDataLoader.swift; sourceTree = "<group>"; };
 		7084E1E41D0F18EE00B1B5B7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = SOURCE_ROOT; };
 		708D535E1D525944009CED95 /* NextGenHook.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NextGenHook.swift; sourceTree = "<group>"; };
 		70977FEE1DA57FFA00627547 /* ExtrasTalentSelectorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtrasTalentSelectorViewController.swift; sourceTree = "<group>"; };
@@ -224,6 +223,7 @@
 		70E12AE71E4B9197004D046D /* TimeInterval+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Utils.swift"; sourceTree = "<group>"; };
 		70E12AE81E4B9197004D046D /* UIViewController+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+Utils.swift"; sourceTree = "<group>"; };
 		70E12AE91E4B9197004D046D /* URL+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "URL+Utils.swift"; sourceTree = "<group>"; };
+		70F2FE421E89D15E006F8A12 /* ExtrasExperienceListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExtrasExperienceListViewController.swift; sourceTree = "<group>"; };
 		70FECF7C1C657976005B1A44 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		A9B12FE4232619740870843F /* Pods_NextGenExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_NextGenExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8C0E3512E4E5C0412D7D1AA /* Pods-NextGenExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NextGenExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NextGenExample/Pods-NextGenExample.debug.xcconfig"; sourceTree = "<group>"; };
@@ -352,6 +352,7 @@
 		70C092CF1D0F60DF00BFC1E4 /* Out-of-Movie Experience */ = {
 			isa = PBXGroup;
 			children = (
+				70F2FE421E89D15E006F8A12 /* ExtrasExperienceListViewController.swift */,
 				70C092D01D0F60DF00BFC1E4 /* ExtrasExperienceViewController.swift */,
 				70C092D31D0F60DF00BFC1E4 /* ExtrasSceneLocationsViewController.swift */,
 				70C092D41D0F60DF00BFC1E4 /* ExtrasShoppingItemsViewController.swift */,
@@ -482,7 +483,6 @@
 			children = (
 				70C9EA691D08A2D7002299B3 /* AppDelegate.swift */,
 				70C9EA6A1D08A2D7002299B3 /* InputViewController.swift */,
-				708488DB1D0F7EC900670B45 /* NextGenDataLoader.swift */,
 				70BB990E1E415DE7008D9027 /* NextGenExamplePlaybackAsset.swift */,
 				70C9EA6D1D08A3C5002299B3 /* LaunchScreen.storyboard */,
 				70C9EA6E1D08A3C5002299B3 /* Main.storyboard */,
@@ -674,7 +674,6 @@
 				70C9EA6C1D08A2D7002299B3 /* InputViewController.swift in Sources */,
 				70C093381D0F60DF00BFC1E4 /* ExtrasSceneLocationsViewController.swift in Sources */,
 				70E12AEB1E4B9197004D046D /* UIViewController+Utils.swift in Sources */,
-				708488DC1D0F7EC900670B45 /* NextGenDataLoader.swift in Sources */,
 				70C0931D1D0F60DF00BFC1E4 /* GallerySceneDetailViewController.swift in Sources */,
 				70A217D21DDF6FE50006815C /* AssetLoaderDelegate.swift in Sources */,
 				70C093281D0F60DF00BFC1E4 /* ShoppingSceneDetailCollectionViewCell.swift in Sources */,
@@ -687,6 +686,7 @@
 				70C093261D0F60DF00BFC1E4 /* SceneDetailViewController.swift in Sources */,
 				70C093441D0F60DF00BFC1E4 /* LandscapeNavigationController.swift in Sources */,
 				70C093611D0F60DF00BFC1E4 /* UIAlertController+Utils.swift in Sources */,
+				70F2FE431E89D15E006F8A12 /* ExtrasExperienceListViewController.swift in Sources */,
 				70C093661D0F60DF00BFC1E4 /* UIStoryboard+Utils.swift in Sources */,
 				70C0934F1D0F60DF00BFC1E4 /* MenuItemCell.swift in Sources */,
 				70C093221D0F60DF00BFC1E4 /* MapDetailViewController.swift in Sources */,

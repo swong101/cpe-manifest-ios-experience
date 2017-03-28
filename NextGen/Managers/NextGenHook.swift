@@ -27,12 +27,12 @@ public enum NextGenAnalyticsEvent: String {
 public enum NextGenAnalyticsAction: String {
     // General
     case exit = "exit"
-    
+
     // Home
     case launchInMovie = "launch_ime"
     case launchExtras = "launch_extras"
     case launchBuy = "launch_buy"
-    
+
     // Extras
     case selectTalent = "select_talent"
     case selectVideoGallery = "select_video_gallery"
@@ -41,13 +41,13 @@ public enum NextGenAnalyticsAction: String {
     case selectSceneLocations = "select_scene_locations"
     case selectApp = "select_app"
     case selectShopping = "select_shopping"
-    
+
     // Talent
     case selectGallery = "select_gallery"
     case selectSocial = "select_social"
     case selectFilm = "select_film"
     case selectImage = "select_image"
-    
+
     // Galleries
     case selectVideo = "select_video"
     case setVideoFullScreen = "set_video_full_screen"
@@ -55,19 +55,19 @@ public enum NextGenAnalyticsAction: String {
     case setImageGalleryFullScreen = "set_image_gallery_full_screen"
     case scrollImageGallery = "scroll_image_gallery"
     case shareImage = "share_image"
-    
+
     // Locations
     case setMapType = "set_map_type"
     case selectLocationMarker = "select_location_marker"
     case selectLocationThumbnail = "select_location_thumbnail"
     case selectMap = "select_map"
-    
+
     // Shopping
     case selectCategory = "select_category"
     case selectProduct = "select_product"
     case selectShareProductLink = "select_share_product_link"
     case selectShopProduct = "select_shop_product"
-    
+
     // IME
     case skipInterstitial = "skip_interstitial"
     case rotateShowExtras = "rotate_show_extras"
@@ -80,7 +80,7 @@ public enum NextGenAnalyticsAction: String {
     case selectPrevious = "select_previous"
     case selectNext = "select_next"
     case shareVideo = "share_video"
-    
+
     // Player
     case playButton = "play_button"
     case pauseButton = "pause_button"
@@ -120,45 +120,45 @@ public enum NextGenSharedContentType {
     case video
 }
 
-public protocol NextGenHookDelegate {
-    
+public protocol NextGenHookDelegate: class {
+
     // Connection status
     func connectionStatusChanged(status: NextGenConnectionStatus)
-    
+
     // NextGen Experience status
     func experienceWillOpen()
     func experienceWillClose()
     func experienceWillEnterDebugMode()
-    
+
     // Preview mode callbacks
     func previewModeShouldLaunchBuy()
-    
+
     // Video Player callbacks
     func interstitialShouldPlayMultipleTimes() -> Bool
     func playbackAsset(withURL url: URL, title: String?, imageURL: URL?, forMode mode: VideoPlayerMode, completion: @escaping (NextGenPlaybackAsset) -> Void)
     func didFinishPlayingAsset(_ playbackAsset: NextGenPlaybackAsset, mode: VideoPlayerMode)
-    
+
     // Sharing callbacks
     func urlForSharedContent(id: String, type: NextGenSharedContentType, completion: @escaping (_ url: URL?) -> Void)
-    
+
     // Talent callbacks
     func didTapFilmography(forTitle title: String, fromViewController viewController: UIViewController)
-    
+
     // Analytics
     func logAnalyticsEvent(_ event: NextGenAnalyticsEvent, action: NextGenAnalyticsAction, itemId: String?, itemName: String?)
 }
 
 class NextGenHook {
-    
+
     static var delegate: NextGenHookDelegate?
-    
+
     static func experienceWillClose() {
         delegate?.experienceWillClose()
         NextGenCacheManager.clearTempDirectory()
     }
-    
+
     static func logAnalyticsEvent(_ event: NextGenAnalyticsEvent, action: NextGenAnalyticsAction, itemId: String? = nil, itemName: String? = nil) {
         delegate?.logAnalyticsEvent(event, action: action, itemId: itemId, itemName: itemName)
     }
-    
+
 }

@@ -2,49 +2,43 @@
 //  MenuSection.swift
 //
 
-import UIKit
+import Foundation
 
-class MenuSection: NSObject {
-    
-    struct Keys {
-        static let Title = "title"
-        static let Value = "Value"
-        static let Rows = "rows"
-    }
-    
-    var title: String!
+class MenuSection {
+
+    var title: String
     var value: String?
-    var items = [MenuItem]()
-    var expanded = false
-    
+    var items: [MenuItem]?
+    var isExpanded = false
+
+    var numItems: Int {
+        return (items?.count ?? 0)
+    }
+
     var numRows: Int {
-        get {
-            if expanded {
-                return items.count + 1
-            }
-            
-            return 1
-        }
+        return (isExpanded ? (numItems + 1) : 1)
     }
-    
-    var expandable: Bool {
-        get {
-            return items.count > 0
-        }
+
+    var isExpandable: Bool {
+        return (numItems > 0)
     }
-    
-    required init(info: NSDictionary) {
-        title = info[Keys.Title] as! String
-        value = info[Keys.Value] as? String
-        if let rows = info[Keys.Rows] as? [NSDictionary] {
-            for itemInfo in rows {
-                items.append(MenuItem(info: itemInfo))
-            }
-        }
+
+    init(title: String, value: String? = nil, items: [MenuItem]? = nil) {
+        self.title = title
+        self.value = value
+        self.items = items
     }
-    
+
     func toggle() {
-        expanded = !expanded
+        isExpanded = !isExpanded
+    }
+
+    func item(atIndex index: Int) -> MenuItem? {
+        if let items = items, items.count > index {
+            return items[index]
+        }
+
+        return nil
     }
 
 }

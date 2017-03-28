@@ -6,29 +6,29 @@ import UIKit
 import NextGenDataManager
 
 class TitledImageCell: UICollectionViewCell {
-    
+
     static let ReuseIdentifier = "TitledImageCellReuseIdentifier"
-    
+
     @IBOutlet weak private var titleLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
-    
+
     var experience: Experience? {
         didSet {
             title = experience?.title
             imageURL = experience?.thumbnailImageURL
         }
     }
-    
+
     var title: String? {
         set {
             titleLabel.text = newValue?.uppercased()
         }
-        
+
         get {
             return titleLabel.text
         }
     }
-    
+
     var imageURL: URL? {
         set {
             if let url = newValue {
@@ -38,16 +38,16 @@ class TitledImageCell: UICollectionViewCell {
                 imageView.image = nil
             }
         }
-        
+
         get {
             return nil
         }
     }
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
-        
+
         experience = nil
     }
-    
+
 }

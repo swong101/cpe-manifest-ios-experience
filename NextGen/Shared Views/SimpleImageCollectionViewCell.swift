@@ -5,14 +5,14 @@
 import UIKit
 
 class SimpleImageCollectionViewCell: UICollectionViewCell {
-    
+
     static let BaseReuseIdentifier = "SimpleImageCollectionViewCellReuseIdentifier"
-    
+
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var playButton: UIButton?
-    
+
     var showsSelectedBorder = false
-    
+
     var imageURL: URL? {
         set {
             if let url = newValue {
@@ -22,22 +22,22 @@ class SimpleImageCollectionViewCell: UICollectionViewCell {
                 imageView.image = nil
             }
         }
-        
+
         get {
             return nil
         }
     }
-    
+
     var playButtonVisible: Bool {
         set {
             playButton?.isHidden = !newValue
         }
-        
+
         get {
             return playButton != nil && !playButton!.isHidden
         }
     }
-    
+
     override var isSelected: Bool {
         didSet {
             if self.isSelected && showsSelectedBorder {
@@ -49,12 +49,12 @@ class SimpleImageCollectionViewCell: UICollectionViewCell {
             }
         }
     }
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
-        
+
         self.isSelected = false
-        
+
         imageURL = nil
         playButtonVisible = false
     }

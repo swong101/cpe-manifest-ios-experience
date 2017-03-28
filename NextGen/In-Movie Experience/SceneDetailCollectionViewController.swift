@@ -9,7 +9,7 @@ import NextGenDataManager
 struct ExperienceCellData {
     var experience: Experience
     var timedEvent: TimedEvent
-    
+
     init(experience: Experience, timedEvent: TimedEvent) {
         self.experience = experience
         self.timedEvent = timedEvent
@@ -17,7 +17,7 @@ struct ExperienceCellData {
 }
 
 class SceneDetailCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
-    
+
     private struct SegueIdentifier {
         static let ShowGallery = "ShowGallerySegueIdentifier"
         static let ShowShopping = "ShowShoppingSegueIdentifier"
@@ -25,7 +25,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
         static let ShowClipShare = "ShowClipShareSegueIdentifier"
         static let ShowLargeText = "ShowLargeTextSegueIdentifier"
     }
-    
+
     private struct Constants {
         static let ItemsPerRow: CGFloat = (DeviceType.IS_IPAD ? 2 : 1)
         static let ItemSpacing: CGFloat = 10
@@ -34,23 +34,23 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
         static let ItemTitleHeight: CGFloat = 35
         static let ItemCaptionHeight: CGFloat = (DeviceType.IS_IPAD ? 25 : 30)
     }
-    
+
     private var didChangeTimeObserver: NSObjectProtocol!
-    
+
     private var _currentTime: Double = -1
     private var _currentTimedEvents = [TimedEvent]()
     private var _isProcessingTimedEvents = false
-    
+
     deinit {
         let center = NotificationCenter.default
         center.removeObserver(didChangeTimeObserver)
         didChangeTimeObserver = nil
     }
-    
+
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         self.collectionView?.backgroundColor = UIColor.clear
         self.collectionView?.alpha = 0
         self.collectionView?.register(UINib(nibName: "TextSceneDetailCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: TextSceneDetailCollectionViewCell.ReuseIdentifier)
@@ -58,7 +58,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
         self.collectionView?.register(UINib(nibName: "ClipShareSceneDetailCollectionViewCell", bundle:nil), forCellWithReuseIdentifier: ImageSceneDetailCollectionViewCell.ClipShareReuseIdentifier)
         self.collectionView?.register(UINib(nibName: "MapSceneDetailCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: MapSceneDetailCollectionViewCell.ReuseIdentifier)
         self.collectionView?.register(UINib(nibName: "ShoppingSceneDetailCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: ShoppingSceneDetailCollectionViewCell.ReuseIdentifier)
-        
+
         didChangeTimeObserver = NotificationCenter.default.addObserver(forName: .videoPlayerDidChangeTime, object: nil, queue: nil) { [weak self] (notification) -> Void in
             if let strongSelf = self, let time = notification.userInfo?[NotificationConstants.time] as? Double {
                 if time != strongSelf._currentTime && !strongSelf._isProcessingTimedEvents {
@@ -68,38 +68,38 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             }
         }
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+
         self.collectionView?.alpha = 1
         self.collectionViewLayout.invalidateLayout()
     }
-    
+
     override func didRotate(from fromInterfaceOrientation: UIInterfaceOrientation) {
         self.collectionViewLayout.invalidateLayout()
     }
-    
+
     func processTimedEvents(_ time: Double) {
         DispatchQueue.global(qos: .userInteractive).async {
             self._currentTime = time
-            
+
             var deleteIndexPaths: [IndexPath]?
             var insertIndexPaths: [IndexPath]?
             var reloadIndexPaths: [IndexPath]?
-            
+
             var newTimedEvents = [TimedEvent]()
             if let timedEvents = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: time) {
                 for timedEvent in timedEvents {
                     if !timedEvent.isType(.person) {
                         let indexPath = IndexPath(item: newTimedEvents.count, section: 0)
-                        
+
                         if newTimedEvents.count < self._currentTimedEvents.count {
                             if self._currentTimedEvents[newTimedEvents.count] != timedEvent {
                                 if reloadIndexPaths == nil {
                                     reloadIndexPaths = [IndexPath]()
                                 }
-                                
+
                                 reloadIndexPaths!.append(indexPath)
                             } else if timedEvent.isType(.product), let cell = self.collectionView?.cellForItem(at: indexPath) as? ShoppingSceneDetailCollectionViewCell {
                                 cell.currentTime = self._currentTime
@@ -108,56 +108,55 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
                             if insertIndexPaths == nil {
                                 insertIndexPaths = [IndexPath]()
                             }
-                            
+
                             insertIndexPaths!.append(indexPath)
                         }
-                        
+
                         newTimedEvents.append(timedEvent)
                     }
                 }
             }
-            
+
             if self._currentTimedEvents.count > newTimedEvents.count {
                 for i in newTimedEvents.count ..< self._currentTimedEvents.count {
                     if deleteIndexPaths == nil {
                         deleteIndexPaths = [IndexPath]()
                     }
-                    
+
                     deleteIndexPaths!.append(IndexPath(item: i, section: 0))
                 }
             }
-            
+
             DispatchQueue.main.async {
                 self._currentTimedEvents = newTimedEvents
-                
+
                 self.collectionView?.performBatchUpdates({
                     if let deleteIndexPaths = deleteIndexPaths, deleteIndexPaths.count > 0 {
                         self.collectionView?.deleteItems(at: deleteIndexPaths)
                     }
-                    
+
                     if let insertIndexPaths = insertIndexPaths, insertIndexPaths.count > 0 {
                         self.collectionView?.insertItems(at: insertIndexPaths)
                     }
-                    
+
                     if let reloadIndexPaths = reloadIndexPaths, reloadIndexPaths.count > 0 {
                         self.collectionView?.reloadItems(at: reloadIndexPaths)
                     }
-                }, completion: { (completed) in
+                }, completion: { (_) in
                     self._isProcessingTimedEvents = false
                 })
             }
         }
     }
-    
-    
+
     // MARK: UICollectionViewDataSource
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return _currentTimedEvents.count
     }
-    
+
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let timedEvent = _currentTimedEvents[indexPath.row]
-        
+
         var reuseIdentifier: String
         if timedEvent.isType(.location) {
             reuseIdentifier = MapSceneDetailCollectionViewCell.ReuseIdentifier
@@ -170,32 +169,36 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
         } else {
             reuseIdentifier = TextSceneDetailCollectionViewCell.ReuseIdentifier
         }
-        
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! SceneDetailCollectionViewCell
+
+        let collectionViewCell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
+        guard let cell = collectionViewCell as? SceneDetailCollectionViewCell else {
+            return collectionViewCell
+        }
+
         cell.timedEvent = timedEvent
         cell.currentTime = _currentTime
         return cell
     }
-    
+
     // MARK: UICollectionViewDelegateFlowLayout
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let itemWidth: CGFloat = (collectionView.frame.width / Constants.ItemsPerRow) - (Constants.ItemSpacing / Constants.ItemsPerRow)
         let itemHeight = (itemWidth / Constants.ItemImageAspectRatio) + Constants.ItemTitleHeight + Constants.ItemCaptionHeight
         return CGSize(width: itemWidth, height: itemHeight)
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return Constants.LineSpacing
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return Constants.ItemSpacing
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         return UIEdgeInsets(top: 0, left: 0, bottom: Constants.LineSpacing, right: 0)
     }
-    
+
     // MARK: UICollectionViewDelegate
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if let cell = collectionView.cellForItem(at: indexPath) as? SceneDetailCollectionViewCell, let timedEvent = cell.timedEvent {
@@ -228,21 +231,20 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
                     segueIdentifier = SegueIdentifier.ShowLargeText
                     NextGenHook.logAnalyticsEvent(.imeExtrasAction, action: .selectTrivia, itemId: timedEvent.analyticsID)
                 }
-                
+
                 if let identifier = segueIdentifier {
                     self.performSegue(withIdentifier: identifier, sender: cell)
                 }
             }
         }
- 
+
     }
-    
+
     // MARK: Storyboard Methods
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let cell = sender as? SceneDetailCollectionViewCell, let timedEvent = cell.timedEvent {
             if segue.identifier == SegueIdentifier.ShowShopping {
-                if let products = (cell as? ShoppingSceneDetailCollectionViewCell)?.products {
-                    let shopDetailViewController = segue.destination as! ShoppingDetailViewController
+                if let products = (cell as? ShoppingSceneDetailCollectionViewCell)?.products, let shopDetailViewController = segue.destination as? ShoppingDetailViewController {
                     shopDetailViewController.mode = .ime
                     shopDetailViewController.products = products
                 }
@@ -251,5 +253,5 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             }
         }
     }
-    
+
 }

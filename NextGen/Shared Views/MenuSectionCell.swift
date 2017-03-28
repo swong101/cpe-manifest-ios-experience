@@ -6,54 +6,54 @@ import UIKit
 import QuartzCore
 
 class MenuSectionCell: UITableViewCell {
-    
+
     static let ReuseIdentifier = "MenuSectionCellReuseIdentifier"
-    
+
     @IBOutlet weak private var titleLabel: UILabel!
     @IBOutlet weak private var dropDownImageView: UIImageView!
-    
+
     var menuSection: MenuSection? {
         didSet {
             titleLabel.text = menuSection?.title
-            dropDownImageView.isHidden = (menuSection == nil || !menuSection!.expandable)
+            dropDownImageView.isHidden = (menuSection == nil || !menuSection!.isExpandable)
         }
     }
-    
+
     var active = false {
         didSet {
             updateCellStyle()
         }
     }
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
-        
+
         menuSection = nil
         active = false
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        
+
         if let section = menuSection {
-            dropDownImageView.transform = CGAffineTransform(rotationAngle: section.expanded ? CGFloat(-M_PI) : 0.0)
+            dropDownImageView.transform = CGAffineTransform(rotationAngle: section.isExpanded ? CGFloat(-M_PI) : 0.0)
         }
     }
-    
+
     func updateCellStyle() {
         titleLabel.textColor = self.active ? UIColor.themePrimary : UIColor.white
     }
-    
+
     func toggleDropDownIcon() {
         if let section = menuSection {
             let rotate = CABasicAnimation(keyPath: "transform.rotation.z")
-            rotate.fromValue = section.expanded ? 0.0 : CGFloat(-M_PI)
-            rotate.toValue = section.expanded ? CGFloat(-M_PI) : 0.0
+            rotate.fromValue = (section.isExpanded ? 0.0 : CGFloat(-M_PI))
+            rotate.toValue = (section.isExpanded ? CGFloat(-M_PI) : 0.0)
             rotate.duration = 0.25
             rotate.autoreverses = true
             rotate.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
             dropDownImageView.layer.add(rotate, forKey: nil)
         }
     }
-    
+
 }

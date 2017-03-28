@@ -8,13 +8,13 @@ extension Notification.Name {
     // Application
     static let nextGenApplicationWillResignActive = Notification.Name("nextgen.notifications.nextGenApplicationWillResignActive")
     static let nextGenApplicationWillEnterForeground = Notification.Name("nextgen.notifications.nextGenApplicationWillEnterForeground")
-    
+
     // Out-of-Movie Experience
     static let outOfMovieExperienceShouldLaunch = Notification.Name("nextgen.notifications.outOfMovieExperienceShouldLaunch")
-    
+
     // In-Movie Experience
     static let inMovieExperienceShouldCloseDetails = Notification.Name("nextgen.notifications.inMovieExperienceShouldCloseDetails")
-    
+
     // Video Player
     static let videoPlayerWillPlayNextItem = Notification.Name("nextgen.notifications.videoPlayerWillPlayNextItem")
     static let videoPlayerDidChangeTime = Notification.Name("nextgen.notifications.videoPlayerDidChangeTime")
@@ -31,14 +31,14 @@ extension Notification.Name {
     static let videoPlayerPlaybackLikelyToKeepUp = Notification.Name("nextgen.notifications.videoPlayerPlaybackLikelyToKeepUp")
     static let externalPlaybackDidToggle = Notification.Name("nextgen.notifications.externalPlaybackDidToggle")
     static let availableWirelessRoutesDidChange = Notification.Name("nextgen.notifications.availableWirelessRoutesDidChange")
-    
+
     // Image Gallery
     static let imageGalleryDidScrollToPage = Notification.Name("nextgen.notifications.imageGalleryDidScrollToPage")
     static let imageGalleryDidToggleFullScreen = Notification.Name("nextgen.notifications.imageGalleryDidToggleFullScreen")
-    
+
     // Locations
     static let locationsMapTypeDidChange = Notification.Name("nextgen.notifications.locationsMapTypeDidChange")
-    
+
     // Shopping
     static let shoppingDidSelectCategory = Notification.Name("nextgen.notifications.shoppingDidSelectCategory")
     static let shoppingShouldCloseDetails = Notification.Name("nextgen.notifications.shoppingShouldCloseDetails")

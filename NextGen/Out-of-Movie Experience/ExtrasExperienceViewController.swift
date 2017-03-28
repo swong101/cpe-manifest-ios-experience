@@ -7,7 +7,7 @@ import NextGenDataManager
 import SDWebImage
 
 class ExtrasExperienceViewController: UIViewController {
-    
+
     internal struct Constants {
         static let HeaderButtonWidth: CGFloat = (DeviceType.IS_IPAD ? 250 : 100)
         static let HeaderIconPadding: CGFloat = (DeviceType.IS_IPAD ? 30 : 15)
@@ -17,17 +17,17 @@ class ExtrasExperienceViewController: UIViewController {
         static let TitleLabelXOffset: CGFloat = -30
         static let TitleLabelYOffset: CGFloat = 5
     }
-    
+
     var experience: Experience!
     var customTitle: String?
-    
+
     private var _homeButton: UIButton!
     private var _backButton: UIButton!
-    
+
     // MARK: View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         var titleView: UIView
         if experience.isOutOfMovieExperience, let titleImageURL = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: experience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation)?.theme.baseImageURLForButton("Title") {
             let titleImageView = UIImageView()
@@ -49,7 +49,7 @@ class ExtrasExperienceViewController: UIViewController {
             self.view.sendSubview(toBack: titleLabel)
             titleView = titleLabel
         }
-        
+
         titleView.clipsToBounds = true
         titleView.translatesAutoresizingMaskIntoConstraints = false
         if #available(iOS 9.0, *) {
@@ -65,15 +65,15 @@ class ExtrasExperienceViewController: UIViewController {
                 NSLayoutConstraint(item: titleView, attribute: .trailing, relatedBy: .equal, toItem: self.view, attribute: .trailing, multiplier: 1, constant: -8)
             ])
         }
-        
+
         _homeButton = headerButton(String.localize("label.home"), imageName: "Home")
         self.view.addSubview(_homeButton)
         self.view.sendSubview(toBack: _homeButton)
-        
+
         _backButton = headerButton(String.localize("label.back"), imageName: "Back Nav")
         self.view.addSubview(_backButton)
         self.view.sendSubview(toBack: _backButton)
-        
+
         if let titleTreatmentImageURL = CPEXMLSuite.current?.manifest.inMovieExperience.thumbnailImageURL {
             let titleTreatmentImageView = UIImageView()
             titleTreatmentImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -82,7 +82,7 @@ class ExtrasExperienceViewController: UIViewController {
             titleTreatmentImageView.sd_setImage(with: titleTreatmentImageURL)
             self.view.addSubview(titleTreatmentImageView)
             self.view.sendSubview(toBack: titleTreatmentImageView)
-            
+
             if #available(iOS 9.0, *) {
                 titleTreatmentImageView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.4).isActive = true
                 titleTreatmentImageView.heightAnchor.constraint(equalToConstant: Constants.TitleImageHeight - (Constants.TitleImageTopPadding * 2)).isActive = true
@@ -97,10 +97,10 @@ class ExtrasExperienceViewController: UIViewController {
                 ])
             }
         }
-        
+
         if let nodeStyle = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.outOfMovieExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation) {
             self.view.backgroundColor = nodeStyle.backgroundColor
-            
+
             if let backgroundImageURL = nodeStyle.backgroundImageURL {
                 let backgroundImageView = UIImageView()
                 backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -108,7 +108,7 @@ class ExtrasExperienceViewController: UIViewController {
                 backgroundImageView.contentMode = (nodeStyle.backgroundScaleMethod == .bestFit ? .scaleAspectFill : .scaleAspectFit)
                 self.view.addSubview(backgroundImageView)
                 self.view.sendSubview(toBack: backgroundImageView)
-                
+
                 if #available(iOS 9.0, *) {
                     backgroundImageView.topAnchor.constraint(equalTo: self.view.topAnchor).isActive = true
                     backgroundImageView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor).isActive = true
@@ -124,42 +124,42 @@ class ExtrasExperienceViewController: UIViewController {
                 }
             }
         }
-        
+
         showBackButton()
     }
-    
+
     internal func headerButton(_ title: String, imageName: String) -> UIButton {
         let button = UIButton(type: .custom)
         button.isHidden = true
         button.frame = CGRect(x: 0, y: 0, width: Constants.HeaderButtonWidth, height: Constants.TitleImageHeight)
         button.contentHorizontalAlignment = .left
-        button.titleEdgeInsets = UIEdgeInsetsMake(0, Constants.HeaderIconPadding + 10, 0, 0)
-        button.imageEdgeInsets = UIEdgeInsetsMake(0, Constants.HeaderIconPadding, 0, 0)
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: Constants.HeaderIconPadding + 10, bottom: 0, right: 0)
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: Constants.HeaderIconPadding, bottom: 0, right: 0)
         button.titleLabel?.font = UIFont.themeFont(DeviceType.IS_IPAD ? 18 : 14)
         button.setTitle(title, for: .normal)
         button.setImage(UIImage(named: imageName), for: .normal)
         button.addTarget(self, action: #selector(self.close), for: .touchUpInside)
         return button
     }
-    
+
     internal func showHomeButton() {
         _homeButton.isHidden = false
         _backButton.isHidden = true
     }
-    
+
     internal func showBackButton() {
         _homeButton.isHidden = true
         _backButton.isHidden = false
     }
-    
-    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         if let presentedViewController = self.presentedViewController, presentedViewController.classForCoder != UIAlertController.self, !presentedViewController.isBeingDismissed {
             return presentedViewController.supportedInterfaceOrientations
         }
-        
+
         return (DeviceType.IS_IPAD ? .landscape : .portrait)
     }
-    
+
     // MARK: Actions
     internal func close() {
         self.dismiss(animated: true, completion: nil)

@@ -5,7 +5,7 @@
 import AVFoundation
 
 extension AVPlayerItem {
-    
+
     convenience init(cacheableURL: URL) {
         if let tempFileURL = NextGenCacheManager.tempFileURL(cacheableURL) {
             if NextGenCacheManager.fileExists(tempFileURL) {
@@ -18,5 +18,5 @@ extension AVPlayerItem {
             self.init(url: cacheableURL)
         }
     }
-    
+
 }

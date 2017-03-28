@@ -7,7 +7,7 @@ import AVFoundation
 import SDWebImage
 
 class NextGenExamplePlaybackAsset: NextGenPlaybackAsset {
-    
+
     var assetId: String
     var assetURL: URL
     var assetURLAsset: AVURLAsset?
@@ -22,7 +22,7 @@ class NextGenExamplePlaybackAsset: NextGenPlaybackAsset {
         didSet {
             if let assetImageURL = assetImageURL {
                 let lockScreenImageSize = CGSize(width: 768, height: 768)
-                SDWebImageDownloader.shared().downloadImage(with: assetImageURL, options: .lowPriority, progress: nil, completed: { [weak self] (image, data, error, finished) in
+                SDWebImageDownloader.shared().downloadImage(with: assetImageURL, options: .lowPriority, progress: nil, completed: { [weak self] (image, _, _, _) in
                     if let image = image {
                         var scaledImageRect = CGRect.zero
                         let aspectWidth = lockScreenImageSize.width / image.size.width
@@ -45,12 +45,12 @@ class NextGenExamplePlaybackAsset: NextGenPlaybackAsset {
             }
         }
     }
-    
+
     init(id: String, url: URL, title: String? = nil, imageURL: URL? = nil) {
         assetId = id
         assetURL = url
         assetTitle = title
         assetImageURL = imageURL
     }
-    
+
 }
