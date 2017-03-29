@@ -2,7 +2,7 @@ PODS:
   - CPEData (3.0.0):
     - SWXMLHash
   - CPEExperience (4.0.0):
-    - CPEData
+    - CPEData (~> 3.0)
     - google-cast-sdk (~> 3.0)
     - MBProgressHUD (~> 0.9)
     - ReachabilitySwift (~> 3.0)
@@ -31,7 +31,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   CPEData: 2ca88aac3fa87bdefa67064b7af7ab3c3b4ac3fd
-  CPEExperience: 19e02361a162a5179cb896e2cdba14a9ef753344
+  CPEExperience: c65ecc75d762c828d24cac7fdcfdbc76554b753b
   google-cast-sdk: da1989cbc1b9ff7b50ddb9dae5b1969d95a65a0f
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
   ReachabilitySwift: f5b9bb30a0777fac8f09ce8b067e32faeb29bb64

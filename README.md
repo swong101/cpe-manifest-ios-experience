@@ -1,42 +1,34 @@
-# NextGen Extras
+# CPEExperience
+An enhanced 'extras' experience around user owned content, built for iOS in accordance with a variety of [MovieLabs Specifications & Standards](http://movielabs.com/md/manifest/index.html). This reference library is built to allow implementators to accelerate their Cross-Platform Extras iOS implementation.
 
-## Table of Contents
-1. [Overview](#Overview)
-2. [License](#License)
-3. [Diagrams](#Diagrams)
-4. [Getting Started](#Getting-Started)
+## Installation
 
+### CocoaPods
 
-## Overview
-NextGen Extras is an _enhanced_ 'extras' experience around user owned content. This reference library is built to allow implementators to accelerate their NextGen Extras iPad Tablet implementation.
+[CocoaPods](http://cocoapods.org) is a dependency manager for Cocoa projects. You can install it with the following command:
 
-## License
-This codebase is open-source under the Apache 2.0 license. See [LICENSE](LICENSE)
-
-## Diagrams
-### Flowchart
-A high-level flowchart on how the library operates when embedded in a partner retailer's app.
-[Architectural Flowchart](./Docs/NextGen_Flowchart.svg)
-
-### Data binding + UI layers
-The reference code for iPad & Android Tablets is being built to be modular; e.g. a partner retailer can choose to use just the manifest-to-native data-binding layer and/or the UI layer. Each layer is customizable by retailer is they choose to do so.
-[Architectural Layers](./Docs/NextGen_Data_and_UI_Layers.svg?raw=true)
-
-### iOS CocoaPods Library Diagram
-A iOS specific architecture diagram.
-[iOS Architecture Diagram](./Docs/NextGen_iOS_Library_Diagram.svg?raw=true)
-
-## Getting Started
-### Dependency Management
-[CocoaPods](https://guides.cocoapods.org/using/getting-started.html) can be used to easily set this library up in an existing iOS application.
-
-#### iPad Dependency Licenses
-[iPad Dependency Licenses](./Docs/Licenses/opensource-licenses.html)  
-See: ./Docs/Licenses/opensource-licenses.html
-
-### Installation
-#### Podfile
-To integrate NextGen Extras into your Xcode project using [CocoaPods](https://guides.cocoapods.org/using/getting-started.html), specify it in your Podfile:
+```bash
+$ gem install cocoapods
 ```
-pod 'NextGenExtras'
+
+To integrate CPEExperience into your Xcode project using CocoaPods, specify it in your `Podfile`:
+
+```ruby
+source 'https://github.com/CocoaPods/Specs.git'
+platform :ios, '8.0'
+use_frameworks!
+
+target '<Your Target Name>' do
+    pod 'CPEExperience', '~> 4.0'
+end
 ```
+
+Then, run the following command:
+
+```bash
+$ pod install
+```
+
+## Usage
+
+Open `Example/CPEExperienceExampleWorkspace.xcworkspace` in Xcode to build and run the sample project, which contains a reference to the required calls and delegate hooks to integrate the Cross-Platform Extras Experience into your video platform.
