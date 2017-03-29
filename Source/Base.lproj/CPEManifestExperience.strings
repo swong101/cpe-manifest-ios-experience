@@ -1,0 +1,80 @@
+// General labels
+"label.yes" = "Yes";
+"label.no" = "No";
+"label.close" = "Close";
+"label.home" = "Home";
+"label.back" = "Back";
+"label.exit" = "Exit";
+"label.cancel" = "Cancel";
+"label.continue" = "Continue";
+
+// Loading
+"loading.error.unknown.message" = "Sorry, an unexpected error occurred while loading this title. Please try again later.";
+
+// Home
+"label.play_movie" = "Play Movie";
+"label.extras" = "Extras";
+
+// Out-Of-Movie Experience
+"out_of_movie.extras_title" = "Extras";
+
+// Video labels
+"label.runtime" = "Runtime: %{runtime}";
+"label.watched" = "WATCHED";
+"label.playing" = "PLAYING";
+"label.time.hours" = "%{count} hr";
+"label.time.minutes" = "%{count} min";
+"label.time.seconds" = "%{count} sec";
+
+// Player
+"label.off" = "Off";
+"label.commentary" = "Commentary";
+"label.commentary_on" = "Commentary is on";
+"player.message.select_captions" = "Select an option below or choose \"Off\" to disable captions.";
+"player.message.external.playing" = "Now playing on your TV";
+"player.message.pip.exit" = "Selecting this option will exit your Picture in Picture video. Are you sure you would like to continue?";
+"player.message.pip.external" = "Please return playback from your TV to your iPad to enable Picture in Picture mode.";
+"player.message.pip.unavailable" = "Picture in Picture mode is currently unavailable because it is in use by another application.";
+"player.message.pip.error" = "Sorry, an error occurred while starting Picture in Picture mode.";
+
+// Menu labels
+"label.all" = "All";
+"label.actors" = "Actors";
+
+// Info text
+"info.leaving_app.title" = "Leaving App";
+"info.leaving_app.message" = "Following this link will exit the app and launch your browser. Would you like to continue?";
+"info.leaving_app.message_itunes" = "Following this link will exit the app and launch iTunes. Would you like to continue?";
+
+// Talent
+"talent.show_more" = "Show More";
+"talent.show_less" = "Show Less";
+
+// Talent Detail
+"talentdetail.title" = "Actor";
+"talentdetail.biography" = "Biography";
+"talentdetail.gallery" = "Actor Gallery";
+"talentdetail.filmography" = "Filmography";
+
+// Clip & Share
+"clipshare.select_clip_title" = "Choose a clip to share";
+"clipshare.description" = "Share this clip with friends!";
+"clipshare.share_message" = "Check out this clip from %{movie_name}: %{url}";
+"clipshare.share_button" = "Share this Clip";
+
+// Locations
+"locations.map" = "Map";
+"locations.map.type_standard" = "Map";
+"locations.map.type_satellite" = "Satellite";
+
+// Galleries
+"gallery.share_message" = "Check out this image from %{movie_name}: %{url}";
+"gallery.share_button" = "Share this Image";
+
+// Shopping
+"shopping.exact_match" = "Exact match";
+"shopping.close_match" = "Close match";
+"shopping.shop_button" = "Shop Now";
+"shopping.send_button" = "Send the Link";
+"shopping.powered_by" = "Powered by";
+"shopping.disclaimer" = "No endorsement or sponsorship implied by any actor, studio or brand featured on TheTake.com";

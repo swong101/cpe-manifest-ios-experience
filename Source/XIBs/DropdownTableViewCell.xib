@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11542" systemVersion="16A319" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11524"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="RobotoCondensed-Regular.ttf">
+            <string>RobotoCondensed-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" rowHeight="89" id="ZFg-U0-fjg" customClass="DropdownTableViewCell" customModule="Movies_All_Access" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="300" height="40"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ZFg-U0-fjg" id="Rb8-s1-zKI">
+                <rect key="frame" x="0.0" y="0.0" width="300" height="39"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="DropdownRadio" translatesAutoresizingMaskIntoConstraints="NO" id="zu8-In-nrB">
+                        <rect key="frame" x="10" y="10" width="20" height="20"/>
+                        <constraints>
+                            <constraint firstAttribute="width" secondItem="zu8-In-nrB" secondAttribute="height" multiplier="1:1" id="rcH-0f-YYm"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Commentary" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="12" translatesAutoresizingMaskIntoConstraints="NO" id="hrx-Y5-lp0">
+                        <rect key="frame" x="40" y="10" width="255" height="20"/>
+                        <fontDescription key="fontDescription" name="RobotoCondensed-Regular" family="Roboto Condensed" pointSize="18"/>
+                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="hrx-Y5-lp0" firstAttribute="top" secondItem="zu8-In-nrB" secondAttribute="top" id="M0m-Mo-pk1"/>
+                    <constraint firstItem="zu8-In-nrB" firstAttribute="leading" secondItem="Rb8-s1-zKI" secondAttribute="leading" constant="10" id="Xy5-Rr-xhe"/>
+                    <constraint firstAttribute="trailing" secondItem="hrx-Y5-lp0" secondAttribute="trailing" constant="5" id="bGm-qU-Sbd"/>
+                    <constraint firstAttribute="bottom" secondItem="zu8-In-nrB" secondAttribute="bottom" constant="10" id="cvC-Pu-YaA"/>
+                    <constraint firstItem="hrx-Y5-lp0" firstAttribute="leading" secondItem="zu8-In-nrB" secondAttribute="trailing" constant="10" id="ipJ-hm-8B7"/>
+                    <constraint firstItem="zu8-In-nrB" firstAttribute="top" secondItem="Rb8-s1-zKI" secondAttribute="top" constant="10" id="mgj-Gy-J6C"/>
+                    <constraint firstItem="hrx-Y5-lp0" firstAttribute="bottom" secondItem="zu8-In-nrB" secondAttribute="bottom" id="xqV-yz-1Ll"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="iconImageView" destination="zu8-In-nrB" id="IQp-ei-qOZ"/>
+                <outlet property="titleLabel" destination="hrx-Y5-lp0" id="JSF-4I-KPI"/>
+            </connections>
+            <point key="canvasLocation" x="409" y="357"/>
+        </tableViewCell>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+    </objects>
+    <resources>
+        <image name="DropdownRadio" width="20" height="20"/>
+    </resources>
+</document>

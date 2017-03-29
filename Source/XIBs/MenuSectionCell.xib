@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="11201" systemVersion="16A319" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11161"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="RobotoCondensed-Regular.ttf">
+            <string>RobotoCondensed-Regular</string>
+        </array>
+    </customFonts>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="none" indentationWidth="10" reuseIdentifier="MenuSectionCellReuseIdentifier" id="hL8-fj-HHz" customClass="MenuSectionCell" customModule="NextGen" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="541" height="61"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="hL8-fj-HHz" id="qf2-SQ-lmI">
+                <frame key="frameInset" width="541" height="60.666666666666664"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Audio Settings" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumScaleFactor="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="UmG-2I-HV0">
+                        <fontDescription key="fontDescription" name="RobotoCondensed-Regular" family="Roboto Condensed" pointSize="18"/>
+                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Dropdown Icon" translatesAutoresizingMaskIntoConstraints="NO" id="0Y0-pW-JkU">
+                        <constraints>
+                            <constraint firstAttribute="width" constant="16" id="IaA-Pj-EL5">
+                                <variation key="widthClass=compact" constant="14"/>
+                            </constraint>
+                            <constraint firstAttribute="width" secondItem="0Y0-pW-JkU" secondAttribute="height" multiplier="1:1" id="hYR-Xh-5ga"/>
+                        </constraints>
+                    </imageView>
+                </subviews>
+                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+                <constraints>
+                    <constraint firstItem="0Y0-pW-JkU" firstAttribute="centerY" secondItem="qf2-SQ-lmI" secondAttribute="centerY" id="AvZ-1l-1fv"/>
+                    <constraint firstItem="UmG-2I-HV0" firstAttribute="leading" secondItem="qf2-SQ-lmI" secondAttribute="leading" constant="20" id="BtK-fU-4QT">
+                        <variation key="widthClass=compact" constant="10"/>
+                    </constraint>
+                    <constraint firstAttribute="trailing" secondItem="0Y0-pW-JkU" secondAttribute="trailing" constant="20" id="Pul-AO-LlD">
+                        <variation key="widthClass=compact" constant="8"/>
+                    </constraint>
+                    <constraint firstAttribute="bottom" secondItem="UmG-2I-HV0" secondAttribute="bottom" id="VGk-MR-T0b"/>
+                    <constraint firstItem="0Y0-pW-JkU" firstAttribute="leading" secondItem="UmG-2I-HV0" secondAttribute="trailing" constant="20" id="n5N-4r-sP9">
+                        <variation key="widthClass=compact" constant="8"/>
+                    </constraint>
+                    <constraint firstItem="UmG-2I-HV0" firstAttribute="top" secondItem="qf2-SQ-lmI" secondAttribute="top" id="uFw-zu-r87"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+            <connections>
+                <outlet property="dropDownImageView" destination="0Y0-pW-JkU" id="sIW-5w-toV"/>
+                <outlet property="titleLabel" destination="UmG-2I-HV0" id="QsH-E4-aD2"/>
+            </connections>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="Dropdown Icon" width="40" height="40"/>
+    </resources>
+</document>
