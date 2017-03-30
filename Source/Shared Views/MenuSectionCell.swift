@@ -37,7 +37,7 @@ class MenuSectionCell: UITableViewCell {
         super.layoutSubviews()
 
         if let section = menuSection {
-            dropDownImageView.transform = CGAffineTransform(rotationAngle: section.isExpanded ? CGFloat(-M_PI) : 0.0)
+            dropDownImageView.transform = CGAffineTransform(rotationAngle: section.isExpanded ? CGFloat(Double.pi * -1) : 0.0)
         }
     }
 
@@ -48,8 +48,8 @@ class MenuSectionCell: UITableViewCell {
     func toggleDropDownIcon() {
         if let section = menuSection {
             let rotate = CABasicAnimation(keyPath: "transform.rotation.z")
-            rotate.fromValue = (section.isExpanded ? 0.0 : CGFloat(-M_PI))
-            rotate.toValue = (section.isExpanded ? CGFloat(-M_PI) : 0.0)
+            rotate.fromValue = (section.isExpanded ? 0.0 : CGFloat(Double.pi * -1))
+            rotate.toValue = (section.isExpanded ? CGFloat(Double.pi * -1) : 0.0)
             rotate.duration = 0.25
             rotate.autoreverses = true
             rotate.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)

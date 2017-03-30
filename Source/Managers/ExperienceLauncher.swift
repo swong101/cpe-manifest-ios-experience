@@ -6,14 +6,14 @@ import UIKit
 import CPEData
 import ReachabilitySwift
 
-public class ExperienceLauncher {
+open  class ExperienceLauncher {
 
     public static var delegate: ExperienceDelegate?
     private static var reachability = Reachability()!
     private static var reachabilityChangedObserver: NSObjectProtocol?
     static var isBeingDismissed = false
 
-    public static func launch(fromViewController viewController: UIViewController) {
+    open static func launch(fromViewController viewController: UIViewController) {
         delegate?.experienceWillOpen()
 
         let homeViewController = UIStoryboard.viewController(for: HomeViewController.self) as? HomeViewController
@@ -40,7 +40,7 @@ public class ExperienceLauncher {
         }
     }
 
-    static func close() {
+    open static func close() {
         isBeingDismissed = true
 
         if let observer = reachabilityChangedObserver {

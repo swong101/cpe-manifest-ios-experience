@@ -1038,7 +1038,7 @@ class VideoPlayerViewController: UIViewController {
                     break
 
                 case .failed:
-                    if let error = (object as? AVPlayerItem)?.error as? NSError {
+                    if let error = (object as? AVPlayerItem)?.error as NSError? {
                         assetFailedToPrepareForPlayback(error: error)
                     }
                     break
@@ -1120,7 +1120,7 @@ class VideoPlayerViewController: UIViewController {
         syncScrubber()
         playerControlsEnabled = false
 
-        print("Asset failed to prepare for playback with error: \(error)")
+        print("Asset failed to prepare for playback with error: \(error?.localizedDescription ?? "Unknown error")")
 
         if let error = error {
             display(error: error)

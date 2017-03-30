@@ -4,9 +4,9 @@
 
 import UIKit
 
-class LandscapeNavigationController: UINavigationController {
+open class LandscapeNavigationController: UINavigationController {
 
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+    override open var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .landscape
     }
 

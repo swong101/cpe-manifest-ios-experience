@@ -49,7 +49,7 @@ class ExtrasExperienceListViewController: ExtrasExperienceViewController {
             Analytics.log(event: .extrasAction, action: .selectSceneLocations)
         } else if experience.isType(.app) {
             if let app = experience.app, let url = app.url {
-                let webViewController = WebViewController(title: app.title, url: url)
+                let webViewController = WebViewController(url: url, title: app.title)
                 webViewController.shouldDisplayFullScreen = true
                 let navigationController = LandscapeNavigationController(rootViewController: webViewController)
                 self.present(navigationController, animated: true, completion: nil)

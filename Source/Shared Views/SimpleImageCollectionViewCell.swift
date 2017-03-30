@@ -4,17 +4,17 @@
 
 import UIKit
 
-class SimpleImageCollectionViewCell: UICollectionViewCell {
+open class SimpleImageCollectionViewCell: UICollectionViewCell {
 
-    static let NibName = "SimpleImageCollectionViewCell"
-    static let BaseReuseIdentifier = "SimpleImageCollectionViewCellReuseIdentifier"
+    public static let NibName = "SimpleImageCollectionViewCell"
+    public static let BaseReuseIdentifier = "SimpleImageCollectionViewCellReuseIdentifier"
 
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var playButton: UIButton?
 
-    var showsSelectedBorder = false
+    public var showsSelectedBorder = false
 
-    var imageURL: URL? {
+    open var imageURL: URL? {
         set {
             if let url = newValue {
                 imageView.sd_setImage(with: url)
@@ -29,7 +29,7 @@ class SimpleImageCollectionViewCell: UICollectionViewCell {
         }
     }
 
-    var playButtonVisible: Bool {
+    open var playButtonVisible: Bool {
         set {
             playButton?.isHidden = !newValue
         }
@@ -39,7 +39,7 @@ class SimpleImageCollectionViewCell: UICollectionViewCell {
         }
     }
 
-    override var isSelected: Bool {
+    override open var isSelected: Bool {
         didSet {
             if self.isSelected && showsSelectedBorder {
                 self.layer.borderWidth = 2
@@ -51,7 +51,7 @@ class SimpleImageCollectionViewCell: UICollectionViewCell {
         }
     }
 
-    override func prepareForReuse() {
+    override open func prepareForReuse() {
         super.prepareForReuse()
 
         self.isSelected = false

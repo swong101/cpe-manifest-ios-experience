@@ -4,27 +4,27 @@
 
 import Foundation
 
-class ExternalPlaybackManager {
+public struct ExternalPlaybackManager {
 
-    static var isAirPlayActive = false {
+    public static var isAirPlayActive = false {
         didSet {
             syncExternalPlaybackFlag()
         }
     }
 
-    static var isChromecastActive = false {
+    public static var isChromecastActive = false {
         didSet {
             syncExternalPlaybackFlag()
         }
     }
 
-    static var isFireTVActive = false {
+    public static var isFireTVActive = false {
         didSet {
             syncExternalPlaybackFlag()
         }
     }
 
-    static var isExternalPlaybackActive = false {
+    public static var isExternalPlaybackActive = false {
         didSet {
             if isExternalPlaybackActive != oldValue {
                 NotificationCenter.default.post(name: .externalPlaybackDidToggle, object: nil, userInfo: [NotificationConstants.isExternalPlaybackActive: isExternalPlaybackActive])
@@ -32,7 +32,7 @@ class ExternalPlaybackManager {
         }
     }
 
-    static private func syncExternalPlaybackFlag() {
+    private static func syncExternalPlaybackFlag() {
         isExternalPlaybackActive = (isAirPlayActive || isChromecastActive || isFireTVActive)
     }
 

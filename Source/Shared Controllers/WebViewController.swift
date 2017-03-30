@@ -6,9 +6,9 @@ import UIKit
 import WebKit
 import MBProgressHUD
 
-class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessageHandler {
+open class WebViewController: UIViewController {
 
-    private struct Constants {
+    fileprivate struct Constants {
         static let ScriptMessageHandlerName = "microHTMLMessageHandler"
         static let ScriptMessageAppVisible = "AppVisible"
         static let ScriptMessageAppShutdown = "AppShutdown"
@@ -17,14 +17,14 @@ class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessage
         static let HeaderButtonHeight: CGFloat = (DeviceType.IS_IPAD ? 90 : 50)
         static let HeaderIconPadding: CGFloat = (DeviceType.IS_IPAD ? 30 : 15)
     }
-
-    private var webView: WKWebView!
+    
     private var url: URL!
-    private var hud: MBProgressHUD?
-    var shouldDisplayFullScreen = false
+    private var webView: WKWebView!
+    public var hud: MBProgressHUD?
+    public var shouldDisplayFullScreen = false
 
     // MARK: Initialization
-    convenience init(title: String?, url: URL) {
+    convenience public init(url: URL, title: String? = nil) {
         self.init()
 
         var webViewUrl = url
@@ -46,7 +46,7 @@ class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessage
     }
 
     // MARK: View Lifecycle
-    override func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
 
         self.view.backgroundColor = UIColor.black
@@ -91,30 +91,36 @@ class WebViewController: UIViewController, WKNavigationDelegate, WKScriptMessage
     }
 
     // MARK: Actions
-    func close() {
+    open func close() {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: Constants.ScriptMessageHandlerName)
         webView.navigationDelegate = nil
         self.dismiss(animated: true, completion: nil)
     }
+    
+}
 
-    // MARK: WKNavigationDelegate
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+extension WebViewController: WKNavigationDelegate {
+    
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         decisionHandler(WKNavigationActionPolicy.allow)
     }
-
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    
+    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         hud?.hide(true)
     }
+    
+}
 
-    // MARK: WKScriptMessageHandler
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+extension WebViewController: WKScriptMessageHandler {
+    
+    public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == Constants.ScriptMessageHandlerName, let messageBody = message.body as? String {
             if messageBody == Constants.ScriptMessageAppVisible {
-
+                
             } else if messageBody == Constants.ScriptMessageAppShutdown {
                 close()
             }
         }
     }
-
+    
 }

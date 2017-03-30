@@ -9,7 +9,7 @@
 import Foundation
 import AVFoundation
 
-@objc public class AssetLoaderDelegate: NSObject {
+@objc open class AssetLoaderDelegate: NSObject {
 
     /// The URL scheme for FPS content.
     static let customScheme = "skd"
@@ -21,7 +21,7 @@ import AVFoundation
     static let didPersistContentKeyNotification = NSNotification.Name(rawValue: "handleAssetLoaderDelegateDidPersistContentKeyNotification")
 
     /// The AVURLAsset associated with the asset.
-    let asset: AVURLAsset
+    public let asset: AVURLAsset
 
     /// The name associated with the asset.
     fileprivate let assetName: String
@@ -32,7 +32,7 @@ import AVFoundation
     /// The document URL to use for saving persistent content key.
     fileprivate let documentURL: URL
 
-    init(asset: AVURLAsset, assetName: String) {
+    public init(asset: AVURLAsset, assetName: String) {
         // Determine the library URL.
         guard let documentPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first else { fatalError("Unable to determine library URL") }
         documentURL = URL(fileURLWithPath: documentPath)
@@ -46,7 +46,7 @@ import AVFoundation
     }
 
     /// Returns the Application Certificate needed to generate the Server Playback Context message.
-    public func fetchApplicationCertificate() -> Data? {
+    open func fetchApplicationCertificate() -> Data? {
 
         // MARK: ADAPT: YOU MUST IMPLEMENT THIS METHOD.
         let applicationCertificate: Data? = nil
@@ -58,7 +58,7 @@ import AVFoundation
         return applicationCertificate
     }
 
-    public func contentKeyFromKeyServerModuleWithSPCData(spcData: Data, assetIDString: String, completion: @escaping (_ data: Data?) -> Void) {
+    open func contentKeyFromKeyServerModuleWithSPCData(spcData: Data, assetIDString: String, completion: @escaping (_ data: Data?) -> Void) {
 
         // MARK: ADAPT: YOU MUST IMPLEMENT THIS METHOD.
         let ckcData: Data? = nil
@@ -191,7 +191,7 @@ private extension AssetLoaderDelegate {
              */
             spcData = try resourceLoadingRequest.streamingContentKeyRequestData(forApp: applicationCertificate, contentIdentifier: assetIDData, options: resourceLoadingRequestOptions)
         } catch let error as NSError {
-            print("Error obtaining key request data: \(error.domain) reason: \(error.localizedFailureReason)")
+            print("Error obtaining key request data: \(error.domain) reason: \(error.localizedFailureReason ?? "Unknown")")
             resourceLoadingRequest.finishLoading(with: error)
             return
         }

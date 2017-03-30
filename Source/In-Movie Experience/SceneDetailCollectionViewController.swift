@@ -205,7 +205,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
             if timedEvent.isType(.appGroup) {
                 if let experienceApp = timedEvent.experience?.app, let url = experienceApp.url {
                     NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
-                    let webViewController = WebViewController(title: experienceApp.title, url: url)
+                    let webViewController = WebViewController(url: url, title: experienceApp.title)
                     let navigationController = LandscapeNavigationController(rootViewController: webViewController)
                     self.present(navigationController, animated: true, completion: nil)
                     Analytics.log(event: .imeExtrasAction, action: .selectApp, itemId: experienceApp.analyticsID)
