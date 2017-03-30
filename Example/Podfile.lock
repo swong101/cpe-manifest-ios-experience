@@ -31,7 +31,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   CPEData: 2ca88aac3fa87bdefa67064b7af7ab3c3b4ac3fd
-  CPEExperience: 1424baf8b176a968e88baae9a9f6514b6270f4ec
+  CPEExperience: ce5780739009afa926cc8eb6a06e1f90bc48fe21
   google-cast-sdk: da1989cbc1b9ff7b50ddb9dae5b1969d95a65a0f
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
   ReachabilitySwift: f5b9bb30a0777fac8f09ce8b067e32faeb29bb64

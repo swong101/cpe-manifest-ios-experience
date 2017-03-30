@@ -26,6 +26,6 @@ Pod::Spec.new do |s|
   s.vendored_frameworks = 'Frameworks/*.framework'
   s.frameworks          = 'Accelerate', 'AVFoundation', 'CoreBluetooth', 'CoreData', 'CoreLocation', 'CoreText', 'GLKit', 'ImageIO', 'OpenGLES', 'QuartzCore', 'Security', 'SystemConfiguration', 'CoreGraphics'
   s.libraries           = 'icucore', 'c++', 'z'
-  s.xcconfig            = { 'FRAMEWORK_SEARCH_PATHS' => '$(SRCROOT)/../Frameworks' }
+  s.xcconfig            = { 'FRAMEWORK_SEARCH_PATHS' => File.join(File.dirname(__FILE__), 'Frameworks') }
 
 end
