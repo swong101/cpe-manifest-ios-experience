@@ -1469,7 +1469,7 @@ class VideoPlayerViewController: UIViewController {
             }
 
             DispatchQueue.global(qos: .background).async {
-                if let closestClipShareTimedEvent = CPEXMLSuite.current?.manifest.closedTimedEvent(toTimecode: self.currentTime, type: .clipShare) {
+                if let closestClipShareTimedEvent = CPEXMLSuite.current?.manifest.closestTimedEvent(toTimecode: self.currentTime, type: .clipShare) {
                     if !self.playbackOverlayView.isHidden && closestClipShareTimedEvent != self.playbackOverlayTimedEvent {
                         DispatchQueue.main.async {
                             if let imageURL = closestClipShareTimedEvent.thumbnailImageURL {

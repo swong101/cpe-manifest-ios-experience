@@ -56,9 +56,11 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         videoContainerView.isHidden = true
         clipNameLabel.text = timedEvent?.description
 
-        DispatchQueue.global(qos: .userInteractive).async {
-            //self.previousTimedEvent = self.timedEvent?.previousTimedEventOfType(.clipShare)
-            //self.nextTimedEvent = self.timedEvent?.nextTimedEventOfType(.clipShare)
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let timedEvent = self.timedEvent {
+                self.previousTimedEvent = CPEXMLSuite.current?.manifest.previousTimedEvent(from: timedEvent, ofType: .clipShare)
+                self.nextTimedEvent = CPEXMLSuite.current?.manifest.nextTimedEvent(from: timedEvent, ofType: .clipShare)
+            }
 
             DispatchQueue.main.async {
                 self.previousButton.isHidden = (self.previousTimedEvent == nil)
