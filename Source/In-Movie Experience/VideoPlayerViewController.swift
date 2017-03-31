@@ -863,7 +863,7 @@ class VideoPlayerViewController: UIViewController {
                 captionsOptionsTableView?.register(UINib(nibName: DropdownTableViewCell.NibName, bundle: Bundle.frameworkResources), forCellReuseIdentifier: DropdownTableViewCell.ReuseIdentifier)
 
                 // Picture-in-Picture setup
-                if #available(iOS 9.0, *) {
+                if #available(iOS 10.0, *) {
                     if AVPictureInPictureController.isPictureInPictureSupported(), let playerLayer = playbackView.playerLayer {
                         pictureInPictureController = AVPictureInPictureController(playerLayer: playerLayer)
                         (pictureInPictureController as? AVPictureInPictureController)?.delegate = self
@@ -1347,7 +1347,7 @@ class VideoPlayerViewController: UIViewController {
         playerControlsVisible = false
 
         if !didPlayInterstitial {
-            if let videoURL = CPEXMLSuite.current!.manifest.interstitialVideo?.url {
+            if let videoURL = CPEXMLSuite.current?.manifest.interstitialVideo?.url {
                 playAsset(withURL: videoURL)
 
                 playerControlsLocked = true
@@ -1362,7 +1362,7 @@ class VideoPlayerViewController: UIViewController {
         playerControlsLocked = false
         skipContainerView.isHidden = true
 
-        if let videoURL = CPEXMLSuite.current!.manifest.featureVideo.url {
+        if let videoURL = CPEXMLSuite.current?.manifest.featureVideo.url {
             NotificationCenter.default.post(name: .videoPlayerDidPlayMainExperience, object: nil)
             playAsset(withURL: videoURL)
         }
@@ -1414,13 +1414,13 @@ class VideoPlayerViewController: UIViewController {
                 if currentTime > 0 {
                     DispatchQueue.global(qos: .background).async {
                         if self.mode == .mainFeature {
-                            if let triviaTimedEvent = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: self.currentTime, type: .textItem)?.first {
+                            if let triviaTimedEvent = CPEXMLSuite.current?.manifest.timedEvents(atTimecode: self.currentTime, type: .textItem)?.first {
                                 if triviaTimedEvent != self.nowPlayingInfoTimedEvent, let description = triviaTimedEvent.description {
                                     self.nowPlayingInfoTimedEvent = triviaTimedEvent
                                     nowPlayingInfo[MPMediaItemPropertyTitle] = triviaTimedEvent.experience?.title
                                     nowPlayingInfo[MPMediaItemPropertyArtist] = description
                                 }
-                            } else if let clipShareTimedEvent = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: self.currentTime, type: .clipShare)?.first {
+                            } else if let clipShareTimedEvent = CPEXMLSuite.current?.manifest.timedEvents(atTimecode: self.currentTime, type: .clipShare)?.first {
                                 if clipShareTimedEvent != self.nowPlayingInfoTimedEvent, let description = clipShareTimedEvent.description {
                                     self.nowPlayingInfoTimedEvent = clipShareTimedEvent
                                     nowPlayingInfo[MPMediaItemPropertyTitle] = clipShareTimedEvent.experience?.title
@@ -1469,7 +1469,7 @@ class VideoPlayerViewController: UIViewController {
             }
 
             DispatchQueue.global(qos: .background).async {
-                if let closestClipShareTimedEvent = CPEXMLSuite.current!.manifest.closedTimedEvent(toTimecode: self.currentTime, type: .clipShare) {
+                if let closestClipShareTimedEvent = CPEXMLSuite.current?.manifest.closedTimedEvent(toTimecode: self.currentTime, type: .clipShare) {
                     if !self.playbackOverlayView.isHidden && closestClipShareTimedEvent != self.playbackOverlayTimedEvent {
                         DispatchQueue.main.async {
                             if let imageURL = closestClipShareTimedEvent.thumbnailImageURL {
