@@ -17,7 +17,7 @@ open class WebViewController: UIViewController {
         static let HeaderButtonHeight: CGFloat = (DeviceType.IS_IPAD ? 90 : 50)
         static let HeaderIconPadding: CGFloat = (DeviceType.IS_IPAD ? 30 : 15)
     }
-    
+
     private var url: URL!
     private var webView: WKWebView!
     public var hud: MBProgressHUD?
@@ -96,31 +96,31 @@ open class WebViewController: UIViewController {
         webView.navigationDelegate = nil
         self.dismiss(animated: true, completion: nil)
     }
-    
+
 }
 
 extension WebViewController: WKNavigationDelegate {
-    
+
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         decisionHandler(WKNavigationActionPolicy.allow)
     }
-    
+
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         hud?.hide(true)
     }
-    
+
 }
 
 extension WebViewController: WKScriptMessageHandler {
-    
+
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if message.name == Constants.ScriptMessageHandlerName, let messageBody = message.body as? String {
             if messageBody == Constants.ScriptMessageAppVisible {
-                
+
             } else if messageBody == Constants.ScriptMessageAppShutdown {
                 close()
             }
         }
     }
-    
+
 }

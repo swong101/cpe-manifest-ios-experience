@@ -1,6 +1,6 @@
 disabled_rules:
   - todo
-  - variable_name
+  - identifier_name
   - line_length
   - cyclomatic_complexity
   - type_body_length
