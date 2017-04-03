@@ -255,7 +255,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         let shouldAnimateOpen = locationDetailView.isHidden
         closeDetailView(animated: false)
 
-        galleryScrollView.gallery = gallery
+        galleryScrollView.load(with: gallery)
         galleryScrollView.isHidden = false
 
         if gallery.isTurntable {
@@ -286,7 +286,7 @@ class ExtrasSceneLocationsViewController: ExtrasExperienceViewController, UIColl
         let hideViews = {
             self.locationDetailView.isHidden = true
 
-            self.galleryScrollView.destroyGallery()
+            self.galleryScrollView.load(with: nil)
             self.galleryScrollView.isHidden = true
             self.galleryPageControl.isHidden = true
 

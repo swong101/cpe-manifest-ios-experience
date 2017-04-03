@@ -60,7 +60,7 @@ class TalentImageGalleryViewController: SceneDetailViewController {
         super.viewDidAppear(animated)
 
         if let imageURLs = talent.images?.flatMap({ $0.imageURL }) {
-            galleryScrollView.gallery = Gallery(imageURLs: imageURLs)
+            galleryScrollView.load(with: Gallery(imageURLs: imageURLs))
             galleryScrollView.gotoPage(initialPage, animated: false)
         }
     }

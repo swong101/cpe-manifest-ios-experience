@@ -110,7 +110,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
     private func showGallery(_ gallery: Gallery) {
         closeDetailView()
 
-        galleryScrollView.gallery = gallery
+        galleryScrollView.load(with: gallery)
         galleryScrollView.isHidden = false
 
         locationDetailView.isHidden = false
@@ -119,7 +119,7 @@ class MapDetailViewController: SceneDetailViewController, UICollectionViewDataSo
     private func closeDetailView() {
         locationDetailView.isHidden = true
 
-        galleryScrollView.destroyGallery()
+        galleryScrollView.load(with: nil)
         galleryScrollView.isHidden = true
 
         videoPlayerViewController?.willMove(toParentViewController: nil)

@@ -66,7 +66,7 @@ class GallerySceneDetailViewController: SceneDetailViewController, UIScrollViewD
                 videoContainerView?.removeFromSuperview()
                 videoContainerView = nil
 
-                galleryScrollView?.gallery = gallery
+                galleryScrollView?.load(with: gallery)
                 descriptionLabel.text = gallery.description
 
                 if gallery.isTurntable {
