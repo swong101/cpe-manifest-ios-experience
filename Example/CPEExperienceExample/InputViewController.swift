@@ -52,11 +52,17 @@ struct Config {
 
 class InputViewController: UIViewController {
 
+    private struct Constants {
+        static let BigBuckBunnyURL = URL(string: "http://pdl.warnerbros.com/digitalcopy2/s/bbb/big_buck_bunny_480p_h264.mov")!
+    }
+
     @IBOutlet weak private var manifestXMLTextField: UITextField!
     @IBOutlet weak private var appDataXMLTextField: UITextField!
     @IBOutlet weak private var cpeStyleXMLTextField: UITextField!
+    @IBOutlet weak private var mainFeatureTextField: UITextField!
 
     private var hud: MBProgressHUD?
+    fileprivate var mainFeatureURL: URL?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,12 +75,14 @@ class InputViewController: UIViewController {
         manifestXMLTextField.text = "https://cpe-manifest.s3.amazonaws.com/xml/urn:dece:cid:eidr-s:EE48-FE4D-B363-71AF-A3AB-G/FantasticBeasts_V1.2_Manifest.xml"
         appDataXMLTextField.text = "https://cpe-manifest.s3.amazonaws.com/xml/urn:dece:cid:eidr-s:EE48-FE4D-B363-71AF-A3AB-G/FantasticBeasts_V1.1_AppData.xml"
         cpeStyleXMLTextField.text = "https://cpe-manifest.s3.amazonaws.com/xml/urn:dece:cid:eidr-s:EE48-FE4D-B363-71AF-A3AB-G/FantasticBeasts_V1.1_style.xml"
+        mainFeatureTextField.text = Constants.BigBuckBunnyURL.absoluteString
     }
 
     @objc private func onTapView() {
         manifestXMLTextField.endEditing(true)
         appDataXMLTextField.endEditing(true)
         cpeStyleXMLTextField.endEditing(true)
+        mainFeatureTextField.endEditing(true)
     }
 
     @IBAction private func onLoad() {
@@ -92,29 +100,33 @@ class InputViewController: UIViewController {
             }
 
             DispatchQueue.global(qos: .userInitiated).async {
-                do {
-                    if let key = Config.theTakeAPIKey {
-                        CPEXMLSuite.Settings.productAPIUtil = TheTakeAPIUtil(apiKey: key)
-                    }
+                if let key = Config.theTakeAPIKey {
+                    CPEXMLSuite.Settings.productAPIUtil = TheTakeAPIUtil(apiKey: key)
+                }
 
-                    if let key = Config.baselineAPIKey {
-                        CPEXMLSuite.Settings.talentAPIUtil = BaselineAPIUtil(apiKey: key)
-                    }
+                if let key = Config.baselineAPIKey {
+                    CPEXMLSuite.Settings.talentAPIUtil = BaselineAPIUtil(apiKey: key)
+                }
 
-                    try CPEXMLSuite.load(manifestXMLURL: manifestXMLURL, appDataXMLURL: appDataXMLURL, cpeStyleXMLURL: cpeStyleXMLURL) { [unowned self] in
-                        DispatchQueue.main.async {
-                            self.hud?.hide(true)
-
-                            ExperienceLauncher.launch(fromViewController: self)
-                        }
-                    }
-                } catch {
+                CPEXMLSuite.load(manifestXMLURL: manifestXMLURL, appDataXMLURL: appDataXMLURL, cpeStyleXMLURL: cpeStyleXMLURL) { (error) in
                     DispatchQueue.main.async {
                         self.hud?.hide(true)
 
-                        let alertController = UIAlertController(title: "Error parsing files", message: "\(error)", preferredStyle: .alert)
-                        alertController.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
-                        self.navigationController?.present(alertController, animated: true, completion: nil)
+                        if let error = error {
+                            let alertController = UIAlertController(title: "Error parsing files", message: "\(error)", preferredStyle: .alert)
+                            alertController.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+                            self.navigationController?.present(alertController, animated: true, completion: nil)
+                        } else {
+                            DispatchQueue.main.async {
+                                if let urlString = self.mainFeatureTextField.text, let url = URL(string: urlString) {
+                                    self.mainFeatureURL = url
+                                } else {
+                                    self.mainFeatureURL = Constants.BigBuckBunnyURL
+                                }
+
+                                ExperienceLauncher.launch(fromViewController: self)
+                            }
+                        }
                     }
                 }
             }
@@ -180,7 +192,7 @@ extension InputViewController: ExperienceDelegate {
         // Handle DRM
         if mode == .mainFeature {
             // TODO: Replace the this asset handler with your DRM flow
-            completion(ExamplePlaybackAsset(id: url.absoluteString, url: URL(string: "http://pdl.warnerbros.com/digitalcopy2/s/bbb/big_buck_bunny_480p_h264.mov")!, title: "Big Buck Bunny"))
+            completion(ExamplePlaybackAsset(id: url.absoluteString, url: mainFeatureURL!, title: "CPE Experience Test Title"))
         } else {
             completion(ExamplePlaybackAsset(id: url.absoluteString, url: url, title: title, imageURL: imageURL))
         }
