@@ -16,7 +16,7 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController {
 
     // MARK: View Lifecycle
     override func viewDidLoad() {
-        customTitle = String.localize("label.actors")
+        customTitle = CPEDataUtils.peopleExperienceName
 
         super.viewDidLoad()
 
@@ -103,7 +103,7 @@ class ExtrasTalentSelectorViewController: ExtrasExperienceViewController {
 extension ExtrasTalentSelectorViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return (CPEXMLSuite.current?.manifest.people?.count ?? 0)
+        return CPEDataUtils.numPeopleForDisplay
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -112,7 +112,7 @@ extension ExtrasTalentSelectorViewController: UITableViewDataSource {
             return tableViewCell
         }
 
-        if let people = CPEXMLSuite.current?.manifest.people, people.count > indexPath.row {
+        if let people = CPEDataUtils.peopleForDisplay, people.count > indexPath.row {
             cell.talent = people[indexPath.row]
         }
 
