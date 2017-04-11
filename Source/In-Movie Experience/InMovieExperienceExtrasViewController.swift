@@ -44,7 +44,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
         if let nodeStyle = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.inMovieExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation) {
             self.view.backgroundColor = nodeStyle.backgroundColor
 
-            if let backgroundImageURL = nodeStyle.backgroundImageURL {
+            if let backgroundImageURL = nodeStyle.backgroundImage?.url {
                 backgroundImageView.sd_setImage(with: backgroundImageURL)
                 backgroundImageView.contentMode = nodeStyle.backgroundScaleMethod == .bestFit ? .scaleAspectFill : .scaleAspectFit
             }

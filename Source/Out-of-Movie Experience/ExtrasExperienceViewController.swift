@@ -101,7 +101,7 @@ class ExtrasExperienceViewController: UIViewController {
         if let nodeStyle = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.outOfMovieExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation) {
             self.view.backgroundColor = nodeStyle.backgroundColor
 
-            if let backgroundImageURL = nodeStyle.backgroundImageURL {
+            if let backgroundImageURL = nodeStyle.backgroundImage?.url {
                 let backgroundImageView = UIImageView()
                 backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
                 backgroundImageView.sd_setImage(with: backgroundImageURL)

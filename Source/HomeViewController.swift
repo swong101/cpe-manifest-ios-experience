@@ -56,12 +56,12 @@ class HomeViewController: UIViewController {
     }
 
     private var backgroundVideoSize: CGSize {
-        return (nodeStyle?.backgroundVideoSize ?? CGSize.zero)
+        return (nodeStyle?.backgroundVideo?.size ?? CGSize.zero)
     }
 
     private var observedBackgroundImageSize: CGSize?
     private var backgroundImageSize: CGSize {
-        return (nodeStyle?.backgroundImageSize ?? observedBackgroundImageSize ?? CGSize.zero)
+        return (nodeStyle?.backgroundImage?.size ?? observedBackgroundImageSize ?? CGSize.zero)
     }
 
     private var playButtonImage: Image? {
@@ -288,7 +288,7 @@ class HomeViewController: UIViewController {
             coordinator.animate(alongsideTransition: { [weak self] (_) in
                 if let strongSelf = self, strongSelf.interfaceCreated {
                     if let currentURL = strongSelf.backgroundVideoPlayerViewController?.url {
-                        if let newURL = self?.nodeStyle?.backgroundVideoURL, currentURL != newURL {
+                        if let newURL = self?.nodeStyle?.backgroundVideo?.url, currentURL != newURL {
                             strongSelf.unloadBackground()
                             strongSelf.loadBackground()
                         } else {
@@ -357,7 +357,7 @@ class HomeViewController: UIViewController {
                 var backgroundSize = CGSize.zero
                 let backgroundImageAspectRatio = backgroundImageSize.width / backgroundImageSize.height
 
-                if nodeStyle?.backgroundScaleMethod == .full && nodeStyle?.backgroundVideoURL == nil {
+                if nodeStyle?.backgroundScaleMethod == .full && nodeStyle?.backgroundVideo?.url == nil {
                     if backgroundImageAspectRatio > viewAspectRatio {
                         backgroundSize.width = viewWidth
                         backgroundSize.height = backgroundSize.width / backgroundImageAspectRatio
@@ -382,7 +382,7 @@ class HomeViewController: UIViewController {
                         backgroundSize.height = backgroundSize.width / backgroundImageAspectRatio
                     }
 
-                    if nodeStyle == nil || nodeStyle?.backgroundVideoURL != nil || nodeStyle?.backgroundPositioningMethod == .centered {
+                    if nodeStyle == nil || nodeStyle?.backgroundVideo?.url != nil || nodeStyle?.backgroundPositioningMethod == .centered {
                         backgroundPoint.x = (backgroundSize.width - viewWidth) / -2
                         backgroundPoint.y = (backgroundSize.height - viewHeight) / -2
                     }
@@ -524,7 +524,7 @@ class HomeViewController: UIViewController {
 
     // MARK: Video Player
     private func loadBackground() {
-        if let nodeStyle = nodeStyle, let backgroundVideoURL = nodeStyle.backgroundVideoURL, let videoPlayerViewController = UIStoryboard.viewController(for: VideoPlayerViewController.self) as? VideoPlayerViewController {
+        if let nodeStyle = nodeStyle, let backgroundVideoURL = nodeStyle.backgroundVideo?.url, let videoPlayerViewController = UIStoryboard.viewController(for: VideoPlayerViewController.self) as? VideoPlayerViewController {
             videoPlayerViewController.mode = .basicPlayer
 
             videoPlayerViewController.view.frame = backgroundVideoView.bounds
@@ -565,9 +565,9 @@ class HomeViewController: UIViewController {
             showHomeScreenViews(animated: false)
         }
 
-        if let backgroundImageURL = nodeStyle?.backgroundImageURL {
+        if let backgroundImageURL = nodeStyle?.backgroundImage?.url {
             backgroundImageView.sd_setImage(with: backgroundImageURL)
-        } else if nodeStyle?.backgroundVideoURL == nil {
+        } else if nodeStyle?.backgroundVideo?.url == nil {
             if let backgroundImageURL = CPEXMLSuite.current?.manifest.backgroundImageURL {
                 backgroundImageView.sd_setImage(with: backgroundImageURL, completed: { [weak self] (image, _, _, _) in
                     if let image = image {
@@ -580,7 +580,7 @@ class HomeViewController: UIViewController {
             }
         }
 
-        if !interfaceCreated, let backgroundAudioUrl = nodeStyle?.backgroundAudioURL {
+        if !interfaceCreated, let backgroundAudioUrl = nodeStyle?.backgroundAudio?.url {
             let audioPlayerItem = AVPlayerItem(asset: AVAsset(url: backgroundAudioUrl))
             backgroundAudioDidFinishPlayingObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: audioPlayerItem, queue: nil, using: { (_) in
                 DispatchQueue.main.async {
