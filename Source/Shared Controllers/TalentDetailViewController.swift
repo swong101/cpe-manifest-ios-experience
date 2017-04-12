@@ -95,21 +95,24 @@ class TalentDetailViewController: SceneDetailViewController {
             talentImageView?.isUserInteractionEnabled = true
         }
 
-        // Fill data
-        talentNameLabel.text = talent.name.uppercased()
-        if let imageURL = talent.largeImageURL {
-            talentImageView?.sd_setImage(with: imageURL)
-        } else {
-            talentImageView?.removeFromSuperview()
-        }
-
         filmographyCollectionView?.register(UINib(nibName: SimpleImageCollectionViewCell.NibName, bundle: Bundle.frameworkResources), forCellWithReuseIdentifier: SimpleImageCollectionViewCell.BaseReuseIdentifier)
 
         if !talent.detailsLoaded {
             hud = MBProgressHUD.showAdded(to: self.view, animated: true)
         }
 
-        DispatchQueue.global(qos: .userInteractive).async {
+        // Fill data
+        self.talentNameLabel.text = talent.name.uppercased()
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let imageURL = self.talent.largeImageURL {
+                self.talentImageView?.sd_setImage(with: imageURL)
+            } else {
+                DispatchQueue.main.async {
+                    self.talentImageView?.removeFromSuperview()
+                }
+            }
+
             self.talent.getTalentDetails({ (biography, socialAccounts, films) in
                 DispatchQueue.main.async(execute: {
                     if let biography = biography, !biography.isEmpty {

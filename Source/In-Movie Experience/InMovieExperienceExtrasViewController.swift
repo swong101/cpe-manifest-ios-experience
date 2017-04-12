@@ -81,7 +81,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
 
     private func processTimedEvents(_ time: Double) {
         if !self.view.isHidden {
-            DispatchQueue.global(qos: .userInteractive).async {
+            DispatchQueue.global(qos: .userInitiated).async {
                 self.currentTime = time
 
                 let newTalents = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: time, type: .person)?.sorted(by: {

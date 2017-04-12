@@ -81,7 +81,7 @@ class SceneDetailCollectionViewController: UICollectionViewController, UICollect
     }
 
     func processTimedEvents(_ time: Double) {
-        DispatchQueue.global(qos: .userInteractive).async {
+        DispatchQueue.global(qos: .userInitiated).async {
             self._currentTime = time
 
             var deleteIndexPaths: [IndexPath]?

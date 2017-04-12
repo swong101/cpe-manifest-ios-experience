@@ -62,22 +62,24 @@ class ShoppingSceneDetailCollectionViewCell: SceneDetailCollectionViewCell {
         if let timedEvent = timedEvent, timedEvent.isType(.product) {
             if let product = timedEvent.product {
                 products = [product]
-            } else if let productAPIUtil = CPEXMLSuite.Settings.productAPIUtil {
+            } else {
                 DispatchQueue.global(qos: .userInteractive).async {
-                    let newFrameTime = productAPIUtil.closestFrameTime(self.currentTime)
-                    if newFrameTime != self.currentProductFrameTime {
-                        self.currentProductFrameTime = newFrameTime
+                    if let productAPIUtil = CPEXMLSuite.Settings.productAPIUtil {
+                        let newFrameTime = productAPIUtil.closestFrameTime(self.currentTime)
+                        if newFrameTime != self.currentProductFrameTime {
+                            self.currentProductFrameTime = newFrameTime
 
-                        if let currentTask = self.currentProductSessionDataTask {
-                            currentTask.cancel()
-                        }
-
-                        self.currentProductSessionDataTask = productAPIUtil.getFrameProducts(self.currentProductFrameTime, completion: { [weak self] (products) -> Void in
-                            self?.currentProductSessionDataTask = nil
-                            DispatchQueue.main.async {
-                                self?.products = products
+                            if let currentTask = self.currentProductSessionDataTask {
+                                currentTask.cancel()
                             }
-                        })
+
+                            self.currentProductSessionDataTask = productAPIUtil.getFrameProducts(self.currentProductFrameTime, completion: { [weak self] (products) -> Void in
+                                self?.currentProductSessionDataTask = nil
+                                DispatchQueue.main.async {
+                                    self?.products = products
+                                }
+                            })
+                        }
                     }
                 }
             }
