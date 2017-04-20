@@ -4,6 +4,7 @@
 
 import UIKit
 import CPEData
+import SDWebImage
 
 enum ShoppingDetailMode {
     case ime
@@ -23,7 +24,10 @@ class ShoppingDetailViewController: SceneDetailViewController {
     @IBOutlet weak private var productMatchContainerView: UIView!
     @IBOutlet weak private var productMatchIcon: UIView!
     @IBOutlet weak private var productMatchLabel: UILabel!
-    @IBOutlet weak private var productImageView: UIImageView!
+    @IBOutlet weak private var productImageView: UIImageView?
+    @IBOutlet weak private var productVideoContainerView: UIView?
+    @IBOutlet weak private var productVideoPreviewImageView: UIImageView?
+    @IBOutlet weak private var productVideoPreviewPlayButton: UIButton?
     @IBOutlet weak private var productBrandLabel: UILabel!
     @IBOutlet weak private var productNameLabel: UILabel!
     @IBOutlet weak private var productPriceLabel: UILabel!
@@ -35,6 +39,7 @@ class ShoppingDetailViewController: SceneDetailViewController {
     var mode = ShoppingDetailMode.extras
     var products: [ProductItem]?
     private var closeDetailsViewObserver: NSObjectProtocol?
+    private var videoPlayerViewController: VideoPlayerViewController?
 
     deinit {
         if let observer = closeDetailsViewObserver {
@@ -67,12 +72,16 @@ class ShoppingDetailViewController: SceneDetailViewController {
                     productPriceLabel.isHidden = true
                 }
 
-                if let imageURL = currentProduct?.productImageURL {
-                    productImageView.sd_setImage(with: imageURL)
+                if let productImageURL = currentProduct?.productImageURL {
+                    productImageView?.sd_setImage(with: productImageURL)
                 } else {
-                    productImageView.sd_cancelCurrentImageLoad()
-                    productImageView.image = nil
-                    productImageView.backgroundColor = UIColor.clear
+                    productImageView?.removeFromSuperview()
+                }
+
+                if DeviceType.IS_IPAD || mode == .extras, let _ = currentProduct?.productVideoURL as? URL, let productVideoPreviewImageURL = currentProduct?.productVideoPreviewImageURL as? URL {
+                    productVideoPreviewImageView?.sd_setImage(with: productVideoPreviewImageURL)
+                } else {
+                    productVideoContainerView?.removeFromSuperview()
                 }
             }
         }
@@ -98,6 +107,12 @@ class ShoppingDetailViewController: SceneDetailViewController {
         currentProduct = products?.first
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        videoPlayerViewController?.pauseVideo()
+    }
+
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
 
@@ -105,14 +120,14 @@ class ShoppingDetailViewController: SceneDetailViewController {
     }
 
     // MARK: Actions
-    @IBAction private func onShop(_ sender: AnyObject) {
+    @IBAction private func onShop() {
         if let product = currentProduct, let externalURL = product.externalURL {
             NotificationCenter.default.post(name: .videoPlayerShouldPause, object: nil)
             externalURL.promptLaunch(cancelHandler: {
                 NotificationCenter.default.post(name: .videoPlayerCanResume, object: nil)
             })
 
-            Analytics.log(event:mode.analyticsEvent, action: .selectShopProduct, itemName: product.name)
+            Analytics.log(event: mode.analyticsEvent, action: .selectShopProduct, itemName: product.name)
         }
     }
 
@@ -126,7 +141,33 @@ class ShoppingDetailViewController: SceneDetailViewController {
             }
 
             self.present(activityViewController, animated: true, completion: nil)
-            Analytics.log(event:mode.analyticsEvent, action: .selectShareProductLink, itemName: product.name)
+            Analytics.log(event: mode.analyticsEvent, action: .selectShareProductLink, itemName: product.name)
+        }
+    }
+
+    @IBAction private func onPlay() {
+        if let currentProduct = currentProduct, let productVideoContainerView = productVideoContainerView {
+            let videoPlayerExists = (videoPlayerViewController != nil)
+            if let videoURL = currentProduct.productVideoURL as? URL, let videoPlayerViewController = (videoPlayerViewController ?? UIStoryboard.viewController(for: VideoPlayerViewController.self) as? VideoPlayerViewController) {
+                productVideoPreviewImageView?.isHidden = true
+                productVideoPreviewPlayButton?.isHidden = true
+
+                if videoPlayerExists {
+                    videoPlayerViewController.removeCurrentItem()
+                } else {
+                    videoPlayerViewController.mode = VideoPlayerMode.supplemental
+                    videoPlayerViewController.view.frame = productVideoContainerView.bounds
+                    productVideoContainerView.addSubview(videoPlayerViewController.view)
+                    self.addChildViewController(videoPlayerViewController)
+                    videoPlayerViewController.didMove(toParentViewController: self)
+                    videoPlayerViewController.topToolbar?.removeFromSuperview()
+                }
+
+                videoPlayerViewController.playAsset(withURL: videoURL, title: currentProduct.name, imageURL: currentProduct.productImageURL)
+
+                self.videoPlayerViewController = videoPlayerViewController
+                Analytics.log(event: mode.analyticsEvent, action: .selectVideo, itemId: currentProduct.id)
+            }
         }
     }
 
