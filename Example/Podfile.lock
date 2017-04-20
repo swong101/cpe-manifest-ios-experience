@@ -8,9 +8,9 @@ PODS:
     - ReachabilitySwift (~> 3.0)
     - SDWebImage (~> 4.0)
     - UAProgressView (~> 0.1)
-  - google-cast-sdk (3.3.0):
-    - google-cast-sdk/Core (= 3.3.0)
-  - google-cast-sdk/Core (3.3.0)
+  - google-cast-sdk (3.4.0):
+    - google-cast-sdk/Core (= 3.4.0)
+  - google-cast-sdk/Core (3.4.0)
   - MBProgressHUD (0.9.2)
   - ReachabilitySwift (3)
   - SDWebImage (4.0.0):
@@ -32,7 +32,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   CPEData: 977cab395af03be6c51c012caa6082b85ffdd0fd
   CPEExperience: ce5780739009afa926cc8eb6a06e1f90bc48fe21
-  google-cast-sdk: da1989cbc1b9ff7b50ddb9dae5b1969d95a65a0f
+  google-cast-sdk: 35da95f568b50d72628014f3320e2f3240bf2a7a
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
   ReachabilitySwift: f5b9bb30a0777fac8f09ce8b067e32faeb29bb64
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41

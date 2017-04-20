@@ -248,7 +248,7 @@ class VideoPlayerViewController: UIViewController {
     }
 
     // Controls
-    @IBOutlet weak private var topToolbar: UIView?
+    @IBOutlet weak public var topToolbar: UIView?
     @IBOutlet weak fileprivate var commentaryButton: UIButton?
     @IBOutlet weak fileprivate var captionsButton: UIButton?
     @IBOutlet weak private var airPlayButton: AirPlayButton?
@@ -1270,7 +1270,7 @@ class VideoPlayerViewController: UIViewController {
         }
     }
 
-    private func pauseVideo() {
+    public func pauseVideo() {
         // Pause media
         if isCastingActive {
             CastManager.sharedInstance.pauseMedia()
@@ -2003,8 +2003,8 @@ extension VideoPlayerViewController: GCKSessionManagerListener {
 
 extension VideoPlayerViewController: GCKRemoteMediaClientListener {
 
-    fileprivate func updateWithMediaStatus(_ mediaStatus: GCKMediaStatus) {
-        if didPlayInterstitial {
+    fileprivate func updateWithMediaStatus(_ mediaStatus: GCKMediaStatus?) {
+        if didPlayInterstitial, let mediaStatus = mediaStatus {
             if let duration = mediaStatus.mediaInformation?.streamDuration {
                 playerItemDuration = duration
             }
@@ -2045,7 +2045,7 @@ extension VideoPlayerViewController: GCKRemoteMediaClientListener {
         selectInitialCaptions()
     }
 
-    func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus) {
+    func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus?) {
         updateWithMediaStatus(mediaStatus)
     }
 
