@@ -1,5 +1,5 @@
 PODS:
-  - CPEData (3.0.0):
+  - CPEData (3.1.0):
     - SWXMLHash (~> 3.0)
   - CPEExperience (4.0.0):
     - CPEData (~> 3.0)
@@ -30,7 +30,7 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  CPEData: 977cab395af03be6c51c012caa6082b85ffdd0fd
+  CPEData: 6b8cae680cbbafaad30b526f43cb047545e4cd97
   CPEExperience: ce5780739009afa926cc8eb6a06e1f90bc48fe21
   google-cast-sdk: 35da95f568b50d72628014f3320e2f3240bf2a7a
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
