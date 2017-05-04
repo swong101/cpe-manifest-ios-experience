@@ -16,16 +16,11 @@ open class SimpleImageCollectionViewCell: UICollectionViewCell {
 
     open var imageURL: URL? {
         set {
-            DispatchQueue.global(qos: .userInitiated).async {
-                if let url = newValue {
-                    self.imageView.sd_setImage(with: url)
-                } else {
-                    self.imageView.sd_cancelCurrentImageLoad()
-
-                    DispatchQueue.main.async {
-                        self.imageView.image = nil
-                    }
-                }
+            if let url = newValue {
+                self.imageView.sd_setImage(with: url)
+            } else {
+                self.imageView.sd_cancelCurrentImageLoad()
+                self.imageView.image = nil
             }
         }
 

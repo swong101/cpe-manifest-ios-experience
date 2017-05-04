@@ -24,9 +24,7 @@ class TalentTableViewCell: UITableViewCell {
 
             if let url = imageURL {
                 if url != oldValue {
-                    DispatchQueue.global(qos: .userInitiated).async {
-                        self.talentImageView.sd_setImage(with: url)
-                    }
+                    self.talentImageView.sd_setImage(with: url)
                 }
             } else {
                 talentImageView.sd_cancelCurrentImageLoad()
