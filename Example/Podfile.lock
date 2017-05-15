@@ -16,7 +16,7 @@ PODS:
   - SDWebImage (4.0.0):
     - SDWebImage/Core (= 4.0.0)
   - SDWebImage/Core (4.0.0)
-  - SWXMLHash (3.0.4)
+  - SWXMLHash (3.1.0)
   - UAProgressView (0.1.3)
 
 DEPENDENCIES:
@@ -36,7 +36,7 @@ SPEC CHECKSUMS:
   MBProgressHUD: 1569cf7ace17a8bac47aabfbb8580a49690386d1
   ReachabilitySwift: f5b9bb30a0777fac8f09ce8b067e32faeb29bb64
   SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
-  SWXMLHash: 29d20b84692fc319ea8ed933058fe7d8d005139b
+  SWXMLHash: d2a672ac416d71099aea91d2b4b9fa871eb09f94
   UAProgressView: ce49aee47c14df6dc372f6fd57852f570ca97e6b
 
 PODFILE CHECKSUM: 9baba0881fe36a7f67201896035439111650ff71
