@@ -23,9 +23,8 @@ class TalentTableViewCell: UITableViewCell {
             talentInitialLabel.isHidden = true
 
             if let url = imageURL {
-
                 if url != oldValue {
-                    talentImageView.sd_setImage(with: url)
+                    self.talentImageView.sd_setImage(with: url)
                 }
             } else {
                 talentImageView.sd_cancelCurrentImageLoad()

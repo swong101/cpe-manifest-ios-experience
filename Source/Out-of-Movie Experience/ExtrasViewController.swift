@@ -31,7 +31,7 @@ class ExtrasViewController: ExtrasExperienceViewController {
     fileprivate var selectedIndexPath: IndexPath?
 
     fileprivate var showActorsInGrid: Bool {
-        return (!DeviceType.IS_IPAD && CPEXMLSuite.current!.manifest.hasActors)
+        return (!DeviceType.IS_IPAD && CPEDataUtils.hasPeopleForDisplay)
     }
 
     // MARK: View Lifecycle
@@ -40,7 +40,7 @@ class ExtrasViewController: ExtrasExperienceViewController {
 
         experience = CPEXMLSuite.current!.manifest.outOfMovieExperience
 
-        if let talentTableView = talentTableView, CPEXMLSuite.current!.manifest.hasActors {
+        if let talentTableView = talentTableView, CPEDataUtils.hasPeopleForDisplay {
             talentTableView.register(UINib(nibName: TalentTableViewCell.NibNameWide, bundle: Bundle.frameworkResources), forCellReuseIdentifier: TalentTableViewCell.ReuseIdentifier)
             talentTableView.contentInset = UIEdgeInsets(top: 15, left: 0, bottom: 0, right: 0)
         } else {
@@ -144,7 +144,7 @@ class ExtrasViewController: ExtrasExperienceViewController {
 extension ExtrasViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return CPEXMLSuite.current!.manifest.numActors
+        return CPEDataUtils.numPeopleForDisplay
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -153,8 +153,8 @@ extension ExtrasViewController: UITableViewDataSource {
             return tableViewCell
         }
 
-        if let actors = CPEXMLSuite.current!.manifest.actors, actors.count > indexPath.row {
-            cell.talent = actors[indexPath.row]
+        if let people = CPEDataUtils.peopleForDisplay, people.count > indexPath.row {
+            cell.talent = people[indexPath.row]
         }
 
         return cell
@@ -206,8 +206,8 @@ extension ExtrasViewController: UICollectionViewDataSource {
         if showActorsInGrid {
             if childExperienceIndex == 0 {
                 cell.experience = nil
-                cell.title = String.localize("label.actors")
-                cell.imageURL = CPEXMLSuite.current!.manifest.actors?.first?.thumbnailImageURL
+                cell.title = CPEDataUtils.peopleExperienceName
+                cell.imageURL = CPEDataUtils.peopleForDisplay?.first?.thumbnailImageURL
                 cell.imageView.contentMode = .scaleAspectFit
                 return cell
             }

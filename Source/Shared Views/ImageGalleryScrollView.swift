@@ -153,23 +153,21 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     func load(with gallery: Gallery?) {
         pictures.removeAll()
 
-        if let gallery = gallery {
+        if let gallery = gallery, let pictures = gallery.pictureGroup?.pictures {
             isTurntable = gallery.isTurntable
 
-            if isTurntable {
-                if let pictures = gallery.pictureGroup?.pictures {
-                    var turntableStrideBy = 1
-                    if #available(iOS 9.3, *) {
-                        turntableStrideBy = 4
-                    } else {
-                        turntableStrideBy = 10
-                    }
-
-                    for i in stride(from: 0, to: pictures.count, by: turntableStrideBy) {
-                        self.pictures.append(pictures[i])
-                    }
+            if isTurntable && pictures.count > 40 {
+                var turntableStrideBy = 1
+                if #available(iOS 9.3, *) {
+                    turntableStrideBy = 4
+                } else {
+                    turntableStrideBy = 10
                 }
-            } else if let pictures = gallery.pictureGroup?.pictures {
+
+                for i in stride(from: 0, to: pictures.count, by: turntableStrideBy) {
+                    self.pictures.append(pictures[i])
+                }
+            } else {
                 self.pictures = pictures
             }
         } else {
@@ -308,8 +306,8 @@ class ImageGalleryScrollView: UIScrollView, UIScrollViewDelegate {
     }
 
     private func loadGalleryImageForPage(_ page: Int) {
-        if let url = picture(forPage: page)?.imageURL, let imageView = (self.viewWithTag(page + 1) as? UIScrollView)?.subviews.first as? UIImageView, imageView.image == nil {
-            DispatchQueue.global(qos: .userInitiated).async {
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let url = self.picture(forPage: page)?.imageURL, let imageView = (self.viewWithTag(page + 1) as? UIScrollView)?.subviews.first as? UIImageView, imageView.image == nil {
                 imageView.sd_setImage(with: url)
             }
         }

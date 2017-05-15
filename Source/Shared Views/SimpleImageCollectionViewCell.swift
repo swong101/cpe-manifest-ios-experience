@@ -17,10 +17,10 @@ open class SimpleImageCollectionViewCell: UICollectionViewCell {
     open var imageURL: URL? {
         set {
             if let url = newValue {
-                imageView.sd_setImage(with: url)
+                self.imageView.sd_setImage(with: url)
             } else {
-                imageView.sd_cancelCurrentImageLoad()
-                imageView.image = nil
+                self.imageView.sd_cancelCurrentImageLoad()
+                self.imageView.image = nil
             }
         }
 

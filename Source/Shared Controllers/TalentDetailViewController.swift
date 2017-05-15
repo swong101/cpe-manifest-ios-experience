@@ -69,7 +69,7 @@ class TalentDetailViewController: SceneDetailViewController {
         filmographyHeaderLabel?.text = String.localize("talentdetail.filmography").uppercased()
 
         // Mode Layout
-        let talentHasGallery = talent.images != nil && talent.images!.count > 1
+        let talentHasGallery = talent.gallery != nil && talent.gallery!.numPictures > 1
         if mode == .Extras {
             titleLabel.removeFromSuperview()
             closeButton.removeFromSuperview()
@@ -95,21 +95,24 @@ class TalentDetailViewController: SceneDetailViewController {
             talentImageView?.isUserInteractionEnabled = true
         }
 
-        // Fill data
-        talentNameLabel.text = talent.name.uppercased()
-        if let imageURL = talent.fullImageURL {
-            talentImageView?.sd_setImage(with: imageURL)
-        } else {
-            talentImageView?.removeFromSuperview()
-        }
-
         filmographyCollectionView?.register(UINib(nibName: SimpleImageCollectionViewCell.NibName, bundle: Bundle.frameworkResources), forCellWithReuseIdentifier: SimpleImageCollectionViewCell.BaseReuseIdentifier)
 
         if !talent.detailsLoaded {
             hud = MBProgressHUD.showAdded(to: self.view, animated: true)
         }
 
-        DispatchQueue.global(qos: .userInteractive).async {
+        // Fill data
+        self.talentNameLabel.text = talent.name.uppercased()
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let imageURL = self.talent.largeImageURL {
+                self.talentImageView?.sd_setImage(with: imageURL)
+            } else {
+                DispatchQueue.main.async {
+                    self.talentImageView?.removeFromSuperview()
+                }
+            }
+
             self.talent.getTalentDetails({ (biography, socialAccounts, films) in
                 DispatchQueue.main.async(execute: {
                     if let biography = biography, !biography.isEmpty {
@@ -227,7 +230,11 @@ extension TalentDetailViewController: UICollectionViewDataSource {
             return talent?.films?.count ?? 0
         }
 
-        return talent?.additionalImages?.count ?? 0
+        if let numPictures = talent?.gallery?.numPictures {
+            return (numPictures - 1)
+        }
+
+        return 0
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -239,7 +246,7 @@ extension TalentDetailViewController: UICollectionViewDataSource {
         if collectionView == filmographyCollectionView {
             cell.imageURL = talent?.films?[indexPath.row].imageURL
         } else if collectionView == galleryCollectionView {
-            cell.imageURL = talent?.additionalImages?[indexPath.row].thumbnailImageURL
+            cell.imageURL = talent?.gallery?.picture(atIndex: indexPath.row + 1)?.thumbnailImageURL
         }
 
         return cell

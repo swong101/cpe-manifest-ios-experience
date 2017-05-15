@@ -9,7 +9,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
 
     fileprivate struct Constants {
         static let HeaderHeight: CGFloat = 35
-        static let FooterHeight: CGFloat = 50
+        static let FooterHeight: CGFloat = 45
     }
 
     fileprivate struct SegueIdentifier {
@@ -25,6 +25,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
     fileprivate var currentTalents: [Person]?
     private var hiddenTalents: [Person]?
     fileprivate var isShowingMore = false
+    fileprivate var talentTableViewHeaderLabel: UILabel?
 
     private var currentTime: Double = -1
     private var didChangeTimeObserver: NSObjectProtocol?
@@ -43,13 +44,13 @@ class InMovieExperienceExtrasViewController: UIViewController {
         if let nodeStyle = CPEXMLSuite.current!.cpeStyle?.nodeStyle(withExperienceID: CPEXMLSuite.current!.manifest.inMovieExperience.id, interfaceOrientation: UIApplication.shared.statusBarOrientation) {
             self.view.backgroundColor = nodeStyle.backgroundColor
 
-            if let backgroundImageURL = nodeStyle.backgroundImageURL {
+            if let backgroundImageURL = nodeStyle.backgroundImage?.url {
                 backgroundImageView.sd_setImage(with: backgroundImageURL)
                 backgroundImageView.contentMode = nodeStyle.backgroundScaleMethod == .bestFit ? .scaleAspectFill : .scaleAspectFit
             }
         }
 
-        if CPEXMLSuite.current!.manifest.hasActors {
+        if CPEDataUtils.hasPeopleForDisplay {
             talentTableView?.register(UINib(nibName: TalentTableViewCell.NibNameNarrow + (DeviceType.IS_IPAD ? "" : "_iPhone"), bundle: Bundle.frameworkResources), forCellReuseIdentifier: TalentTableViewCell.ReuseIdentifier)
         } else {
             talentTableView?.removeFromSuperview()
@@ -80,7 +81,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
 
     private func processTimedEvents(_ time: Double) {
         if !self.view.isHidden {
-            DispatchQueue.global(qos: .userInteractive).async {
+            DispatchQueue.global(qos: .userInitiated).async {
                 self.currentTime = time
 
                 let newTalents = CPEXMLSuite.current!.manifest.timedEvents(atTimecode: time, type: .person)?.sorted(by: {
@@ -118,7 +119,7 @@ class InMovieExperienceExtrasViewController: UIViewController {
 
         if isShowingMore {
             hiddenTalents = currentTalents
-            currentTalents = CPEXMLSuite.current!.manifest.actors
+            currentTalents = CPEDataUtils.peopleForDisplay
             Analytics.log(event: .imeTalentAction, action: .showMore)
         } else {
             currentTalents = hiddenTalents
@@ -159,8 +160,18 @@ extension InMovieExperienceExtrasViewController: UITableViewDataSource {
         return cell
     }
 
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return String.localize("label.actors").uppercased()
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        if talentTableViewHeaderLabel == nil {
+            talentTableViewHeaderLabel = UILabel(frame: CGRect(x: 5, y: 0, width: tableView.bounds.width - 10, height: Constants.HeaderHeight))
+            talentTableViewHeaderLabel?.textAlignment = .center
+            talentTableViewHeaderLabel?.textColor = UIColor(netHex: 0xe5e5e5)
+            talentTableViewHeaderLabel?.font = UIFont.themeCondensedFont(DeviceType.IS_IPAD ? 19 : 17)
+            talentTableViewHeaderLabel?.adjustsFontSizeToFitWidth = true
+            talentTableViewHeaderLabel?.minimumScaleFactor = 0.65
+            talentTableViewHeaderLabel?.text = CPEDataUtils.peopleExperienceName.uppercased()
+        }
+
+        return talentTableViewHeaderLabel
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -179,19 +190,11 @@ extension InMovieExperienceExtrasViewController: UITableViewDataSource {
 
 extension InMovieExperienceExtrasViewController: UITableViewDelegate {
 
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        if let header = view as? UITableViewHeaderFooterView {
-            header.textLabel?.textAlignment = .center
-            header.textLabel?.font = UIFont.themeCondensedFont(DeviceType.IS_IPAD ? 19 : 17)
-            header.textLabel?.textColor = UIColor(netHex: 0xe5e5e5)
-        }
-    }
-
     func tableView(_ tableView: UITableView, willDisplayFooterView view: UIView, forSection section: Int) {
         if let footer = view as? UITableViewHeaderFooterView {
             footer.textLabel?.textAlignment = .center
-            footer.textLabel?.font = UIFont.themeCondensedFont(DeviceType.IS_IPAD ? 19 : 17)
             footer.textLabel?.textColor = UIColor(netHex: 0xe5e5e5)
+            footer.textLabel?.font = UIFont.themeCondensedFont(DeviceType.IS_IPAD ? 19 : 17)
 
             if footer.gestureRecognizers == nil || footer.gestureRecognizers!.count == 0 {
                 footer.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.onTapFooter)))

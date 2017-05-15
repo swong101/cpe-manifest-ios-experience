@@ -59,8 +59,8 @@ class TalentImageGalleryViewController: SceneDetailViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        if let imageURLs = talent.images?.flatMap({ $0.imageURL }) {
-            galleryScrollView.load(with: Gallery(imageURLs: imageURLs))
+        if let gallery = talent.gallery {
+            galleryScrollView.load(with: gallery)
             galleryScrollView.gotoPage(initialPage, animated: false)
         }
     }
@@ -74,7 +74,7 @@ class TalentImageGalleryViewController: SceneDetailViewController {
 extension TalentImageGalleryViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return talent.images?.count ?? 0
+        return (talent.gallery?.numPictures ?? 0)
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -85,7 +85,7 @@ extension TalentImageGalleryViewController: UICollectionViewDataSource {
 
         cell.showsSelectedBorder = true
         cell.isSelected = (indexPath.row == galleryScrollView.currentPage)
-        cell.imageURL = talent.images?[indexPath.row].thumbnailImageURL
+        cell.imageURL = talent.gallery?.picture(atIndex: indexPath.row)?.thumbnailImageURL
         return cell
     }
 

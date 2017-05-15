@@ -118,17 +118,17 @@ class ExtrasShoppingViewController: MenuedViewController {
             productListSessionDataTask?.cancel()
             DispatchQueue.main.async {
                 self.hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+            }
 
-                DispatchQueue.global(qos: .userInteractive).async {
-                    self.productListSessionDataTask = productAPIUtil.getCategoryProducts(categoryID, completion: { [weak self] (products) in
-                        self?.productListSessionDataTask = nil
+            DispatchQueue.global(qos: .userInitiated).async {
+                self.productListSessionDataTask = productAPIUtil.getCategoryProducts(categoryID, completion: { [weak self] (products) in
+                    self?.productListSessionDataTask = nil
 
-                        DispatchQueue.main.async {
-                            self?.extrasShoppingItemsViewController?.products = products
-                            self?.hud?.hide(true)
-                        }
-                    })
-                }
+                    DispatchQueue.main.async {
+                        self?.extrasShoppingItemsViewController?.products = products
+                        self?.hud?.hide(true)
+                    }
+                })
             }
 
             Analytics.log(event: .extrasShopAction, action: .selectCategory, itemId: categoryID)

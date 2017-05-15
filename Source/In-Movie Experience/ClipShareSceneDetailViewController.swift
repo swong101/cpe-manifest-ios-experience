@@ -80,7 +80,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
         previewImageView.isHidden = true
         previewPlayButton.isHidden = true
 
-        if let videoURL = timedEvent?.video?.url, let videoPlayerViewController = UIStoryboard.viewController(for: VideoPlayerViewController.self) as? VideoPlayerViewController {
+        if let videoURL = timedEvent?.audioVisual?.presentation?.video?.url, let videoPlayerViewController = UIStoryboard.viewController(for: VideoPlayerViewController.self) as? VideoPlayerViewController {
             videoPlayerViewController.removeCurrentItem()
             videoPlayerViewController.mode = .supplementalInMovie
             videoPlayerViewController.view.frame = videoContainerView.bounds
@@ -114,7 +114,7 @@ class ClipShareSceneDetailViewController: SceneDetailViewController {
     }
 
     @IBAction private func onShare(_ sender: UIButton) {
-        if let video = timedEvent?.video, let videoURL = video.url {
+        if let video = timedEvent?.audioVisual?.presentation?.video, let videoURL = video.url {
             let showShareDialog = { [weak self] (url: URL) in
                 let activityViewController = UIActivityViewController(activityItems: [String.localize("clipshare.share_message", variables: ["movie_name": CPEXMLSuite.current?.manifest.mainExperience.title, "url": url.absoluteString])], applicationActivities: nil)
                 activityViewController.popoverPresentationController?.sourceView = sender

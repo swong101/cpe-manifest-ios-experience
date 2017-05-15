@@ -48,7 +48,7 @@ class GallerySceneDetailViewController: SceneDetailViewController, UIScrollViewD
                 pageControl = nil
                 shareButton = nil
 
-                if let videoURL = timedEvent.video?.url {
+                if let videoURL = timedEvent.audioVisual?.presentation?.video?.url {
                     descriptionLabel.text = timedEvent.description
 
                     if let videoContainerView = videoContainerView, let videoPlayerViewController = UIStoryboard.viewController(for: VideoPlayerViewController.self) as? VideoPlayerViewController {

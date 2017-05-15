@@ -248,7 +248,7 @@ class VideoPlayerViewController: UIViewController {
     }
 
     // Controls
-    @IBOutlet weak private var topToolbar: UIView?
+    @IBOutlet weak public var topToolbar: UIView?
     @IBOutlet weak fileprivate var commentaryButton: UIButton?
     @IBOutlet weak fileprivate var captionsButton: UIButton?
     @IBOutlet weak private var airPlayButton: AirPlayButton?
@@ -1270,7 +1270,7 @@ class VideoPlayerViewController: UIViewController {
         }
     }
 
-    private func pauseVideo() {
+    public func pauseVideo() {
         // Pause media
         if isCastingActive {
             CastManager.sharedInstance.pauseMedia()
@@ -1451,31 +1451,31 @@ class VideoPlayerViewController: UIViewController {
                     }
                 }
             } else {
-                var nowPlayingInfo = [String: Any]()
+                DispatchQueue.main.async {
+                    var nowPlayingInfo = [String: Any]()
 
-                if let title = playbackAsset.assetTitle {
-                    nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                    if let title = playbackAsset.assetTitle {
+                        nowPlayingInfo[MPMediaItemPropertyTitle] = title
+                    }
+
+                    nowPlayingInfo[MPMediaItemPropertyArtist] = ""
+
+                    if #available(iOS 10.0, *) {
+                        nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 768, height: 768), requestHandler: { [weak self] (_) -> UIImage in
+                            return (self?.nowPlayingInfoImage ?? playbackAsset.assetImage)
+                        })
+                    }
+
+                    MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
                 }
-
-                nowPlayingInfo[MPMediaItemPropertyArtist] = ""
-
-                if #available(iOS 10.0, *) {
-                    nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 768, height: 768), requestHandler: { [weak self] (_) -> UIImage in
-                        return (self?.nowPlayingInfoImage ?? playbackAsset.assetImage)
-                    })
-                }
-
-                MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
             }
 
             DispatchQueue.global(qos: .background).async {
                 if let closestClipShareTimedEvent = CPEXMLSuite.current?.manifest.closestTimedEvent(toTimecode: self.currentTime, type: .clipShare) {
                     if !self.playbackOverlayView.isHidden && closestClipShareTimedEvent != self.playbackOverlayTimedEvent {
-                        DispatchQueue.main.async {
-                            if let imageURL = closestClipShareTimedEvent.thumbnailImageURL {
-                                self.playbackOverlayImageView.sd_setImage(with: imageURL)
-                                self.playbackOverlayTimedEvent = closestClipShareTimedEvent
-                            }
+                        if let imageURL = closestClipShareTimedEvent.thumbnailImageURL {
+                            self.playbackOverlayImageView.sd_setImage(with: imageURL)
+                            self.playbackOverlayTimedEvent = closestClipShareTimedEvent
                         }
                     }
                 }
@@ -2003,8 +2003,8 @@ extension VideoPlayerViewController: GCKSessionManagerListener {
 
 extension VideoPlayerViewController: GCKRemoteMediaClientListener {
 
-    fileprivate func updateWithMediaStatus(_ mediaStatus: GCKMediaStatus) {
-        if didPlayInterstitial {
+    fileprivate func updateWithMediaStatus(_ mediaStatus: GCKMediaStatus?) {
+        if didPlayInterstitial, let mediaStatus = mediaStatus {
             if let duration = mediaStatus.mediaInformation?.streamDuration {
                 playerItemDuration = duration
             }
@@ -2045,7 +2045,7 @@ extension VideoPlayerViewController: GCKRemoteMediaClientListener {
         selectInitialCaptions()
     }
 
-    func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus) {
+    func remoteMediaClient(_ client: GCKRemoteMediaClient, didUpdate mediaStatus: GCKMediaStatus?) {
         updateWithMediaStatus(mediaStatus)
     }
 
