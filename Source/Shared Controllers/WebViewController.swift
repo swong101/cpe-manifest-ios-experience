@@ -102,7 +102,12 @@ open class WebViewController: UIViewController {
 extension WebViewController: WKNavigationDelegate {
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        decisionHandler(WKNavigationActionPolicy.allow)
+        if navigationAction.targetFrame == nil {
+            navigationAction.request.url?.promptLaunch(withMessage: nil)
+            return decisionHandler(.cancel)
+        }
+        
+        decisionHandler(.allow)
     }
 
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
