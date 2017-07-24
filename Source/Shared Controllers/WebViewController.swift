@@ -103,7 +103,7 @@ extension WebViewController: WKNavigationDelegate {
 
     public func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if navigationAction.targetFrame == nil {
-            navigationAction.request.url?.promptLaunch(withMessage: nil)
+            navigationAction.request.url?.promptLaunch(withMessage: String.localize("info.leaving_app.message_general"))
             return decisionHandler(.cancel)
         }
         

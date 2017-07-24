@@ -44,6 +44,7 @@
 // Info text
 "info.leaving_app.title" = "Leaving App";
 "info.leaving_app.message" = "Following this link will exit the app and launch your browser. Would you like to continue?";
+"info.leaving_app.message_general" = "Following this link will exit the app. Would you like to continue?";
 "info.leaving_app.message_itunes" = "Following this link will exit the app and launch iTunes. Would you like to continue?";
 
 // Talent
