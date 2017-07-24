@@ -621,7 +621,7 @@ class HomeViewController: UIViewController {
 
     // MARK: Actions
     @objc private func onTapHomeView() {
-        showHomeScreenViews(animated: true, exitButtonOnly: true)
+        showHomeScreenViews(animated: true)
     }
 
     @objc private func onPlay() {
