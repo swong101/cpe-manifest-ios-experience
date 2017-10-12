@@ -4,12 +4,12 @@ Pod::Spec.new do |s|
   s.version             = '4.2.1'
   s.summary             = 'iOS User Experience for Cross-Platform Extras'
   s.license             = { :type => 'Apache License, Version 2.0', :file => 'LICENSE' }
-  s.homepage            = 'https://github.com/swong101/cpe-manifest-ios-data.git'
+  s.homepage            = 'https://github.com/swong101/cpe-manifest-ios-experience.git'
   s.author              = { 'Alec Ananian' => 'alec.ananian@warnerbros.com' }
 
   s.platform            = :ios, '8.0'
 
-  s.dependency            'CPEData',            :git => 'https://github.com/swong101/cpe-manifest-ios-data.git'
+  s.dependency            'CPEData',            '~> 3.0'
   s.dependency            'google-cast-sdk',    '~> 3.0'
   s.dependency            'MBProgressHUD',      '~> 0.9'
   s.dependency            'SDWebImage',         '~> 4.0'
