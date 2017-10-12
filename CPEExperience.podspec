@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
 
   s.platform            = :ios, '8.0'
 
-
+  s.dependency            'CPEData',            '~> 3.2'
   s.dependency            'google-cast-sdk',    '~> 3.0'
   s.dependency            'MBProgressHUD',      '~> 0.9'
   s.dependency            'SDWebImage',         '~> 4.0'
