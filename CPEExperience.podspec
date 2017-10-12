@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.dependency            'UAProgressView',     '~> 0.1'
   s.dependency            'ReachabilitySwift',  '~> 3.0'
 
-  s.source              = { :git => 'https://github.com/swong101/cpe-manifest-ios-data.git', :tag => s.version.to_s }
+  s.source              = { :git => 'https://github.com/swong101/cpe-manifest-ios-experience.git', :tag => s.version.to_s }
   s.source_files        = 'Source/**/*.swift', 'Source/*.swift'
   s.resource_bundles    = {
     'CPEExperience' => ['Source/**/*.{xcassets,storyboard,strings,xib,ttf}']
